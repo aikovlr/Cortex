@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <script src="./js/script.js" defer></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <img src="./images/logo.png" alt="Logo" class="logo">
+    <ul class="menu">
+      <li><a href="#">📋 Minhas Tarefas</a></li>
+      <li><a href="#">📊 Dashboard</a></li>
+      <li><a href="#">🎯 Minhas Metas</a></li>
+      <li><a href="#">⚙️ Configurações</a></li>
+      <li><a href="#">👥 Equipe</a></li>
+      <li><a href="#">🏆 Metas Corporativas</a></li>
+      <li><a href="#">💡 Sugestões</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <header>
+      <h1>Olá, Admin !</h1>
+    </header>
+
+    <!-- Task Table -->
+    <div class="search-container">
+        <input type="text" placeholder="Hinted search text">
+        <button>+</button>
+    </div>
+
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Tarefa</th>
+          <th>Data</th>
+          <th>Atribuído a</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>          
+          <td><input type="checkbox"></td>
+          <td><a href="./pages/tarefa.html">Criar protótipo</a></td>
+          <td>12/06/2025</td>
+          <td>Kayke</td>
+          <td><span class="status pendente">Pendente</span></td>
+        </tr>
+        <tr onclick="abrirTarefa('./pages/tarefa.html')">
+          <td><input type="checkbox"></td>
+          <td>Entregar projeto</td>
+          <td>12/06/2025</td>
+          <td>Kayke</td>
+          <td><span class="status entrega">Entrega</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
+
+

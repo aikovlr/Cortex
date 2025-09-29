@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarefa - Cortex</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <img src="../images/logo.png" alt="Logo" class="logo">
+    <ul class="menu">
+      <li><a href="#">📋 Minhas Tarefas</a></li>
+      <li><a href="#">📊 Dashboard</a></li>
+      <li><a href="#">🎯 Minhas Metas</a></li>
+      <li><a href="#">⚙️ Configurações</a></li>
+      <li><a href="#">👥 Equipe</a></li>
+      <li><a href="#">🏆 Metas Corporativas</a></li>
+      <li><a href="#">💡 Sugestões</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <header>
+      <h1>Olá, Admin !</h1>
+    </header>
+
+    <h1 id="taskName">Carregando...</h1>
+    <p id="taskDue">...</p>
+
+    <div class="task-detail">
+      <p><strong>Instruções:</strong><br> <span id="taskInstructions"></span></p>
+
+      <div class="upload">
+        <label for="fileUpload">Meus anexos:</label><br>
+        <input type="file" id="fileUpload">
+      </div>
+
+      <button class="btn roxo">Finalizar tarefa</button>
+    </div>
+
+    <div class="footer-buttons">
+      <button class="btn verde">Sugerir alteração</button>
+      <button class="btn vermelho">Reportar tarefa</button>
+    </div>
+  </main>
+</body>
+</html>
