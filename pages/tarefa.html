@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tarefa - Cortex</title>
-  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/globalstyles.css">
+  <link rel="stylesheet" href="../css/tarefas.css">
   <script src="../js/script.js" defer></script>
 </head>
 <body>
@@ -12,40 +13,40 @@
   <aside class="sidebar">
     <img src="../images/logo.png" alt="Logo" class="logo">
     <ul class="menu">
-      <li><a href="#">📋 Minhas Tarefas</a></li>
+      <li><a href="../index.html">📋 Minhas Tarefas</a></li>
       <li><a href="#">📊 Dashboard</a></li>
       <li><a href="#">🎯 Minhas Metas</a></li>
       <li><a href="#">⚙️ Configurações</a></li>
-      <li><a href="#">👥 Equipe</a></li>
+      <li><a href="../pages/equipe.html">👥 Equipe</a></li>
       <li><a href="#">🏆 Metas Corporativas</a></li>
       <li><a href="#">💡 Sugestões</a></li>
     </ul>
   </aside>
 
   <!-- Main -->
-  <main class="main">
-    <header>
-      <h1>Olá, Admin !</h1>
-    </header>
+<div class="content">
+  <h1>Nome da tarefa</h1>
+  <small>Vence em 12 de junho de 2026 às 23:59</small>
 
-    <h1 id="taskName">Carregando...</h1>
-    <p id="taskDue">...</p>
+<div class="task-box">
+  <div class="task-box-content">
+    <p><strong>Instruções:</strong><br> Entregar trabalho final</p>
+    <label for="file-upload" class="file-label">Anexar arquivo</label>
+    <input id="file-upload" type="file">
+  </div>
 
-    <div class="task-detail">
-      <p><strong>Instruções:</strong><br> <span id="taskInstructions"></span></p>
+  <!-- botão dentro do box, alinhado à direita -->
+  <div class="task-box-actions">
+    <button class="btn-primary finalizar">Finalizar tarefa</button>
+  </div>
+</div>
 
-      <div class="upload">
-        <label for="fileUpload">Meus anexos:</label><br>
-        <input type="file" id="fileUpload">
-      </div>
+<!-- botões de rodapé (fora do box) -->
+<div class="footer-buttons">
+  <button class="btn-green">Sugerir alteração</button>
+  <button class="btn-red">Reportar tarefa</button>
+</div>
 
-      <button class="btn roxo">Finalizar tarefa</button>
-    </div>
-
-    <div class="footer-buttons">
-      <button class="btn verde">Sugerir alteração</button>
-      <button class="btn vermelho">Reportar tarefa</button>
-    </div>
-  </main>
+</div>
 </body>
 </html>

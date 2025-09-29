@@ -1,0 +1,67 @@
+.main {
+  flex: 1;
+  margin-left: 240px;
+  padding: 30px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+    }
+
+header h1 {
+  font-size: 22px;
+    }
+
+/* Barra de busca */
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 50px;
+    }
+
+.search-container input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 70%;
+    margin-left: 100px;
+}
+
+.search-container button {
+  background: #b47bff;
+  border: none;
+  color: white;
+  font-size: 20px;
+  padding: 6px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+    }
+/* Tabela */
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.team-table th {
+  text-align: left;
+  font-size: 14px;
+  padding: 12px 8px;
+  border-bottom: 2px solid #aaa;
+  color: #444;
+}
+
+.team-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #222;
+}
+
+.team-table tr:hover {
+  background: #f3f1f9;
+}

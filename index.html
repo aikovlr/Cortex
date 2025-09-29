@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/globalstyles.css">
+    <link rel="stylesheet" href="./css/index.css">
     <script src="./js/script.js" defer></script>
 </head>
 <body>
@@ -12,11 +13,11 @@
   <aside class="sidebar">
     <img src="./images/logo.png" alt="Logo" class="logo">
     <ul class="menu">
-      <li><a href="#">📋 Minhas Tarefas</a></li>
+      <li><a href="./index.html">📋 Minhas Tarefas</a></li>
       <li><a href="#">📊 Dashboard</a></li>
       <li><a href="#">🎯 Minhas Metas</a></li>
       <li><a href="#">⚙️ Configurações</a></li>
-      <li><a href="#">👥 Equipe</a></li>
+      <li><a href="./pages/equipe.html">👥 Equipe</a></li>
       <li><a href="#">🏆 Metas Corporativas</a></li>
       <li><a href="#">💡 Sugestões</a></li>
     </ul>
@@ -37,7 +38,6 @@
     <table class="task-table">
       <thead>
         <tr>
-          <th></th>
           <th>Tarefa</th>
           <th>Data</th>
           <th>Atribuído a</th>
@@ -45,15 +45,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr>          
-          <td><input type="checkbox"></td>
-          <td><a href="./pages/tarefa.html">Criar protótipo</a></td>
+        <tr onclick="abrirTarefa('./pages/tarefa.html')">          
+          <td>Criar protótipo</td>
           <td>12/06/2025</td>
           <td>Kayke</td>
           <td><span class="status pendente">Pendente</span></td>
         </tr>
-        <tr onclick="abrirTarefa('./pages/tarefa.html')">
-          <td><input type="checkbox"></td>
+        <tr>
           <td>Entregar projeto</td>
           <td>12/06/2025</td>
           <td>Kayke</td>
