@@ -3,11 +3,6 @@
 CSS PAGINA MINHAS TAREFAS
     
 */
-.main {
-  flex: 1;
-  margin-left: 240px;
-  padding: 30px;
-  }
 
 header {
       display: flex;

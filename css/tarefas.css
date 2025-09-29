@@ -1,15 +1,10 @@
-.content {
-  margin-left: 240px;
-  padding: 30px;
-}
-
-.content h1 {
+.main h1 {
   font-size: 1.8rem;
   margin-bottom: 8px;
   color: #111;
 }
 
-.content small {
+.main small {
   color: #555;
   display: block;
   margin-bottom: 20px;

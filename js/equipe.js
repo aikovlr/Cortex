@@ -1,0 +1,26 @@
+function toggleForm() {
+  const formCard = document.getElementById("formCard");
+  formCard.classList.toggle("hidden");
+}
+
+document.getElementById("memberForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const nome = document.getElementById("nome").value;
+  const cargo = document.getElementById("cargo").value;
+  const hoje = new Date().toLocaleDateString("pt-BR");
+
+  const tabela = document.getElementById("teamTable").getElementsByTagName("tbody")[0];
+  const novaLinha = tabela.insertRow();
+
+  novaLinha.insertCell(0).innerText = nome;
+  novaLinha.insertCell(1).innerText = hoje;
+  novaLinha.insertCell(2).innerText = "0";
+  novaLinha.insertCell(3).innerText = cargo;
+
+  // Esconde o formulário de novo
+  toggleForm();
+
+  // Limpa os inputs
+  document.getElementById("memberForm").reset();
+});

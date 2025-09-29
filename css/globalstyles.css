@@ -5,6 +5,12 @@ body {
   color: #222;
 }
 
+.main {
+  flex: 1;
+  margin-left: 240px;
+  padding: 30px;
+  }
+
 .sidebar {
   position: fixed;
   left: 0;
