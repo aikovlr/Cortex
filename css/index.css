@@ -5,74 +5,74 @@ CSS PAGINA MINHAS TAREFAS
 */
 
 header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  }
 
-    header h1 {
-      font-size: 22px;
-    }
+header h1 {
+  font-size: 22px;
+  }
 
-    .search-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 50px;
-    }
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 50px;
+  }
 
-    .search-container input {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      width: 70%;
-      margin-left: 100px;
-    }
+.search-container input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 70%;
+  margin-left: 100px;
+  }
 
-    .search-container button {
-      background: #b47bff;
-      border: none;
-      color: white;
-      font-size: 20px;
-      padding: 6px 12px;
-      border-radius: 50%;
-      cursor: pointer;
-    }
+.search-container button {
+  background: #b47bff;
+  border: none;
+  color: white;
+  font-size: 20px;
+  padding: 6px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  }
 
-    th, td {
-      text-align: left;
-      padding: 12px 8px;
-      border-bottom: 1px solid #eee;
-    }
+th, td {
+  text-align: left;
+  padding: 12px 8px;
+  border-bottom: 1px solid #eee;
+  }
 
-    th {
-      color: #555;
-    }
+th {
+  color: #555;
+  }
 
-    td .status {
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: bold;
-    }
+td .status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: bold;
+  }
 
-    .status.entregue {
-      background: #1d4126;
-      color: #fff;
-    }
+.status.entregue {
+  background: #1d4126;
+  color: #fff;
+  }
 
-    .status.pendente {
-      background: #f4c542;
-      color: #000;
-    }
+.status.pendente {
+  background: #f4c542;
+  color: #000;
+  }
 
-    .status {
+.status {
   padding: 5px 10px;
   border-radius: 12px;
   font-size: 12px;

@@ -6,7 +6,7 @@
   <title>Tarefa - Cortex</title>
   <link rel="stylesheet" href="../css/globalstyles.css">
   <link rel="stylesheet" href="../css/tarefas.css">
-  <script src="../js/script.js" defer></script>
+  <script src="../js/tarefa.js" defer></script>
 </head>
 <body>
   <!-- Sidebar -->
@@ -29,22 +29,60 @@
   <small>Vence em 12 de junho de 2026 às 23:59</small>
 
 <div class="task-box">
+
   <div class="task-box-content">
-    <p><strong>Instruções:</strong><br> Entregar trabalho final</p>
-    <label for="file-upload" class="file-label">Anexar arquivo</label>
-    <input id="file-upload" type="file">
+    <p><strong>Instruções:</strong><br>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
   </div>
 
-  <!-- botão dentro do box, alinhado à direita -->
+<!-- Botões dentro da task -->
   <div class="task-box-actions">
+
+    <div class ="file-upload">
+      <button type="button" id="customFileButton">Anexar arquivo</button>
+      <input type="file" id="fileInput" hidden>
+      <span id="fileName"></span>
+    </div>
+
     <button class="btn-primary finalizar">Finalizar tarefa</button>
   </div>
 </div>
 
+
+<!-- Card de report -->
+<dialog class="card" id="report">
+  <h2 class="card-title">Ticket de reporte</h2>
+
+  <div id="reportContent">
+  <label for="task">Tarefa</label>
+  <input type="text" id="task" placeholder="Nome da tarefa" />
+  
+  <label for="desc">Descrição</label>
+  <textarea id="desc" placeholder="Descreva o problema..."></textarea>
+  </div>
+
+  <button class="btn-red" type="submit">Enviar ticket</button>
+</dialog>
+
+<!-- Card de Sugestão-->
+<dialog class="card" id="suggestion">
+  <h2 class="card-title">Ticket de reporte</h2>
+
+  <div id="suggestionContent">
+  <label for="task">Tarefa</label>
+  <input type="text" id="task" placeholder="Nome da tarefa" />
+  
+  <label for="desc">Sugestão</label>
+  <textarea id="desc" placeholder="Insira sua sugestão..."></textarea>
+  </div>
+
+  <button class="btn-green" type="submit">Enviar sugestão</button>
+</dialog>
+<!-- Card feedback tarefa finalizada -->
+
 <!-- botões de rodapé (fora do box) -->
 <div class="footer-buttons">
-  <button class="btn-green">Sugerir alteração</button>
-  <button class="btn-red">Reportar tarefa</button>
+  <button class="btn-green" onclick="toggleSuggestion()">Sugerir alteração</button>
+  <button class="btn-red" onclick="toggleReport()">Reportar tarefa</button>
 </div>
 
 </main>

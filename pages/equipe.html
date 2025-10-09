@@ -36,7 +36,7 @@
     </div>
 
       <!-- Tabela de equipe -->
-      <table class="team-table">
+      <table id="teamTable">
         <thead>
           <tr>
             <th>Integrante</th>
@@ -50,19 +50,19 @@
             <td>Kayke</td>
             <td>12/06/2025</td>
             <td>1</td>
-            <td>Back-end ➤</td>
+            <td>Back-end</td>
           </tr>
           <tr>
             <td>Lucas</td>
             <td>12/06/2025</td>
             <td>0</td>
-            <td>Analista.. ➤</td>
+            <td>Analista</td>
           </tr>
         </tbody>
       </table>
 
 <!-- Card de cadastro (escondido inicialmente) -->
-<div id="formCard" class="form-card hidden">
+<dialog id="formCard" class="form-card">
   <h3>Insira as informações</h3>
   <form id="memberForm">
     <label>Nome</label>
@@ -82,7 +82,7 @@
 
     <button type="submit">Salvar</button>
   </form>
-</div>
+</dialog>
     </main>
 </body>
 </html>

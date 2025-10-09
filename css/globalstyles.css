@@ -1,11 +1,19 @@
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
   background-color: #f9f9fb;
   color: #222;
+  display: flex;
+  flex-direction: column;
 }
 
 .main {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   margin-left: 240px;
   padding: 30px;

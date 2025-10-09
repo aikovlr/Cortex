@@ -1,6 +1,12 @@
 function toggleForm() {
   const formCard = document.getElementById("formCard");
-  formCard.classList.toggle("hidden");
+  
+  if (formCard.open) {
+    formCard.close();
+    return;
+  }
+
+  formCard.showModal();
 }
 
 document.getElementById("memberForm").addEventListener("submit", function (e) {
