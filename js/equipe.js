@@ -15,6 +15,7 @@ document.getElementById("memberForm").addEventListener("submit", function (e) {
   const nome = document.getElementById("nome").value;
   const cargo = document.getElementById("cargo").value;
   const hoje = new Date().toLocaleDateString("pt-BR");
+  const popup = document.getElementById("popupSucesso");
 
   const tabela = document.getElementById("teamTable").getElementsByTagName("tbody")[0];
   const novaLinha = tabela.insertRow();
@@ -29,4 +30,10 @@ document.getElementById("memberForm").addEventListener("submit", function (e) {
 
   // Limpa os inputs
   document.getElementById("memberForm").reset();
+
+  popup.classList.add("show");
+
+  setTimeout(() => {
+    popup.classList.remove("show");
+  }, 2000);
 });

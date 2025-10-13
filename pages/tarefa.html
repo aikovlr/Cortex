@@ -43,7 +43,7 @@
       <span id="fileName"></span>
     </div>
 
-    <button class="btn-primary finalizar">Finalizar tarefa</button>
+    <button class="btn-primary finalizar" id="finalizar" onclick="toggleFeedback()">Finalizar tarefa</button>
   </div>
 </div>
 
@@ -52,12 +52,12 @@
 <dialog class="card" id="report">
   <h2 class="card-title">Ticket de reporte</h2>
 
-  <div id="reportContent">
+  <div>
   <label for="task">Tarefa</label>
-  <input type="text" id="task" placeholder="Nome da tarefa" />
+  <input type="text" id="reportTask" placeholder="Nome da tarefa" required/>
   
   <label for="desc">Descrição</label>
-  <textarea id="desc" placeholder="Descreva o problema..."></textarea>
+  <textarea id="reportDesc" placeholder="Descreva o problema..."></textarea>
   </div>
 
   <button class="btn-red" type="submit">Enviar ticket</button>
@@ -65,25 +65,38 @@
 
 <!-- Card de Sugestão-->
 <dialog class="card" id="suggestion">
-  <h2 class="card-title">Ticket de reporte</h2>
+  <h2 class="card-title">Sugerir alteração</h2>
 
-  <div id="suggestionContent">
+  <div>
   <label for="task">Tarefa</label>
-  <input type="text" id="task" placeholder="Nome da tarefa" />
+  <input type="text" id="suggestionTask" placeholder="Nome da tarefa" required/>
   
   <label for="desc">Sugestão</label>
-  <textarea id="desc" placeholder="Insira sua sugestão..."></textarea>
+  <textarea id="suggestionDesc" placeholder="Insira sua sugestão..."></textarea>
   </div>
 
   <button class="btn-green" type="submit">Enviar sugestão</button>
 </dialog>
 <!-- Card feedback tarefa finalizada -->
 
+<div class="feedback" id="feedbackContainer" style="display: none;">
+    <div class="feedback-card-styling">
+        <h2 class="card-title">Feedback</h2>
+        <div>
+            <label for="feedbackDesc">Descrição</label>
+            <textarea id="feedbackDesc" placeholder="Insira o feedback..."></textarea>
+        </div>
+        <button class="btn-green" type="submit">Enviar feedback</button>
+    </div>
+</div>
+
 <!-- botões de rodapé (fora do box) -->
 <div class="footer-buttons">
-  <button class="btn-green" onclick="toggleSuggestion()">Sugerir alteração</button>
   <button class="btn-red" onclick="toggleReport()">Reportar tarefa</button>
+  <button class="btn-green" id="sugestao" onclick="toggleSuggestion()">Sugerir alteração</button>
 </div>
+
+<div id="popupSucesso">Ação realizada com sucesso!</div>
 
 </main>
 </body>

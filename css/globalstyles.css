@@ -9,6 +9,7 @@ body {
   color: #222;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .main {
@@ -64,5 +65,24 @@ body {
   color: #b47bff;
   }
 
+#popupSucesso {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #134011;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 9999;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
 
+#popupSucesso.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 

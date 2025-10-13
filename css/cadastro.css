@@ -1,0 +1,115 @@
+.main {
+    display: flex;
+    flex-direction: row;
+}
+
+.container { 
+  background: #12192C;
+  padding: 10px 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  width: 600px;
+  color: #fff;
+  margin: auto;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+button {
+  background: #7B4FC9;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex-grow: 0;
+  align-self: center;
+}
+
+button:hover {
+  background: #6638b4;
+}
+
+.profile-picture-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  align-self: center;
+}
+
+.profile-picture-container img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #7B4FC9;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-picture-container img:hover {
+  opacity: 0.8;
+}
+
+.profile-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-buttons button {
+  background-color: #7B4FC9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.profile-buttons button:hover {
+  background-color: #5d38a4;
+}
+
+
+#mensagemErro {
+  color: #d63131;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.aviso {
+  text-align: center;
+}
+
+.aviso a {
+  color: #fff;
+  font-weight: 500;
+}
