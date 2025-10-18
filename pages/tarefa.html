@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../css/globalstyles.css">
   <link rel="stylesheet" href="../css/tarefas.css">
   <script src="../js/tarefa.js" defer></script>
+  <script src="../js/globaljs.js" defer></script>
 </head>
 <body>
   <!-- Sidebar -->
@@ -16,11 +17,16 @@
       <li><a href="../index.html">📋 Minhas Tarefas</a></li>
       <li><a href="#">📊 Dashboard</a></li>
       <li><a href="#">🎯 Minhas Metas</a></li>
-      <li><a href="#">⚙️ Configurações</a></li>
+      <li><a href="#">⚙️ Configurações</a></li> 
       <li><a href="../pages/equipe.html">👥 Equipe</a></li>
       <li><a href="#">🏆 Metas Corporativas</a></li>
       <li><a href="#">💡 Sugestões</a></li>
     </ul>
+
+    <label class="switch">
+      <input type="checkbox" id="meuSwitch">
+      <span class="slider"></span>
+    </label>
   </aside>
 
   <!-- Main -->
@@ -43,7 +49,7 @@
       <span id="fileName"></span>
     </div>
 
-    <button class="btn-primary finalizar" id="finalizar" onclick="toggleFeedback()">Finalizar tarefa</button>
+    <button class="btn-primary finalizar" data-id="tarefa1" id="finalizar" onclick="toggleFeedback()">Finalizar tarefa</button>
   </div>
 </div>
 
@@ -84,9 +90,9 @@
         <h2 class="card-title">Feedback</h2>
         <div>
             <label for="feedbackDesc">Descrição</label>
-            <textarea id="feedbackDesc" placeholder="Insira o feedback..."></textarea>
+            <input type='text' id="feedbackDesc" placeholder="Insira o feedback..." required/>
         </div>
-        <button class="btn-green" type="submit">Enviar feedback</button>
+        <button class="btn-green" id="sendFeedback" type="submit">Enviar feedback</button>
     </div>
 </div>
 

@@ -7,16 +7,22 @@
   <link rel="stylesheet" href="../css/globalstyles.css">
   <link rel="stylesheet" href="../css/cadastro.css">
   <script src="../js/cadastro.js" defer></script>
+  <script src="../js/globaljs.js" defer></script>
 </head>
 <body>
 
     <!-- Sidebar -->
-<aside class="sidebar">
-<img src="../images/logo.png" alt="Logo" class="logo">
-</aside>
+  <aside class="sidebar">
+    <img src="../images/logo.png" alt="Logo" class="logo">
+
+    <label class="switch">
+      <input type="checkbox" id="meuSwitch">
+      <span class="slider"></span>
+    </label>
+  </aside>
 
     <!-- Conteudo Main -->
-<div class="main">
+<main class="main">
   <div class="container">
     <form id="cadastroForm" class="form">
       <h2>Cadastro</h2>
@@ -72,11 +78,8 @@
         <p id="mensagemErro"></p>
     </form>
   </div>
-
-
   <div id="popupSucesso">Cadastro realizado com sucesso!</div>
-
-</div>
+</main>
 
 </body>
 </html>

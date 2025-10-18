@@ -46,14 +46,12 @@ header h1 {
   font-size: 14px;
   padding: 12px 8px;
   border-bottom: 1px solid #eee;
-  color: #444;
 }
 
 #teamTable td {
   padding: 12px 8px;
   border-bottom: 1px solid #eee;
   font-size: 14px;
-  color: #222;
 }
 
 #teamTable tr:hover {
