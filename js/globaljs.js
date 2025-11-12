@@ -48,12 +48,3 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  // Remove token e dados do usuário do localStorage
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('userData');
-  
-  // Redireciona pra página de login
-  window.location.href = '../pages/login.html';
-});

@@ -27,6 +27,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         }
         // armazena o token de login no localStorage
         localStorage.setItem("token", dados.token);
+        localStorage.setItem("userName", dados.nome);
 
     } catch (error) {
         mensagemErro.textContent = "Erro ao realizar login. Tente novamente mais tarde.";

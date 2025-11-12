@@ -1,3 +1,4 @@
+// abre e fecha o formulário de nova tarefa
 function toggleForm() {
   const formCard = document.getElementById("formCard");
 
@@ -15,6 +16,7 @@ function formatarData(isoString) {
   return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
 }
 
+// lista as tarefas e coloca na formatação do HTML
 async function listarTarefas() {
   try {
     const resposta = await fetch('http://localhost:3000/tarefas', {
@@ -31,13 +33,14 @@ async function listarTarefas() {
     }
 
     const tarefas = await resposta.json();
+    
+    console.log("tarefas", tarefas)
     const tbody = document.getElementById("tarefas-body");
     tbody.innerHTML = "";
 
     tarefas.forEach(tarefa => {
       const tr = document.createElement("tr");
 
-      // mapeia status pelo id
       let statusTexto = "";
       let classeStatus = "";
 
@@ -60,7 +63,9 @@ async function listarTarefas() {
       }
 
       tr.innerHTML = `
-        <td>${tarefa.titulo}</td>
+        <td><a href="../pages/tarefa.html?id=${tarefa.id_tarefa}">
+        ${tarefa.titulo}
+        </a></td>
         <td>${formatarData(tarefa.dt_vencimento)}</td>
         <td><span class="${classeStatus}">${statusTexto}</span></td>
       `;
@@ -73,11 +78,12 @@ async function listarTarefas() {
   }
 }
 
-
+// carrega as tarefas ao abrir a página
 window.onload = function () {
   listarTarefas();
 }
 
+// cria nova tarefa e envia pro DB
 document.getElementById("formCard").addEventListener("submit", async function (e) {
   e.preventDefault();
 

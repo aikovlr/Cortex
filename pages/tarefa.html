@@ -7,7 +7,6 @@
   <title>Tarefa - Cortex</title>
   <link rel="stylesheet" href="../css/globalstyles.css">
   <link rel="stylesheet" href="../css/tarefas.css">
-  <script src="../js/tarefa.js" defer></script>
   <script src="../js/globaljs.js" defer></script>
   <script src="../js/auth.js" defer></script>
 </head>
@@ -29,30 +28,22 @@
 
   <!-- Main -->
   <main class="main">
-    <h1>Nome da tarefa</h1>
-    <small>Vence em 12 de junho de 2026 às 23:59</small>
+    <h1 id="titulo-tarefa">Carregando...</h1>
+    <small id="vencimento">Aguardando data</small>
 
     <div class="task-box">
-
       <div class="task-box-content">
-        <p><strong>Instruções:</strong><br>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-          laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-          esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
-          officia deserunt mollit anim id est laborum.</p>
+        <p id="descricao-tarefa"><strong>Instruções:</strong><br>Carregando descrição...</p>
       </div>
 
-      <!-- Botões dentro da task -->
       <div class="task-box-actions">
-
         <div class="file-upload">
           <button type="button" id="customFileButton">Anexar arquivo</button>
           <input type="file" id="fileInput" hidden>
           <span id="fileName"></span>
         </div>
 
-        <button class="btn-primary finalizar" data-id="tarefa1" id="finalizar" onclick="toggleFeedback()">Finalizar
-          tarefa</button>
+        <button class="btn-primary finalizar" id="finalizar">Finalizar tarefa</button>
       </div>
     </div>
 
@@ -108,6 +99,7 @@
     <div id="popupSucesso">Ação realizada com sucesso!</div>
 
   </main>
+  <script src="../js/tarefa.js" defer></script>
 </body>
 
 </html>
