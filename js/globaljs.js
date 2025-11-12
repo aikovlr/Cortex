@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const background = document.body;
   const styleTag = document.createElement("style");
   document.head.appendChild(styleTag); // adiciona um <style> dinâmico pro hover
-
+ 
   // função pra atualizar o hover dinamicamente
   function atualizarHover(corHover) {
     styleTag.innerHTML = `
@@ -46,4 +46,14 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Black theme switch is OFF");
     }
   });
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  // Remove token e dados do usuário do localStorage
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('userData');
+  
+  // Redireciona pra página de login
+  window.location.href = '../pages/login.html';
 });

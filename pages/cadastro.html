@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +10,10 @@
   <script src="../js/cadastro.js" defer></script>
   <script src="../js/globaljs.js" defer></script>
 </head>
+
 <body>
 
-    <!-- Sidebar -->
+  <!-- Sidebar -->
   <aside class="sidebar">
     <img src="../images/logo.png" alt="Logo" class="logo">
 
@@ -21,65 +23,66 @@
     </label>
   </aside>
 
-    <!-- Conteudo Main -->
-<main class="main">
-  <div class="container">
-    <form id="cadastroForm" class="form">
-      <h2>Cadastro</h2>
+  <!-- Conteudo Main -->
+  <main class="main">
+    <div class="container">
+      <form id="cadastroForm" class="form">
+        <h2>Cadastro</h2>
 
         <div class="profile-picture-container">
-        <img id="profilePreview" src="default-avatar.png" alt="Foto de perfil" />
-        <input type="file" id="profileInput" accept="image/*" hidden />
-        <div class="profile-buttons">
+          <img id="profilePreview" src="default-avatar.png" alt="Foto de perfil" />
+          <input type="file" id="profileInput" accept="image/*" hidden />
+          <div class="profile-buttons">
             <button type="button" id="changePhoto">Alterar foto</button>
             <button type="button" id="removePhoto">Remover foto</button>
-        </div>
+          </div>
         </div>
 
         <form id="cadastroForm">
 
-        <div class="form-group">
-          <label for="nome">Nome</label>
-          <input type="text" id="nome" placeholder="Digite seu nome" required/>
-        </div>
+          <div class="form-group">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required />
+          </div>
 
-        <div class="form-group">
-            <label for="sobrenome">Sobrenome</label>
-            <input type="text" id="sobrenome" placeholder="Digite seu sobrenome" required />
-        </div>
+          <div class="form-group">
+            <label for="cpf">CPF</label>
+            <input type="text" id="cpf" name="cpf" placeholder="Digite seu CPF" required />
+          </div>
 
-        <div class="form-group">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" placeholder="Digite seu e-mail" required />
-        </div>
+          <div class="form-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required />
+          </div>
 
-        <div class="form-group">
-          <label for="confirmEmail">Confirmar e-mail</label>
-          <input type="email" id="confirmEmail" placeholder="Confirme seu e-mail" required />
-        </div>
+          <div class="form-group">
+            <label for="confirmEmail">Confirmar e-mail</label>
+            <input type="email" id="confirmEmail" name="confirmEmail" placeholder="Confirme seu e-mail" required />
+          </div>
 
-        <div class="form-group">
-          <label for="senha">Senha</label>
-          <input type="password" id="senha" placeholder="Digite sua senha" required />
-        </div>
+          <div class="form-group">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required />
+          </div>
 
-        <div class="form-group">
-          <label for="confirmSenha">Confirmar senha</label>
-          <input type="password" id="confirmSenha" placeholder="Confirme sua senha" required />
-        </div>
+          <div class="form-group">
+            <label for="confirmSenha">Confirmar senha</label>
+            <input type="password" id="confirmSenha" name="confirmSenha" placeholder="Confirme sua senha" required />
+          </div>
 
-        <div class="form-group">
-          <label for="contato">Telefone</label>
-          <input type="text" id="contato" placeholder="(xx) xxxxx-xxxx" required />
-        </div>
+          <div class="form-group">
+            <label for="contato">Telefone</label>
+            <input type="text" id="contato" name="contato" placeholder="(xx) xxxxx-xxxx" required />
+          </div>
 
-        <button type="submit" class="btn">Cadastrar</button>
-        <p class="aviso">Já possui uma conta? Clique <a href="../pages/login.html">aqui</a></p>
-        <p id="mensagemErro"></p>
-    </form>
-  </div>
-  <div id="popupSucesso">Cadastro realizado com sucesso!</div>
-</main>
+          <button type="submit" class="btn">Cadastrar</button>
+          <p class="aviso">Já possui uma conta? Clique <a href="../pages/login.html">aqui</a></p>
+          <p id="mensagemErro"></p>
+        </form>
+    </div>
+    <div id="popupSucesso">Cadastro realizado com sucesso!</div>
+  </main>
 
 </body>
+
 </html>

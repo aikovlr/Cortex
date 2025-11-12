@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link rel="stylesheet" href="./css/globalstyles.css">
-    <link rel="stylesheet" href="./css/index.css">
-    <script src="./js/index.js" defer></script>
-    <script src="./js/globaljs.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link rel="stylesheet" href="./css/globalstyles.css">
+  <link rel="stylesheet" href="./css/index.css">
+  <script src="./js/index.js" defer></script>
+  <script src="./js/globaljs.js" defer></script>
+  <script src="./js/auth.js" defer></script>
 </head>
+
 <body>
-  
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <img src="./images/logo.png" alt="Logo" class="logo">
     <ul class="menu">
       <li><a href="./index.html">📋 Minhas Tarefas</a></li>
-      <li><a href="#">📊 Dashboard</a></li>
-      <li><a href="#">🎯 Minhas Metas</a></li>
-      <li><a href="#">⚙️ Configurações</a></li> 
       <li><a href="./pages/equipe.html">👥 Equipe</a></li>
-      <li><a href="#">🏆 Metas Corporativas</a></li>
-      <li><a href="#">💡 Sugestões</a></li>
     </ul>
 
     <label class="switch">
@@ -33,26 +31,32 @@
   <!-- Main -->
   <main class="main">
     <header>
-      <h1>Olá, Admin !</h1>
+    <h1>Olá, Admin !</h1>
+
+    <div class="user-profile">
+      <img src="../images/perfil.png" alt="Foto do usuário" id="userPhoto">
+      <span id="userName">Usuario</span>
+      <button id="logoutBtn">Sair</button>
+    </div>
+    
     </header>
 
     <!-- Task Table -->
     <div class="search-container">
-        <input type="text" placeholder="Hinted search text">
-        <button>+</button>
+      <input type="text" placeholder="Hinted search text">
+      <button class="add-btn" onclick="toggleForm()">+</button>
     </div>
 
     <table class="task-table">
       <thead>
         <tr>
           <th>Tarefa</th>
-          <th>Data</th>
-          <th>Atribuído a</th>
+          <th>Vencimento</th>
           <th>Status</th>
         </tr>
       </thead>
-      <tbody>
-        <tr onclick="abrirTarefa('./pages/tarefa.html')">          
+      <tbody id="tarefas-body">
+        <tr onclick="abrirTarefa('./pages/tarefa.html')">
           <td>Criar protótipo</td>
           <td>12/06/2025</td>
           <td>Kayke</td>
@@ -62,12 +66,49 @@
           <td>Entregar projeto</td>
           <td>12/06/2025</td>
           <td>Kayke</td>
-          <td><span class="status entrega">Entrega</span></td>
+          <td><span class="status entrega">Entregue</span></td>
         </tr>
       </tbody>
     </table>
+
+
+    <dialog id="formCard" class="form-card">
+      <h3>Criar nova tarefa</h3>
+      <form id="memberForm">
+        <label>Nome da tarefa</label>
+        <input type="text" name= "titulo"id="titulo" required>
+
+        <label>Descrição</label>
+        <input type="text" name="descricao" id="descricao">
+
+        <label>Data de entrega</label>
+        <input type="date" name="dataEntrega" id="dataEntrega" required>
+
+        <label>Prioridade</label>
+        <select name="prioridade" id="prioridade" required>
+          <option value="1">Baixa</option>
+          <option value="2">Média</option>
+          <option value="3">Alta</option>
+          <option value="4">Urgente</option>
+        </select>
+
+        <label>Pontuação</label>
+        <input type="number" name="pontuacao" id="pontuacao">
+
+        <label>Atribur a:</label>
+        <input type="text" name="email_responsavel" id="email_responsavel" required>
+
+        <div>
+          <button type="button" id="customFileButton">Anexar arquivo</button>
+          <input type="file" id="fileInput" hidden>
+          <span id="fileName"></span>
+        </div>
+
+        <button type="submit" class="button">Salvar</button>
+      </form>
+    </dialog>
+
   </main>
 </body>
+
 </html>
-
-

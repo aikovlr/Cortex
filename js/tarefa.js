@@ -7,14 +7,14 @@ const fileName = document.getElementById("fileName");
 fileButton.addEventListener("click", () => fileInput.click());
 
 fileInput.addEventListener("change", () => {
-  fileName.textContent = fileInput.files.length
-    ? fileInput.files[0].name
-    : " ";
+    fileName.textContent = fileInput.files.length
+        ? fileInput.files[0].name
+        : " ";
 });
 
 // Funcão finalizar tarefa
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const feedbackContainer = document.getElementById("feedbackContainer");
     const finalizarButton = document.getElementById("finalizar");
     const suggestionButton = document.getElementById("sugestao");
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
         marcarComoFinalizada(true);
     }
 
-    window.toggleFeedback = function() {
+    window.toggleFeedback = function () {
         const isFinalizado = finalizarButton.innerText.trim() === "Finalizar tarefa";
 
         if (!isFinalizado) {
@@ -76,14 +76,14 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // popup de sucesso ao enviar feedback
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
 
     const sendButton = document.querySelector("#feedbackContainer button[type='submit']");
     const feedbackCard = document.getElementById("sendFeedback");
     const popup = document.getElementById("popupSucesso");
 
     sendButton.addEventListener("click", function (e) {
-        e.preventDefault(); 
+        e.preventDefault();
         document.getElementById("feedbackDesc").value = '';
         console.log("Feedback de tarefa enviado");
 
@@ -98,23 +98,23 @@ document.addEventListener("DOMContentLoaded", function() {
 // Funções para abrir e fechar o card de report e sugestão
 
 function toggleReport() {
-  const reportCard = document.getElementById("report");
-  if (reportCard.open) {
-    report.close();
-    return;
-  }
+    const reportCard = document.getElementById("report");
+    if (reportCard.open) {
+        report.close();
+        return;
+    }
 
-  reportCard.showModal();
+    reportCard.showModal();
 }
 // popup de sucesso ao enviar report
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
 
     const sendButton = document.querySelector("#report button[type='submit']");
     const reportCard = document.getElementById("report");
     const popup = document.getElementById("popupSucesso");
 
     sendButton.addEventListener("click", function (e) {
-        e.preventDefault(); 
+        e.preventDefault();
         reportCard.close();
         document.getElementById("reportTask").value = '';
         document.getElementById("reportDesc").value = '';
@@ -138,13 +138,13 @@ function toggleSuggestion() {
     suggestionCard.showModal();
 }
 // popup de sucesso ao enviar sugestão
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const sendButton = document.querySelector("#suggestion button[type='submit']");
     const suggestCard = document.getElementById("suggestion");
     const popup = document.getElementById("popupSucesso");
 
     sendButton.addEventListener("click", function (e) {
-        e.preventDefault(); 
+        e.preventDefault();
         suggestCard.close();
         document.getElementById("suggestionTask").value = '';
         document.getElementById("suggestionDesc").value = '';

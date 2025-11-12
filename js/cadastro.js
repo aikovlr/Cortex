@@ -1,14 +1,19 @@
 // Validação do formulário de cadastro
-document.getElementById("cadastroForm").addEventListener("submit", function (e) {
+document.getElementById("cadastroForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const email = document.getElementById("email").value.trim();
-  const confirmEmail = document.getElementById("confirmEmail").value.trim();
-  const senha = document.getElementById("senha").value.trim();
-  const confirmSenha = document.getElementById("confirmSenha").value.trim();
+  const dados = new FormData(e.target);
+
+  const nome = dados.get('nome').trim();
+  const cpf = dados.get('cpf').trim();
+  const telefone = dados.get('contato').trim();
+  const email = dados.get("email").trim();
+  const confirmEmail = dados.get("confirmEmail").trim();
+  const senha = dados.get("senha").trim();
+  const confirmSenha = dados.get("confirmSenha").trim();
+
   const mensagemErro = document.getElementById("mensagemErro");
   const popup = document.getElementById("popupSucesso");
-
   mensagemErro.textContent = "";
 
   if (email !== confirmEmail) {
@@ -26,10 +31,30 @@ document.getElementById("cadastroForm").addEventListener("submit", function (e) 
     return;
   }
 
+  // Envia os dados para o servidor/db
+  try {
+    const resposta = await fetch('http://localhost:3000/usuarios', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ nome, cpf, telefone, email, senha, })
+    });
+
+    if (!resposta.ok) {
+      throw new Error('Erro na resposta do servidor');
+    }
+  } catch (error) {
+    mensagemErro.textContent = "Erro ao cadastrar. Tente novamente mais tarde.";
+    return;
+  }
+
+  // popup de sucesso, manda para a pagina inicial dps de 2 segundos
   popup.classList.add("show");
 
   setTimeout(() => {
     popup.classList.remove("show");
+    window.location.href = "/index.html";
   }, 2000);
 });
 
@@ -56,8 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Remove a imagem e volta pro padrão
   removeBtn.addEventListener("click", () => {
-    img.src = "default-avatar.png"; 
-    input.value = ""; 
+    img.src = "default-avatar.png";
+    input.value = "";
   });
 });
+
+
 

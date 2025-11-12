@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,19 +9,16 @@
   <link rel="stylesheet" href="../css/tarefas.css">
   <script src="../js/tarefa.js" defer></script>
   <script src="../js/globaljs.js" defer></script>
+  <script src="../js/auth.js" defer></script>
 </head>
+
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
     <img src="../images/logo.png" alt="Logo" class="logo">
     <ul class="menu">
       <li><a href="../index.html">📋 Minhas Tarefas</a></li>
-      <li><a href="#">📊 Dashboard</a></li>
-      <li><a href="#">🎯 Minhas Metas</a></li>
-      <li><a href="#">⚙️ Configurações</a></li> 
       <li><a href="../pages/equipe.html">👥 Equipe</a></li>
-      <li><a href="#">🏆 Metas Corporativas</a></li>
-      <li><a href="#">💡 Sugestões</a></li>
     </ul>
 
     <label class="switch">
@@ -30,80 +28,86 @@
   </aside>
 
   <!-- Main -->
-<main class="main">
-  <h1>Nome da tarefa</h1>
-  <small>Vence em 12 de junho de 2026 às 23:59</small>
+  <main class="main">
+    <h1>Nome da tarefa</h1>
+    <small>Vence em 12 de junho de 2026 às 23:59</small>
 
-<div class="task-box">
+    <div class="task-box">
 
-  <div class="task-box-content">
-    <p><strong>Instruções:</strong><br>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-  </div>
+      <div class="task-box-content">
+        <p><strong>Instruções:</strong><br>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+          laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+          esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+          officia deserunt mollit anim id est laborum.</p>
+      </div>
 
-<!-- Botões dentro da task -->
-  <div class="task-box-actions">
+      <!-- Botões dentro da task -->
+      <div class="task-box-actions">
 
-    <div class ="file-upload">
-      <button type="button" id="customFileButton">Anexar arquivo</button>
-      <input type="file" id="fileInput" hidden>
-      <span id="fileName"></span>
+        <div class="file-upload">
+          <button type="button" id="customFileButton">Anexar arquivo</button>
+          <input type="file" id="fileInput" hidden>
+          <span id="fileName"></span>
+        </div>
+
+        <button class="btn-primary finalizar" data-id="tarefa1" id="finalizar" onclick="toggleFeedback()">Finalizar
+          tarefa</button>
+      </div>
     </div>
 
-    <button class="btn-primary finalizar" data-id="tarefa1" id="finalizar" onclick="toggleFeedback()">Finalizar tarefa</button>
-  </div>
-</div>
 
+    <!-- Card de report -->
+    <dialog class="card" id="report">
+      <h2 class="card-title">Ticket de reporte</h2>
 
-<!-- Card de report -->
-<dialog class="card" id="report">
-  <h2 class="card-title">Ticket de reporte</h2>
+      <div>
+        <label for="task">Tarefa</label>
+        <input type="text" id="reportTask" placeholder="Nome da tarefa" required />
 
-  <div>
-  <label for="task">Tarefa</label>
-  <input type="text" id="reportTask" placeholder="Nome da tarefa" required/>
-  
-  <label for="desc">Descrição</label>
-  <textarea id="reportDesc" placeholder="Descreva o problema..."></textarea>
-  </div>
+        <label for="desc">Descrição</label>
+        <textarea id="reportDesc" placeholder="Descreva o problema..."></textarea>
+      </div>
 
-  <button class="btn-red" type="submit">Enviar ticket</button>
-</dialog>
+      <button class="btn-red" type="submit">Enviar ticket</button>
+    </dialog>
 
-<!-- Card de Sugestão-->
-<dialog class="card" id="suggestion">
-  <h2 class="card-title">Sugerir alteração</h2>
+    <!-- Card de Sugestão-->
+    <dialog class="card" id="suggestion">
+      <h2 class="card-title">Sugerir alteração</h2>
 
-  <div>
-  <label for="task">Tarefa</label>
-  <input type="text" id="suggestionTask" placeholder="Nome da tarefa" required/>
-  
-  <label for="desc">Sugestão</label>
-  <textarea id="suggestionDesc" placeholder="Insira sua sugestão..."></textarea>
-  </div>
+      <div>
+        <label for="task">Tarefa</label>
+        <input type="text" id="suggestionTask" placeholder="Nome da tarefa" required />
 
-  <button class="btn-green" type="submit">Enviar sugestão</button>
-</dialog>
-<!-- Card feedback tarefa finalizada -->
+        <label for="desc">Sugestão</label>
+        <textarea id="suggestionDesc" placeholder="Insira sua sugestão..."></textarea>
+      </div>
 
-<div class="feedback" id="feedbackContainer" style="display: none;">
-    <div class="feedback-card-styling">
+      <button class="btn-green" type="submit">Enviar sugestão</button>
+    </dialog>
+    <!-- Card feedback tarefa finalizada -->
+
+    <div class="feedback" id="feedbackContainer" style="display: none;">
+      <div class="feedback-card-styling">
         <h2 class="card-title">Feedback</h2>
         <div>
-            <label for="feedbackDesc">Descrição</label>
-            <input type='text' id="feedbackDesc" placeholder="Insira o feedback..." required/>
+          <label for="feedbackDesc">Descrição</label>
+          <input type='text' id="feedbackDesc" placeholder="Insira o feedback..." required />
         </div>
         <button class="btn-green" id="sendFeedback" type="submit">Enviar feedback</button>
+      </div>
     </div>
-</div>
 
-<!-- botões de rodapé (fora do box) -->
-<div class="footer-buttons">
-  <button class="btn-red" onclick="toggleReport()">Reportar tarefa</button>
-  <button class="btn-green" id="sugestao" onclick="toggleSuggestion()">Sugerir alteração</button>
-</div>
+    <!-- botões de rodapé (fora do box) -->
+    <div class="footer-buttons">
+      <button class="btn-red" onclick="toggleReport()">Reportar tarefa</button>
+      <button class="btn-green" id="sugestao" onclick="toggleSuggestion()">Sugerir alteração</button>
+    </div>
 
-<div id="popupSucesso">Ação realizada com sucesso!</div>
+    <div id="popupSucesso">Ação realizada com sucesso!</div>
 
-</main>
+  </main>
 </body>
+
 </html>

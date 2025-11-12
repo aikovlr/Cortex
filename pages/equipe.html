@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,81 +9,87 @@
   <link rel="stylesheet" href="../css/equipe.css">
   <script src="../js/equipe.js" defer></script>
   <script src="../js/globaljs.js" defer></script>
+  <script src="../js/auth.js" defer></script>
 </head>
+
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
     <img src="../images/logo.png" alt="Logo" class="logo">
     <ul class="menu">
       <li><a href="../index.html">📋 Minhas Tarefas</a></li>
-      <li><a href="#">📊 Dashboard</a></li>
-      <li><a href="#">🎯 Minhas Metas</a></li>
-      <li><a href="#">⚙️ Configurações</a></li> 
       <li><a href="../pages/equipe.html">👥 Equipe</a></li>
-      <li><a href="#">🏆 Metas Corporativas</a></li>
-      <li><a href="#">💡 Sugestões</a></li>
     </ul>
 
     <label class="switch">
       <input type="checkbox" id="meuSwitch">
       <span class="slider"></span>
     </label>
+
   </aside>
 
- <!-- Main -->
+  <!-- Main -->
   <main class="main">
     <header>
-      <h1>Olá, Admin !</h1>
+    <h1>Olá, Admin !</h1>
+
+    <div class="user-profile">
+      <img src="../images/perfil.png" alt="Foto do usuário" id="userPhoto">
+      <span id="userName">Usuario</span>
+      <button id="logoutBtn">Sair</button>
+    </div>
+    
     </header>
 
-      <!-- Barra de busca -->
+    <!-- Barra de busca -->
     <div class="search-container">
-        <input type="text" placeholder="Hinted search text">
-        <button class="add-btn" onclick="toggleForm()">+</button>
+      <input type="text" placeholder="Hinted search text">
+      <button class="add-btn" onclick="toggleForm()">+</button>
     </div>
 
-      <!-- Tabela de equipe -->
-      <table id="teamTable">
-        <thead>
-          <tr>
-            <th>Integrante</th>
-            <th>Desde</th>
-            <th>Tarefas atribuídas</th>
-            <th>Cargo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Kayke</td>
-            <td>12/06/2025</td>
-            <td>1</td>
-            <td>Back-end</td>
-          </tr>
-          <tr>
-            <td>Lucas</td>
-            <td>12/06/2025</td>
-            <td>0</td>
-            <td>Analista</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Tabela de equipe -->
+    <table id="teamTable">
+      <thead>
+        <tr>
+          <th>Integrante</th>
+          <th>Desde</th>
+          <th>Tarefas atribuídas</th>
+          <th>Cargo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Kayke</td>
+          <td>12/06/2025</td>
+          <td>1</td>
+          <td>Back-end</td>
+        </tr>
+        <tr>
+          <td>Lucas</td>
+          <td>12/06/2025</td>
+          <td>0</td>
+          <td>Analista</td>
+        </tr>
+      </tbody>
+    </table>
 
-<!-- Card de cadastro (escondido inicialmente) -->
-<dialog id="formCard" class="form-card">
-  <h3>Adicionar membro à equipe.</h3>
-  <form id="memberForm">
-    <label>Email</label>
-    <input type="email" id="email" required>
+    <!-- Card de cadastro (escondido inicialmente) -->
+    <dialog id="formCard" class="form-card">
+      <h3>Adicionar membro à equipe.</h3>
+      <form id="memberForm">
+        <label>Email</label>
+        <input type="email" id="email" required>
 
-    <label>Cargo</label>
-    <input type="text" id="cargo" required>
+        <label>Cargo</label>
+        <input type="text" id="cargo" required>
 
-    <button type="submit">Salvar</button>
-  </form>
-</dialog>
-</main>
+        <button type="submit">Salvar</button>
+      </form>
+    </dialog>
+  </main>
 
-<div id="popupSucesso">Membro cadastrado com sucesso!</div>
+  <div id="popupSucesso">Membro cadastrado com sucesso!</div>
 
 </body>
+
 </html>
