@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home</title>
   <link rel="stylesheet" href="./css/globalstyles.css">
   <link rel="stylesheet" href="./css/index.css">
+  <script src="./js/index.js" defer></script>
+  <script src="./js/globaljs.js" defer></script>
+  <script src="./js/auth.js" defer></script>
 </head>
 
 <body>
@@ -40,7 +42,7 @@
 
     <!-- Task Table -->
     <div class="search-container">
-      <input type="text" placeholder="Hinted search text">
+      <input type="text" placeholder="Hinted search text" id='search-input'>
       <button class="add-btn" onclick="toggleForm()">+</button>
     </div>
 
@@ -53,18 +55,7 @@
         </tr>
       </thead>
       <tbody id="tarefas-body">
-        <tr onclick="abrirTarefa('./pages/tarefa.html')">
-          <td>Criar protótipo</td>
-          <td>12/06/2025</td>
-          <td>Kayke</td>
-          <td><span class="status pendente">Pendente</span></td>
-        </tr>
-        <tr>
-          <td>Entregar projeto</td>
-          <td>12/06/2025</td>
-          <td>Kayke</td>
-          <td><span class="status entrega">Entregue</span></td>
-        </tr>
+        <!-- Tarefas serão inseridas aqui dinamicamente -->
       </tbody>
     </table>
 
@@ -104,13 +95,8 @@
         <button type="submit" class="button">Salvar</button>
       </form>
     </dialog>
+    <div id="popupSucesso">Ação realizada com sucesso!</div>
 
   </main>
-
-
-  <script src="./js/index.js" defer></script>
-  <script src="./js/globaljs.js" defer></script>
-  <script src="./js/auth.js" defer></script>
 </body>
-
 </html>
