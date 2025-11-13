@@ -15,7 +15,7 @@ function formatarData(isoString) {
   const data = new Date(isoString);
   return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
 }
-
+// injeta as tarefas na tabela na formatação correta
 function injetarTarefa(tarefas) {
   const tbody = document.getElementById("tarefas-body");
   tbody.innerHTML = "";
@@ -51,7 +51,7 @@ function injetarTarefa(tarefas) {
   })
 };
 
-// lista as tarefas e coloca na formatação do HTML
+// lista as tarefas
 async function listarTarefas() {
       try {
         const resposta = await fetch('http://localhost:3000/tarefas', {
@@ -139,6 +139,7 @@ const debouncedSearch = debounce(performSearch, 500);
     const pontuacao = dados.get("pontuacao")
     const email_responsavel = dados.get("email_responsavel")
     const prioridade = dados.get("prioridade")
+    const mensagemErro = document.getElementById("mensagemErro");
 
     // Envia os dados para o servidor/db
     try {
@@ -157,7 +158,7 @@ const debouncedSearch = debounce(performSearch, 500);
 
       listarTarefas();
     } catch (error) {
-      console.error("Erro ao criar tarefa. Tente novamente mais tarde.");
+      mensagemErro.textContent = "Erro ao criar tarefa. Verifique os campos preenchidos ou tente novamente mais tarde.";
       return;
     }
 

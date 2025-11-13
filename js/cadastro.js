@@ -54,7 +54,7 @@ document.getElementById("cadastroForm").addEventListener("submit", async functio
 
   setTimeout(() => {
     popup.classList.remove("show");
-    window.location.href = "/index.html";
+    window.location.href = "../pages/login.html";
   }, 2000);
 });
 

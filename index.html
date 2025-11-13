@@ -63,28 +63,30 @@
     <dialog id="formCard" class="form-card">
       <h3>Criar nova tarefa</h3>
       <form id="memberForm">
-        <label>Nome da tarefa</label>
-        <input type="text" name= "titulo"id="titulo" required>
+        <label>Nome da tarefa*</label>
+        <input type="text" name= "titulo"id="titulo" placeholder="Titulo" required>
 
         <label>Descrição</label>
-        <input type="text" name="descricao" id="descricao">
+        <input type="text" name="descricao" id="descricao" placeholder="Instruções da tarefa">
 
-        <label>Data de entrega</label>
+        <label>Data de entrega*</label>
         <input type="date" name="dataEntrega" id="dataEntrega" required>
 
-        <label>Prioridade</label>
+        <label>Pontuação*</label>
+        <input type="number" name="pontuacao" id="pontuacao" placeholder="Ex: 10">
+
+        <label>Atribur a: *</label>
+        <input type="text" name="email_responsavel" id="email_responsavel" placeholder="exemplo@email.com" required>
+
+        <label>Prioridade*</label></br>
         <select name="prioridade" id="prioridade" required>
           <option value="1">Baixa</option>
           <option value="2">Média</option>
           <option value="3">Alta</option>
           <option value="4">Urgente</option>
         </select>
-
-        <label>Pontuação</label>
-        <input type="number" name="pontuacao" id="pontuacao">
-
-        <label>Atribur a:</label>
-        <input type="text" name="email_responsavel" id="email_responsavel" required>
+        </br>
+        </br>
 
         <div>
           <button type="button" id="customFileButton">Anexar arquivo</button>
@@ -93,9 +95,10 @@
         </div>
 
         <button type="submit" class="button">Salvar</button>
+        <p id="mensagemErro"></p>
       </form>
+      <div id="popupSucesso">Ação realizada com sucesso!</div>
     </dialog>
-    <div id="popupSucesso">Ação realizada com sucesso!</div>
 
   </main>
 </body>

@@ -156,3 +156,8 @@ td .status {
   color: inherit;
   text-decoration: none;
 }
+
+#mensagemErro {
+  color: red;
+  text-align: center;
+}

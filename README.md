@@ -145,15 +145,6 @@ A aplicação inclui um seletor de tema integrado:
 - O tema claro usa brancos suaves e roxos claros
 - Sua preferência persiste em todas as sessões
 
-## 🔐 Notas de Segurança
-
-⚠️ **Importante**: Esta é uma aplicação apenas frontend. Para uso em produção, certifique-se de:
-- Implementar uma API backend segura para autenticação
-- Usar HTTPS para todas as comunicações
-- Nunca armazenar informações sensíveis em `localStorage`
-- Implementar proteção adequada contra CSRF
-- Validar e sanitizar todas as entradas do usuário no lado do servidor
-
 ## 📝 Visão Geral das Páginas
 
 | Página | URL | Propósito |
