@@ -1,0 +1,63 @@
+.content {
+  flex: 1;
+  padding: 40px 60px;
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+.section {
+  border: 2px dashed #7B4FC9;
+  border-radius: 10px;
+  padding: 20px 25px;
+  margin-bottom: 25px;
+}
+
+.section h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.radio-group, .checkbox-group {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+input[type="radio"], input[type="checkbox"] {
+  accent-color: #7B4FC9;
+  cursor: pointer;
+}
+
+.fontSlider {
+  width: 300px;
+  margin: 10px 0;
+  accent-color: #7B4FC9;
+  box-shadow: none;
+}
+
+.font-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 300px;
+}
+
+.save-btn {
+  background-color: #7B4FC9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 25px;
+  font-size: 16px;
+  cursor: pointer;
+  float: right;
+}
+
+.save-btn:hover {
+  opacity: 0.9;
+}
+
+

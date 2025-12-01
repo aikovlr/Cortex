@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarefa - Cortex</title>
+    <link rel="stylesheet" href="../css/globalstyles.css">
+    <link rel="stylesheet" href="../css/configuracoes.css">
+    <script src="../js/configuracoes.js" defer></script>
+    <script src="../js/globaljs.js" defer></script>
+    <script src="../js/auth.js" defer></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+  <aside class="sidebar">
+    <img src="../images/logo.png" alt="Logo" class="logo">
+    <ul class="menu">
+      <li><a href="../index.html">📋 Minhas Tarefas</a></li>
+      <li><a href="../pages/equipe.html">👥 Equipe</a></li>
+      <li><a href="../pages/configuracoes.html">⚙️ Configurações</a></li>
+    </ul>
+
+    <label class="switch">
+      <input type="checkbox" id="meuSwitch">
+      <span class="slider"></span>
+    </label>
+  </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+        <div class="content">
+            <h1>Configuração</h1>
+            <p>(em desenvolvimento)</p>
+
+            <div class="section">
+                <div>
+                    <h2>Tamanho da Fonte</h2>
+                    <input type="range" min="12" max="24" value="16" class="fontSlider" id="fontRange">
+                    <div class="font-labels">
+                        <span>Pequena</span>
+                        <span>Média</span>
+                        <span>Grande</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Notificações</h2>
+
+                <p><b>Frequência</b></p>
+                <p>Defina quanto tempo antes do prazo das tarefas você gostaria de ser notificado</p>
+                <div class="checkbox-group">
+                    <label><input type="checkbox"> 15min</label>
+                    <label><input type="checkbox"> 30min</label>
+                    <label><input type="checkbox"> 1 hr</label>
+                    <label><input type="checkbox"> 2hr</label>
+                    <label><input type="checkbox"> 1 dia</label>
+                    <label><input type="checkbox"> 1 semana</label>
+                </div>
+
+                <p><b>Método de contato</b></p>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" name="contato" value="sms"> SMS</label>
+                    <label><input type="checkbox" name="contato" value="email"> E-mail</label>
+                    <label><input type="checkbox" name="contato" value="google"> Google Agenda</label>
+                </div>
+            </div>
+
+            <button class="save-btn">Salvar alterações</button>
+        </div>
+        </div>
+
+    </main>
+</body>
+
+</html>
