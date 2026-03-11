@@ -31,7 +31,7 @@
   <!-- Main -->
   <main class="main">
     <header>
-    <h1>Olá, Admin !</h1>
+    <button id="sidebar-toggle">☰</button>
 
     <div class="user-profile">
       <img src="../images/perfil.png" alt="Foto do usuário" id="userPhoto">
@@ -62,6 +62,7 @@
 
 
     <dialog id="formCard" class="form-card">
+      <button type="button" class="close-btn" onclick="toggleForm()">×</button>
       <h3>Criar nova tarefa</h3>
       <form id="memberForm">
         <label>Nome da tarefa*</label>

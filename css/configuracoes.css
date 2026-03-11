@@ -1,6 +1,5 @@
 .content {
   flex: 1;
-  padding: 40px 60px;
 }
 
 h1 {
@@ -33,7 +32,8 @@ input[type="radio"], input[type="checkbox"] {
 }
 
 .fontSlider {
-  width: 300px;
+  width: 100%;
+  max-width: 300px; /* mantém o tamanho original em telas grandes */
   margin: 10px 0;
   accent-color: #7B4FC9;
   box-shadow: none;
@@ -41,8 +41,17 @@ input[type="radio"], input[type="checkbox"] {
 
 .font-labels {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
+  flex-wrap: wrap; /* permite quebra em dispositivos muito estreitos */
+}
+
+.font-labels span {
+  flex: 1;
+  text-align: center;
+  min-width: 60px;
 }
 
 .save-btn {

@@ -48,3 +48,28 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.querySelector('.sidebar');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      sidebar.classList.toggle('open');
+    });
+  }
+
+  // Opcional: Feche a sidebar ao clicar fora dela (no mobile)
+  document.addEventListener('click', function(event) {
+    if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target) && window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+    }
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const btnBack = document.getElementById('btn-back');
+  if (btnBack) {
+    btnBack.addEventListener('click', function() {
+      window.history.back();
+    });
+  }});

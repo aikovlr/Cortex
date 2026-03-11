@@ -138,7 +138,25 @@ button {
 
 
 .card {
+  width: 90%;
   max-width: 900px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.card .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.card .close-btn:hover {
+  color: #ccc;
 }
 
 .feedback {
@@ -147,16 +165,17 @@ button {
 
 .card,
 .feedback {
-  align-self: center;
   background-color: #12192C;
-  border-radius: 10px;
-  padding: 24px;
-  width: 100%;
   color: white;
-  margin: 40px auto;
-  border: 2px solid #e5e5e5;
-  display: flex;
-  flex-direction: column;
+  padding: 20px;
+  border-radius: 10px;
+  align-self: center;
+  justify-self: center;
+  width: 90%;
+  max-width: 1000px;
+  margin: 20px auto;
+  position: relative;
+  box-sizing: border-box;
 }
 
 ::backdrop {

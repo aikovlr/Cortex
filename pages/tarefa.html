@@ -29,6 +29,9 @@
 
   <!-- Main -->
   <main class="main">
+    <header>
+    <button id="btn-back">⬅</button>
+    </header>
     <h1 id="titulo-tarefa">Carregando...</h1>
     <small id="vencimento">Aguardando data</small>
 
@@ -51,6 +54,7 @@
 
     <!-- Card de report -->
     <dialog class="card" id="report">
+      <button type="button" class="close-btn" onclick="toggleReport()">×</button>
       <h2 class="card-title">Ticket de reporte</h2>
 
       <div>
@@ -66,6 +70,7 @@
 
     <!-- Card de Sugestão-->
     <dialog class="card" id="suggestion">
+      <button type="button" class="close-btn" onclick="toggleSuggestion()">×</button>
       <h2 class="card-title">Sugerir alteração</h2>
 
       <div>
