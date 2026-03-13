@@ -171,20 +171,3 @@ const debouncedSearch = debounce(performSearch, 500);
     }, 2000);
   });
 
-  const fileInput = document.getElementById("fileInput");
-  const fileButton = document.getElementById("customFileButton");
-  const fileName = document.getElementById("fileName");
-
-  fileButton.addEventListener("click", () => fileInput.click());
-
-  fileInput.addEventListener("change", () => {
-    fileName.textContent = fileInput.files.length
-      ? fileInput.files[0].name
-      : " ";
-
-
-  });
-
-  function abrirTarefa(url) {
-    window.location.href = url;
-  }

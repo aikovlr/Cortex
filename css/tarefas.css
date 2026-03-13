@@ -52,23 +52,6 @@
   min-width: 160px;
 }
 
-/* Ajustes para o botao anexar arquivo */
-.file-upload {
-  margin-right: auto;
-}
-
-#customFileButton {
-  color: #7B4FC9;
-  border: 2px solid #7B4FC9;
-  transition: 0.2s;
-}
-
-#fileName {
-  color: #555;
-  font-size: 14px;
-}
-
-
 /* RESPONSIVE: em telas pequenas empilha os botões de footer, evita que os botões quebrem completamente em telas menores  */
 @media (max-width: 900px) {
   .task-box {
@@ -91,43 +74,6 @@
   }
 }
 
-/* ===== Botões ===== */
-button {
-  border: none;
-  outline: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-primary {
-  background: #9a4dff;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: #7a2be6;
-}
-
-.btn-green {
-  background: #134011;
-  color: #fff;
-}
-
-.btn-green:hover {
-  background: #0e5c23;
-}
-
-.btn-red {
-  background: #e63946;
-  color: #fff;
-}
-
-.btn-red:hover {
-  background: #c92f3b;
-}
 
 /*CARD REPORT e SUGESTAO */
 
@@ -218,3 +164,4 @@ button {
   max-width: 160px;
   align-self: flex-end
 }
+

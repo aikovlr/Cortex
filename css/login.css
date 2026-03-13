@@ -3,68 +3,9 @@
   flex-direction: row;
 }
 
-.container {
-  background: #12192C;
-  padding: 10px 30px;
-  border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  width: 600px;
-  color: #fff;
-  margin: auto;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-#loginForm {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-.btn {
-  background: #7B4FC9;
-  color: #fff;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  align-self: center;
-}
-
-button:hover {
-  background: #6638b4;
-}
-
 #mensagemErro {
   color: #d63131;
   font-size: 0.9rem;
   margin-top: 10px;
   text-align: center;
-}
-
-.aviso {
-  text-align: center;
-}
-
-.aviso a {
-  color: #fff;
-  font-weight: 500;
 }

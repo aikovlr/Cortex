@@ -24,28 +24,40 @@
 
     <label class="switch">
       <input type="checkbox" id="meuSwitch">
-      <span class="slider"></span>
+      <span class="slider">
+        <img src="../images/sun-svgrepo-com.svg" alt="Sol" class="svg sun">
+        <img src="../images/moon-svgrepo-com.svg" alt="Lua" class="svg moon">
+      </span>
     </label>
   </aside>
 
   <!-- Main -->
-  <main class="main">
-    <header>
+  <header>
     <button id="sidebar-toggle">☰</button>
-
+    <img src="../images/cortex deitado.png" alt="Cortex deitado" id="logo-mobile">
     <div class="user-profile">
       <img src="../images/perfil.png" alt="Foto do usuário" id="userPhoto">
       <span id="userName"></span>
       <button id="logoutBtn">Sair</button>
     </div>
-    
-    </header>
+
+    <!-- Pop-up para mobile -->
+    <div id="userPopup" class="user-popup">
+      <div class="popup-content">
+        <img src="../images/perfil.png" alt="Foto do usuário" id="popupUserPhoto">
+        <span id="popupUserName"></span>
+        <button id="popupLogoutBtn">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
     <!-- Barra de busca -->
     <div class="search-container">
       <input type="text" placeholder="Pesquisar integrante" id='search-input'>
       <button class="add-btn" onclick="toggleForm()">+</button>
     </div>
-    
+
     <p>(em desenvolvimento)</p>
     <!-- Tabela de equipe -->
     <table id="teamTable">
@@ -75,6 +87,7 @@
 
     <!-- Card de cadastro (escondido inicialmente) -->
     <dialog id="formCard" class="form-card">
+      <button type="button" class="close-btn" onclick="toggleForm()">×</button>
       <h3>Adicionar membro à equipe.</h3>
       <form id="memberForm">
         <label>Email</label>
@@ -83,7 +96,7 @@
         <label>Cargo</label>
         <input type="text" id="cargo" required>
 
-        <button type="submit">Salvar</button>
+        <button type="submit" class="button">Salvar</button>
       </form>
     </dialog>
   </main>

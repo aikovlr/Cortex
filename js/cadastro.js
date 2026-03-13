@@ -58,33 +58,6 @@ document.getElementById("cadastroForm").addEventListener("submit", async functio
   }, 2000);
 });
 
-// Preview da foto de perfil
-
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("profileInput");
-  const img = document.getElementById("profilePreview");
-  const changeBtn = document.getElementById("changePhoto");
-  const removeBtn = document.getElementById("removePhoto");
-
-  // Abre o seletor de arquivo
-  changeBtn.addEventListener("click", () => input.click());
-
-  // Quando uma imagem é selecionada, atualiza preview
-  input.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => (img.src = e.target.result);
-      reader.readAsDataURL(file);
-    }
-  });
-
-  // Remove a imagem e volta pro padrão
-  removeBtn.addEventListener("click", () => {
-    img.src = "default-avatar.png";
-    input.value = "";
-  });
-});
 
 
 

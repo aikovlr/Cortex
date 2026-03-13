@@ -19,11 +19,18 @@
 
     <label class="switch">
       <input type="checkbox" id="meuSwitch">
-      <span class="slider"></span>
+      <span class="slider">
+        <img src="../images/sun-svgrepo-com.svg" alt="Sol" class="svg sun">
+        <img src="../images/moon-svgrepo-com.svg" alt="Lua" class="svg moon">
+      </span>
     </label>
   </aside>
 
   <!-- Conteudo Main -->
+  <header>
+    <img src="../images/cortex deitado.png" alt="Cortex deitado" id="logo-mobile">
+  </header>
+
   <main class="main">
     <div class="container">
       <form id="cadastroForm" class="form">
@@ -37,8 +44,6 @@
             <button type="button" id="removePhoto">Remover foto</button>
           </div>
         </div>
-
-        <form id="cadastroForm">
 
           <div class="form-group">
             <label for="nome">Nome</label>
@@ -75,7 +80,7 @@
             <input type="text" id="contato" name="contato" placeholder="(xx) xxxxx-xxxx" required />
           </div>
 
-          <button type="submit" class="btn">Cadastrar</button>
+          <button type="submit" class="button">Cadastrar</button>
           <p class="aviso">Já possui uma conta? Clique <a href="../pages/login.html">aqui</a></p>
           <p id="mensagemErro"></p>
         </form>
