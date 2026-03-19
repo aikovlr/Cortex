@@ -68,6 +68,7 @@
           <th>Tarefa</th>
           <th>Vencimento</th>
           <th>Status</th>
+          <th>Prioridade</th>
         </tr>
       </thead>
       <tbody id="tarefas-body">
@@ -92,8 +93,17 @@
         <label>Pontuação*</label>
         <input type="number" name="pontuacao" id="pontuacao" placeholder="Ex: 10">
 
-        <label>Atribur a: *</label>
-        <input type="text" name="email_responsavel" id="email_responsavel" placeholder="exemplo@email.com" required>
+        <label>Atribuir tarefa à: *</label>
+
+        <div class="radio-option">
+        <label><input type="radio" value="equipe" name="tipo_atribuicao"> Equipe</label>
+        <label><input type="radio" value="individual" name="tipo_atribuicao"> Individual</label>
+        </div>
+
+        <input type="email" name="email_responsavel" id="email_responsavel" placeholder="Email do responsável">
+        <select id="equipe" name="equipe">
+          <option value="">Selecione uma equipe</option>
+        </select>
 
         <label>Prioridade*</label>
         <select name="prioridade" id="prioridade" required>

@@ -7,7 +7,7 @@
   <title>Equipe - Cortex</title>
   <link rel="stylesheet" href="../css/globalstyles.css">
   <link rel="stylesheet" href="../css/equipe.css">
-  <script src="../js/equipe.js" defer></script>
+  <script src="../js/detalhesEquipe.js" defer></script>
   <script src="../js/globaljs.js" defer></script>
   <script src="../js/auth.js" defer></script>
 </head>
@@ -33,7 +33,7 @@
 
   <!-- Main -->
   <header>
-    <button id="sidebar-toggle">☰</button>
+    <button id="btn-back">⬅</button>
     <img src="../images/cortex deitado.png" alt="Cortex deitado" id="logo-mobile">
     <div class="user-profile">
       <img src="../images/perfil.png" alt="Foto do usuário" id="userPhoto">
@@ -54,27 +54,38 @@
   <main class="main">
     <!-- Barra de busca -->
     <div class="search-container">
-      <input type="text" placeholder="Pesquisar equipe" id='search-input'>
+      <input type="text" placeholder="Pesquisar integrante" id='search-input'>
       <button class="add-btn" onclick="toggleForm()">+</button>
     </div>
 
-    <!-- Container de equipes -->
-    <div id="equipes-container">
-      <!-- Equipes serão inseridas aqui dinamicamente -->
-    </div>
+    <!-- Tabela de equipe -->
+    <table id="teamTable">
+      <thead>
+        <tr>
+          <th>Integrante</th>
+          <th>Desde</th>
+          <th>Tarefas atribuídas</th>
+          <th>Cargo</th>
+        </tr>
+      </thead>
+      <tbody id="membros-body">
+        <!-- Membros serão inseridos aqui dinamicamente -->
+      </tbody>
+    </table>
 
     <!-- Card de cadastro (escondido inicialmente) -->
     <dialog id="formCard" class="form-card">
       <button type="button" class="close-btn" onclick="toggleForm()">×</button>
-      <h3>Criar equipe</h3>
+      <h3>Adicionar membro</h3>
       <form id="memberForm">
-        <label>Nome</label>
-        <input type="text" name="nome" id="nome" required>
+        <label>Email</label>
+        <input type="email" name="email" id="email" required>
 
-        <label>Descrição</label>
-        <input type="text" name="descricao" id="descricao">
-
+        <label>Adicionar como administrador?</label>
+        <input type="checkbox" name="isAdmin" id="isAdmin">Sim
+      </br>
         <button type="submit" class="button">Salvar</button>
+        <p id="mensagemErro"></p>
       </form>
     </dialog>
   </main>

@@ -24,16 +24,25 @@ async function carregarTarefa() {
         }
         
         const tarefas = await resposta.json();
-        
-        document.getElementById("titulo-tarefa").textContent = tarefas.titulo;
-        document.getElementById("descricao-tarefa").innerHTML =
-        `<strong>Instruções:</strong><br>${tarefas.descricao}`;
-        document.getElementById("vencimento").textContent =
-        `Vence em ${new Date(tarefas.dt_vencimento).toLocaleString("pt-BR")}`;
+        injetarTarefa(tarefas);
+        console.log("tarefa", tarefas);
         
     } catch (error) {
         console.error("Erro ao carregar tarefa:", error);
     }
+}
+
+function injetarTarefa(tarefas) {
+
+    const titulo = document.getElementById("titulo-tarefa");
+    const descricao = document.getElementById("descricao-tarefa");
+    const equipeResponsavel = document.getElementById("responsavel");
+    const vencimento = document.getElementById("vencimento");
+
+    titulo.innerHTML = tarefas.titulo;
+    descricao.innerHTML = `<strong>Instruções:</strong><br>${tarefas.descricao}`;
+    equipeResponsavel.innerHTML = `<strong>Atribuída por:</strong> ${tarefas.criador_nome} - ${tarefas.equipe_nome}`;
+    vencimento.innerHTML = `<strong>Vence em:</strong> ${new Date(tarefas.dt_vencimento).toLocaleString("pt-BR")}`;
 }
 
 // modal helpers used by onclick attributes

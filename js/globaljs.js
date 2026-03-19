@@ -4,11 +4,19 @@ document.addEventListener("DOMContentLoaded", function () {
   const styleTag = document.createElement("style");
   document.head.appendChild(styleTag);
 
-  function atualizarHover(corHover) {
+  function atualizarEstilos(corHover, bgCard, colorCard, borderCard, colorDesc) {
     styleTag.innerHTML = `
       #teamTable tr:hover {
         background-color: ${corHover} !important;
         transition: background-color 0.3s;
+      }
+      .team-card {
+        background: ${bgCard} !important;
+        color: ${colorCard} !important;
+        border-color: ${borderCard} !important;
+      }
+      .team-card p {
+        color: ${colorDesc} !important;
       }
     `;
   }
@@ -18,12 +26,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (switchTema) switchTema.checked = true;
     background.style.backgroundColor = '#242424ff';
     background.style.color = '#F5F5F5';
-    atualizarHover("#483D8B");
+    atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc");
   } else {
     if (switchTema) switchTema.checked = false;
     background.style.backgroundColor = '#f9f9fb';
     background.style.color = '#222';
-    atualizarHover("#f3f1f9");
+    atualizarEstilos("#f3f1f9", "#fff", "#222", "#ddd", "#666");
   }
 
   if (switchTema) {
@@ -32,14 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
         background.style.backgroundColor = '#1C1C1C';
         background.style.color = '#F5F5F5';
         background.style.transition = 'background-color 0.5s, color 0.5s';
-        atualizarHover("#483D8B");
+        atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc");
         localStorage.setItem("tema", "escuro");
         console.log("Black theme switch is ON");
       } else {
         background.style.backgroundColor = '#f9f9fb';
         background.style.color = '#222';
         background.style.transition = 'background-color 0.5s, color 0.5s';
-        atualizarHover("#f3f1f9");
+        atualizarEstilos("#f3f1f9", "#fff", "#222", "#ddd", "#666");
         localStorage.setItem("tema", "claro");
         console.log("Black theme switch is OFF");
       }

@@ -1,10 +1,3 @@
-/* 
-    
-CSS PAGINA MINHAS TAREFAS
-    
-*/
-
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -61,4 +54,23 @@ td .status {
 #mensagemErro {
   color: red;
   text-align: center;
+}
+
+input[type = "radio"] {
+  width: 20px;
+}
+
+.radio-option {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.radio-option label {
+  margin-top: 0 !important;
+}
+
+#equipe,
+#email_responsavel {
+  display: none;
 }
