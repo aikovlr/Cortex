@@ -12,7 +12,7 @@ body {
   flex-direction: column;
 }
 
-.main {
+main {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -48,6 +48,7 @@ body {
   color: #F5F5F5;
   border-radius: 8px;
   transition: 0.2s;
+  gap: 10px;
 }
 
 .sidebar a:hover,
@@ -59,6 +60,7 @@ body {
 .menu {
   list-style: none;
   padding-left: 0;
+  gap: 10px;
 }
 
 #popupSucesso {
@@ -186,7 +188,7 @@ body {
     /* Mostra a sidebar quando tem a classe 'open' */
   }
 
-  .main {
+  main {
     margin-left: 0;
     padding: 20px;
   }
@@ -316,6 +318,10 @@ body {
 
   .popup-content button:hover {
     background-color: #7B4FC9;
+  }
+
+  .container {
+    max-width: 300px;
   }
 }
 

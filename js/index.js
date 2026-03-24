@@ -156,12 +156,12 @@ document.getElementById("formCard").addEventListener("submit", async function (e
   const tipo = dados.get("tipo_atribuicao");
 
   const dataForms = {
-   titulo: dados.get("titulo"),
-   descricao: dados.get("descricao"),
-   dt_vencimento: dados.get("dataEntrega"),
-   pontuacao: dados.get("pontuacao"),
-   prioridade: dados.get("prioridade"),
-   tipo_atribuicao: tipo
+    titulo: dados.get("titulo"),
+    descricao: dados.get("descricao"),
+    dt_vencimento: dados.get("dataEntrega"),
+    pontuacao: dados.get("pontuacao"),
+    prioridade: dados.get("prioridade"),
+    tipo_atribuicao: tipo
   };
 
   if (tipo === "equipe") {
@@ -172,8 +172,6 @@ document.getElementById("formCard").addEventListener("submit", async function (e
     dataForms.email_responsavel = dados.get("email_responsavel");
   }
 
-
-  // Envia os dados para o servidor/db
   try {
     const resposta = await fetch('http://localhost:3000/tarefa', {
       method: 'POST',
@@ -188,9 +186,37 @@ document.getElementById("formCard").addEventListener("submit", async function (e
       throw new Error('Erro na resposta do servidor');
     }
 
+    const tarefa = await resposta.json();
+
+   
+    const files = document.getElementById("fileInput").files;
+
+    if (files.length > 0) { 
+      const formData = new FormData();
+
+      for (let file of files) {
+        formData.append("anexo", file);
+      }
+
+      const resUpload = await fetch(`http://localhost:3000/tarefas/${tarefa.id}/anexo`, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        },
+        body: formData
+      });
+
+      if (!resUpload.ok) {
+        mensagemErro.textContent = "Erro ao enviar anexo.";
+        return;
+      }
+    }
+
     listarTarefas();
+
   } catch (error) {
-    mensagemErro.textContent = "Erro ao criar tarefa. Verifique os campos preenchidos ou tente novamente mais tarde.";
+    console.error(error); 
+    mensagemErro.textContent = "Erro ao criar tarefa.";
     return;
   }
 
@@ -219,8 +245,6 @@ async function carregarEquipes() {
     const option = document.createElement("option");
     option.value = equipe.id_equipe;
     option.textContent = equipe.nome;
-   dropdown.appendChild(option);
+    dropdown.appendChild(option);
   });
-
 }
-

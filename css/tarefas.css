@@ -124,10 +124,6 @@
   box-sizing: border-box;
 }
 
-::backdrop {
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
 .card input,
 .card textarea,
 .feedback textarea,

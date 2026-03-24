@@ -1,10 +1,50 @@
 document.addEventListener("DOMContentLoaded", function () {
+
+  const fontSizeSlider = document.getElementById("fontRange");
+  const saveBtn = document.getElementById("saveBtn");
+  const popup = document.getElementById("popupSucesso")
+  const fontSalva = localStorage.getItem("fontSize");
+
+  if (fontSalva) {
+    aplicarFonte(fontSalva);
+  }
+
+  if (fontSizeSlider && fontSalva) {
+    fontSizeSlider.value = fontSalva;
+  }
+
+  if (fontSizeSlider) {
+    fontSizeSlider.addEventListener("input", () => {
+      aplicarFonte(fontSizeSlider.value);
+    });
+  }
+
+  if (fontSizeSlider && saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      localStorage.setItem("fontSize", fontSizeSlider.value);
+      popup.classList.add("show");
+      setTimeout(() => {
+        popup.classList.remove("show");
+      }, 2000);
+    });
+  }
+
+  function aplicarFonte(valor) {
+    let tamanho;
+
+    if (valor == 1) tamanho = "14px";
+    if (valor == 2) tamanho = "16px";
+    if (valor == 3) tamanho = "24px";
+
+    document.body.style.fontSize = tamanho;
+  }
+
   const switchTema = document.getElementById("meuSwitch");
   const background = document.body;
   const styleTag = document.createElement("style");
   document.head.appendChild(styleTag);
 
-  function atualizarEstilos(corHover, bgCard, colorCard, borderCard, colorDesc) {
+  function atualizarEstilos(corHover, bgCard, colorCard, borderCard, colorDesc, corPrevBorder, corBtnFile) {
     styleTag.innerHTML = `
       #teamTable tr:hover {
         background-color: ${corHover} !important;
@@ -18,6 +58,16 @@ document.addEventListener("DOMContentLoaded", function () {
       .team-card p {
         color: ${colorDesc} !important;
       }
+
+      .anexo-item,
+      .preview-item {
+      border: 2px solid ${corPrevBorder} !important;
+
+      #selectFile {
+        background-color: ${corBtnFile} !important;
+      }
+
+      }
     `;
   }
 
@@ -26,12 +76,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (switchTema) switchTema.checked = true;
     background.style.backgroundColor = '#242424ff';
     background.style.color = '#F5F5F5';
-    atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc");
+    atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc", "#f5f5f5", "#F5F5F5");
   } else {
     if (switchTema) switchTema.checked = false;
-    background.style.backgroundColor = '#f9f9fb';
-    background.style.color = '#222';
-    atualizarEstilos("#f3f1f9", "#fff", "#222", "#ddd", "#666");
+    background.style.backgroundColor = '#f5f5f5';
+    background.style.color = '#242424ff';
+    atualizarEstilos("#f3f1f9", "#fff", "#242424ff", "#ddd", "#666", "#242424ff", "#242424ff");
   }
 
   if (switchTema) {
@@ -40,16 +90,14 @@ document.addEventListener("DOMContentLoaded", function () {
         background.style.backgroundColor = '#1C1C1C';
         background.style.color = '#F5F5F5';
         background.style.transition = 'background-color 0.5s, color 0.5s';
-        atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc");
+        atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc", "#f5f5f5", "#F5F5F5");
         localStorage.setItem("tema", "escuro");
-        console.log("Black theme switch is ON");
       } else {
         background.style.backgroundColor = '#f9f9fb';
         background.style.color = '#222';
         background.style.transition = 'background-color 0.5s, color 0.5s';
-        atualizarEstilos("#f3f1f9", "#fff", "#222", "#ddd", "#666");
+        atualizarEstilos("#f3f1f9", "#fff", "#242424ff", "#ddd", "#666", "#242424ff", "#242424ff");
         localStorage.setItem("tema", "claro");
-        console.log("Black theme switch is OFF");
       }
     });
   }
@@ -62,9 +110,9 @@ document.addEventListener("DOMContentLoaded", function () {
       sidebar.classList.toggle('open');
     });
   }
-  document.addEventListener('click', function(event) {
+  document.addEventListener('click', function (event) {
     if (sidebar && toggleBtn && !sidebar.contains(event.target) &&
-        !toggleBtn.contains(event.target) && window.innerWidth <= 1024) {
+      !toggleBtn.contains(event.target) && window.innerWidth <= 1024) {
       sidebar.classList.remove('open');
     }
   });
@@ -99,13 +147,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (userPhoto && userPopup && window.innerWidth <= 1024) {
-    userPhoto.addEventListener("click", function(event) {
+    userPhoto.addEventListener("click", function (event) {
       event.stopPropagation();
       userPopup.classList.toggle("show");
     });
 
     // close popup when clicking outside
-    document.addEventListener("click", function(event) {
+    document.addEventListener("click", function (event) {
       if (!userPopup.contains(event.target) && !userPhoto.contains(event.target)) {
         userPopup.classList.remove("show");
       }
@@ -113,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // logout from popup
     if (popupLogoutBtn) {
-      popupLogoutBtn.addEventListener("click", function() {
+      popupLogoutBtn.addEventListener("click", function () {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
         window.location.href = '../pages/login.html';

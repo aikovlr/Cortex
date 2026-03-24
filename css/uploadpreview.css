@@ -1,14 +1,4 @@
-:root{
-  --preview-border:#ddd;
-}
-
-[data-theme="dark"]{
-  --preview-border:#444;
-}
-
-[data-theme="light"]{
-  --preview-border:#ccc;
-}
+/* ================= UPLOAD ================= */
 
 .upload-message .btn-file {
   display: inline-block;
@@ -21,27 +11,35 @@
   transition: 0.2s;
 }
 
-.upload-message .btn-file:hover {
-  background: #f3f1f9;
-}
-
 .upload-area.dragover {
   border-color: #4CAF50;
   background: #f5fff5;
 }
 
+/* GRID DO UPLOAD (NÃO MEXER MAIS) */
 .preview-grid {
   display:grid;
   grid-template-columns: repeat(auto-fill,120px);
   gap:10px;
-  margin:5px 0;
+  margin:10px 0;
 }
 
+.preview-taskgrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 250px;
+  text-overflow: ellipsis;
+}
+
+/* CARD DO UPLOAD */
 .preview-item{
   position:relative;
   padding:8px;
-  border:1px solid var(--preview-border);
+  border:1px solid #ddd;
   border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
 }
 
 .preview-item:hover{
@@ -70,9 +68,9 @@
   white-space:nowrap;
 }
 
+/* botão remover (upload only) */
 .remove-btn{
   position:absolute;
-
   top:-12px;
   right:-12px;
 
@@ -87,52 +85,33 @@
 
   font-size:16px;
   font-weight:bold;
-  line-height:1;
 
   display:flex;
   align-items:center;
   justify-content:center;
 
   cursor:pointer;
-
-  padding:0;
-
   z-index:20;
 }
 
-.progress-bar{
-  height:4px;
-  background:#ddd;
-  margin-top:5px;
-  border-radius:2px;
-  overflow:hidden;
-}
-
-.progress{
-  height:100%;
-  width:0;
-  background:#4CAF50;
-}
-
-/* viewer */
+/* ================= VIEWER (UPLOAD) ================= */
 
 .file-viewer{
-    position:fixed;
-    top:0;
-    left:0;
+  position:fixed;
+  top:0;
+  left:0;
 
-    width:100vw;
-    height:100vh;
+  width:100vw;
+  height:100vh;
 
-    background:rgba(0,0,0,0.7);
+  background:rgba(0,0,0,0.7);
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-    z-index:1000;
-
-    padding:20px;
+  z-index:1000;
+  padding:20px;
 }
 
 .hidden{
@@ -143,18 +122,23 @@
   position:relative;
   max-width:90vw;
   max-height:90vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .viewer-content img,
 .viewer-content video{
   max-width:90vw;
   max-height:90vh;
+  border-radius:8px;
 }
 
 .viewer-content iframe{
-  width: 90vw;
-  height: 90vh;
+  width:90vw;
+  height:90vh;
   border:none;
+  border-radius:8px;
 }
 
 .viewer-close{
@@ -170,20 +154,77 @@
   cursor:pointer;
 }
 
+/* DOCX */
 .docx-preview{
-    background:white;
-    color:black;
-    padding:20px;
+  background:white;
+  color:black;
+  padding:20px;
 
-    max-width:90vw;
-    max-height:90vh;
+  max-width:90vw;
+  max-height:90vh;
 
-    overflow:auto;
-    border-radius:8px;
+  overflow:auto;
+  border-radius:8px;
 }
 
-/* força conteúdo do docx respeitar largura */
 .docx-preview *{
-    max-width:100%;
-    word-break:break-word;
+  max-width:100%;
+  word-break:break-word;
+}
+
+/* ================= ANEXOS DA TAREFA ================= */
+
+/* container separado (NÃO usa preview-grid) */
+.anexos-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.anexo-item {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  gap: 12px;
+}
+
+/* ícone */
+.anexo-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* nome */
+.anexo-nome {
+  flex: 1;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  font-size: 14px;
+}
+
+/* botão download */
+.anexo-download {
+  flex-shrink: 0;
+  color: #7B4FC9;
+  display: flex;
+  align-items: center;
+}
+
+.svg {
+  fill: #09b300;
+}
+
+.svg:hover {
+  fill: #7B4FC9;
 }
