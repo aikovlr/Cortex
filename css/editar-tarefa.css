@@ -1,0 +1,151 @@
+#titulo-tarefa {
+    font-size: 2rem;
+    font-weight: bold;
+    border: none;
+    outline: none;
+    margin-bottom: 4px;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+}
+
+#titulo-tarefa:focus {
+    outline: 2px solid #7B4FC9;
+    border-radius: 4px;
+}
+
+
+
+label[for="descricao-tarefa"] {
+    display: block;
+    font-weight: 500;
+    margin: 12px 0 6px;
+}
+
+#descricao-tarefa {
+    width: 100%;
+    min-height: 100px;
+    background-color: #E5E5E5;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    margin-top: 10px;
+    box-sizing: border-box;
+}
+
+#descricao-tarefa:focus {
+    outline: 2px solid #7B4FC9;
+}
+
+.anexo-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    gap: 12px;
+}
+
+.additional-fields {
+    margin: 20px 0;
+}
+
+.additional-fields label {
+    display: block;
+    font-weight: 500;
+    margin: 12px 0 6px;
+}
+
+.additional-fields input,
+.additional-fields select {
+    width: 100%;
+    background-color: #E5E5E5;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.additional-fields input:focus,
+.additional-fields select:focus {
+    outline: 2px solid #7B4FC9;
+}
+
+.btn-red.excluir {
+    align-items: center;
+    margin-right: 22px;
+    margin-top: auto;
+    margin-left: auto;
+    max-width: 145px;
+    width: 100%;
+}
+
+.btn-red.excluir:hover {
+    background-color: #c82333;
+}
+
+/* TASK BOX - layout, espaçamento e botão final */
+.task-box {
+    border: 2px dashed #9a4dff;
+    padding: 22px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    /* empilha conteúdo e depois actions */
+    gap: 18px;
+    position: relative;
+}
+
+/* Conteudo da tarefa (texto) */
+.task-box-content {
+    /* garante que o conteúdo ocupe espaço antes da area de ações */
+    display: block;
+}
+
+/* Alinha o botão Finalizar à direita dentro da caixa */
+.task-box-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.btn-green {
+    margin-left: auto;
+}
+
+.card {
+    max-width: 360px;
+}
+
+#successDelete {
+    text-align: center;
+}
+
+#successDelete .btn-green {
+    margin-top: 5px;
+}
+/* RESPONSIVE: em telas pequenas empilha os botões de footer, evita que os botões quebrem completamente em telas menores  */
+@media (max-width: 1024px) {
+    .task-box {
+        padding: 16px;
+    }
+
+    .task-box-actions {
+        justify-content: center;
+    }
+
+    .btn-red.excluir {
+        margin-right: 16px;
+    }
+}

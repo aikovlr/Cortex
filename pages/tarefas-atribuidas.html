@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tarefa - Cortex</title>
     <link rel="stylesheet" href="../css/globalstyles.css">
-    <link rel="stylesheet" href="../css/configuracoes.css">
-    <script src="../js/configuracoes.js" defer></script>
+    <link rel="stylesheet" href="../css/tarefas-atribuidas.css">
+    <script src="../js/tarefas-atribuidas.js" defer></script>
     <script src="../js/globaljs.js" defer></script>
     <script src="../js/auth.js" defer></script>
 </head>
@@ -54,7 +54,7 @@
 
     <header>
     <button id="sidebar-toggle">☰</button>
-    <img src="./images/cortex deitado.png" alt="Cortex deitado" id="logo-mobile">
+    <img src="../images/cortex deitado.png" alt="Cortex deitado" id="logo-mobile">
     <div class="user-profile">
       <img src="../images/perfil.png" alt="Foto do usuário" id="userPhoto">
       <span id="userName"></span>
@@ -75,8 +75,21 @@
     <main>
     <div class="search-container">
         <input type="text" placeholder="Pesquisar tarefa" id='search-input'>
-        <button class="add-btn" onclick="toggleForm()">+</button>
     </div>
+
+    <table class="task-table">
+        <thead>
+            <tr>
+                <th>Tarefa</th>
+                <th>Vencimento</th>
+                <th>Responsável</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="tarefas-atribuidas-body">
+            <!-- Tarefas serão inseridas aqui dinamicamente -->
+        </tbody>
+    </table>
 
     </main>
 </body>

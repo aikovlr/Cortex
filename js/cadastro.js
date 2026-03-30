@@ -1,16 +1,26 @@
+const cpfInput = document.getElementById("cpf");
+const telInput = document.getElementById("contato")
+VMasker(telInput).maskPattern("99 99999-9999")
+VMasker(cpfInput).maskPattern("999.999.999-99")
+
 // Validação do formulário de cadastro
 document.getElementById("cadastroForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
   const dados = new FormData(e.target);
 
-  const nome = dados.get('nome').trim();
-  const cpf = dados.get('cpf').trim();
-  const telefone = dados.get('contato').trim();
   const email = dados.get("email").trim();
   const confirmEmail = dados.get("confirmEmail").trim();
   const senha = dados.get("senha").trim();
   const confirmSenha = dados.get("confirmSenha").trim();
+
+  const dataForms = {
+    nome: dados.get('nome').trim(),
+    cpf: dados.get('cpf').trim(),
+    telefone: dados.get('contato').trim(),
+    email,
+    senha,
+  }
 
   const mensagemErro = document.getElementById("mensagemErro");
   const popup = document.getElementById("popupSucesso");
@@ -33,17 +43,34 @@ document.getElementById("cadastroForm").addEventListener("submit", async functio
 
   // Envia os dados para o servidor/db
   try {
-    const resposta = await fetch('http://localhost:3000/usuarios', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ nome, cpf, telefone, email, senha, })
+    const resposta = await fetch("http://localhost:3000/usuarios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataForms }), // ok com o servidor atual; ou JSON.stringify(dataForms) se preferir plano
     });
 
     if (!resposta.ok) {
-      throw new Error('Erro na resposta do servidor');
+      const err = await resposta.json().catch(() => ({}));
+      throw new Error(err.message || "Erro na resposta do servidor");
     }
+    const { token } = await resposta.json();
+
+    const file = dados.get("anexo");
+    if (file && file.size > 0 && token) {
+      const fd = new FormData();
+      fd.append("anexo", file);
+      const fotoUpload = await fetch("http://localhost:3000/usuarios/anexo", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      
+      if (!fotoUpload.ok) {
+        mensagemErro.textContent = "Erro ao enviar anexo.";
+        return;
+      }
+    }
+
   } catch (error) {
     mensagemErro.textContent = "Erro ao cadastrar. Tente novamente mais tarde.";
     return;

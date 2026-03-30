@@ -51,6 +51,16 @@ td .status {
   text-decoration: none;
 }
 
+.task-table thead:hover,
+.task-table tbody tr:hover {
+  background-color: rgba(123, 79, 201, 0.3);
+  transition: background-color 0.3s;
+}
+
+.task-table tbody tr.row-link {
+  cursor: pointer;
+}
+
 #mensagemErro {
   color: red;
   text-align: center;

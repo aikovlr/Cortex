@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
-
+  // Configurações de Fonte
   const fontSizeSlider = document.getElementById("fontRange");
   const saveBtn = document.getElementById("saveBtn");
-  const popup = document.getElementById("popupSucesso")
+  const popup = document.getElementById("popupSucesso");
   const fontSalva = localStorage.getItem("fontSize");
 
   if (fontSalva) {
@@ -31,14 +31,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function aplicarFonte(valor) {
     let tamanho;
-
     if (valor == 1) tamanho = "14px";
     if (valor == 2) tamanho = "16px";
     if (valor == 3) tamanho = "24px";
-
     document.body.style.fontSize = tamanho;
   }
 
+  // Lógica de Tema (Light/Dark)
   const switchTema = document.getElementById("meuSwitch");
   const background = document.body;
   const styleTag = document.createElement("style");
@@ -46,28 +45,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function atualizarEstilos(corHover, bgCard, colorCard, borderCard, colorDesc, corPrevBorder, corBtnFile) {
     styleTag.innerHTML = `
-      #teamTable tr:hover {
-        background-color: ${corHover} !important;
-        transition: background-color 0.3s;
-      }
-      .team-card {
-        background: ${bgCard} !important;
-        color: ${colorCard} !important;
-        border-color: ${borderCard} !important;
-      }
-      .team-card p {
-        color: ${colorDesc} !important;
-      }
-
-      .anexo-item,
-      .preview-item {
-      border: 2px solid ${corPrevBorder} !important;
-
-      #selectFile {
-        background-color: ${corBtnFile} !important;
-      }
-
-      }
+      #teamTable tr:hover { background-color: ${corHover} !important; transition: background-color 0.3s; }
+      .team-card { background: ${bgCard} !important; color: ${colorCard} !important; border-color: ${borderCard} !important; }
+      .team-card p { color: ${colorDesc} !important; }
+      .anexo-item, .preview-item { border: 2px solid ${corPrevBorder} !important; }
+      #selectFile { background-color: ${corBtnFile} !important; }
     `;
   }
 
@@ -76,228 +58,189 @@ document.addEventListener("DOMContentLoaded", function () {
     if (switchTema) switchTema.checked = true;
     background.style.backgroundColor = '#242424ff';
     background.style.color = '#F5F5F5';
-    atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc", "#f5f5f5", "#F5F5F5");
+    atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc", "#f5f5f5", "transparent");
   } else {
     if (switchTema) switchTema.checked = false;
     background.style.backgroundColor = '#f5f5f5';
     background.style.color = '#242424ff';
-    atualizarEstilos("#f3f1f9", "#fff", "#242424ff", "#ddd", "#666", "#242424ff", "#242424ff");
+    atualizarEstilos("#f3f1f9", "#fff", "#242424ff", "#ddd", "#666", "#242424ff", "transparent");
   }
 
   if (switchTema) {
     switchTema.addEventListener("change", function () {
+      background.style.transition = 'background-color 0.5s, color 0.5s';
       if (this.checked) {
         background.style.backgroundColor = '#1C1C1C';
         background.style.color = '#F5F5F5';
-        background.style.transition = 'background-color 0.5s, color 0.5s';
         atualizarEstilos("#483D8B", "#333", "#F5F5F5", "#555", "#ccc", "#f5f5f5", "#F5F5F5");
         localStorage.setItem("tema", "escuro");
       } else {
         background.style.backgroundColor = '#f9f9fb';
         background.style.color = '#222';
-        background.style.transition = 'background-color 0.5s, color 0.5s';
         atualizarEstilos("#f3f1f9", "#fff", "#242424ff", "#ddd", "#666", "#242424ff", "#242424ff");
         localStorage.setItem("tema", "claro");
       }
     });
   }
 
-  // sidebar toggle
+  // Sidebar e Botão Voltar
   const sidebar = document.querySelector('.sidebar');
   const toggleBtn = document.getElementById('sidebar-toggle');
   if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener('click', function () {
-      sidebar.classList.toggle('open');
-    });
+    toggleBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
   }
-  document.addEventListener('click', function (event) {
-    if (sidebar && toggleBtn && !sidebar.contains(event.target) &&
-      !toggleBtn.contains(event.target) && window.innerWidth <= 1024) {
+
+  document.addEventListener('click', (event) => {
+    if (sidebar && toggleBtn && !sidebar.contains(event.target) && !toggleBtn.contains(event.target) && window.innerWidth <= 1024) {
       sidebar.classList.remove('open');
     }
   });
 
-  // back button
   const btnBack = document.getElementById('btn-back');
   if (btnBack) {
-    btnBack.addEventListener('click', function () {
-      window.history.back();
-    });
+    btnBack.addEventListener('click', () => window.history.back());
   }
 
-  // fill current user name if element exists
+  // --- ALTERAÇÃO SOLICITADA: EXIBIÇÃO DE NOME E FOTO DO USUÁRIO ---
   const nomeSpan = document.getElementById("userName");
-  const storedName = localStorage.getItem("userName");
-  if (nomeSpan) {
-    nomeSpan.textContent = storedName || "Usuário";
-  }
-
-  // user popup for mobile
+  const popupNomeSpan = document.getElementById("popupUserName");
   const userPhoto = document.getElementById("userPhoto");
+  const popupImg = document.getElementById("popupUserPhoto");
+  const profilePreviewEl = document.getElementById("profilePreview");
+
+  // Primeiro, carrega o que estiver no localStorage para evitar delay visual
+  const storedName = localStorage.getItem("userName");
+  if (nomeSpan) nomeSpan.textContent = storedName || "Usuário";
+  if (popupNomeSpan) popupNomeSpan.textContent = storedName || "Usuário";
+
+  // Busca dados reais do banco (Nome e Foto)
+  (async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      // 1. Buscamos o objeto completo do usuário para pegar o NOME real do banco
+      const resUser = await fetch(`${API_BASE}/usuarios/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (resUser.ok) {
+        const u = await resUser.json();
+        // Atualiza o DOM com o nome vindo do banco
+        if (nomeSpan) nomeSpan.textContent = u.nome || "Usuário";
+        if (popupNomeSpan) popupNomeSpan.textContent = u.nome || "Usuário";
+        localStorage.setItem("userName", u.nome || "");
+      }
+
+      // 2. Buscamos a FOTO de perfil
+      const src = await carregarFotoPerfil();
+      const fallback = "../images/perfil.png"; // Ajustado para seu caminho de imagens
+      const url = src || fallback;
+
+      if (userPhoto) userPhoto.src = url;
+      if (popupImg) popupImg.src = url;
+      if (profilePreviewEl) profilePreviewEl.src = src || "../images/perfil.png";
+
+    } catch (err) {
+      console.error("Erro ao sincronizar dados do header:", err);
+    }
+  })();
+
+  // Popup de Usuário (Mobile)
   const userPopup = document.getElementById("userPopup");
   const popupLogoutBtn = document.getElementById("popupLogoutBtn");
-  const popupNomeSpan = document.getElementById("popupUserName");
-  const popupImg = document.getElementById("popupUserPhoto");
-
-  if (popupNomeSpan) {
-    popupNomeSpan.textContent = storedName || "Usuário";
-  }
-  if (popupImg && userPhoto) {
-    popupImg.src = userPhoto.src;
-  }
 
   if (userPhoto && userPopup && window.innerWidth <= 1024) {
-    userPhoto.addEventListener("click", function (event) {
+    userPhoto.addEventListener("click", (event) => {
       event.stopPropagation();
       userPopup.classList.toggle("show");
     });
 
-    // close popup when clicking outside
-    document.addEventListener("click", function (event) {
+    document.addEventListener("click", (event) => {
       if (!userPopup.contains(event.target) && !userPhoto.contains(event.target)) {
         userPopup.classList.remove("show");
       }
     });
 
-    // logout from popup
     if (popupLogoutBtn) {
-      popupLogoutBtn.addEventListener("click", function () {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
+      popupLogoutBtn.addEventListener("click", () => {
+        localStorage.clear();
         window.location.href = '../pages/login.html';
       });
     }
   }
 
-  // cadastro profile preview
+  // Lógica de Foto em Configurações (Se existir na página)
   const inputProfile = document.getElementById("profileInput");
-  const img = document.getElementById("profilePreview");
+  const imgPreview = document.getElementById("profilePreview");
   const changeBtn = document.getElementById("changePhoto");
   const removeBtn = document.getElementById("removePhoto");
-  if (inputProfile && img && changeBtn && removeBtn) {
-    changeBtn.addEventListener("click", () => inputProfile.click());
+
+  if (inputProfile && imgPreview && changeBtn) {
+    changeBtn.onclick = (e) => {
+      e.preventDefault();
+      inputProfile.click();
+    };
+
     inputProfile.addEventListener("change", (event) => {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = (e) => (img.src = e.target.result);
+        reader.onload = (e) => (imgPreview.src = e.target.result);
         reader.readAsDataURL(file);
       }
     });
-    removeBtn.addEventListener("click", () => {
-      img.src = "default-avatar.png";
-      inputProfile.value = "";
-    });
-  }
-
-  // tarefa page behaviours
-  if (document.getElementById("titulo-tarefa")) {
-    if (typeof carregarTarefa === "function") carregarTarefa();
-
-    const feedbackContainer = document.getElementById("feedbackContainer");
-    const finalizarButton = document.getElementById("finalizar");
-    const suggestionButton = document.getElementById("sugestao");
-    const fileButton = document.getElementById("customFileButton");
-
-    if (finalizarButton) {
-      const taskId = finalizarButton.dataset.id || "tarefaGenerica";
-      const finalizadas =
-        JSON.parse(localStorage.getItem("tarefasFinalizadas")) || [];
-      if (finalizadas.includes(taskId)) {
-        marcarComoFinalizada(true);
-      }
-
-      window.toggleFeedback = function () {
-        const isFinalizado =
-          finalizarButton.innerText.trim() === "Finalizar tarefa";
-
-        if (!isFinalizado) {
-          marcarComoFinalizada(false);
-          const index = finalizadas.indexOf(taskId);
-          if (index !== -1) {
-            finalizadas.splice(index, 1);
-            localStorage.setItem(
-              "tarefasFinalizadas",
-              JSON.stringify(finalizadas)
-            );
-          }
-          console.log("Envio de tarefa cancelado");
-        } else {
-          marcarComoFinalizada(true);
-          if (!finalizadas.includes(taskId)) {
-            finalizadas.push(taskId);
-            localStorage.setItem(
-              "tarefasFinalizadas",
-              JSON.stringify(finalizadas)
-            );
-          }
-          console.log("Envio de tarefa iniciado");
-        }
-      };
-
-      function marcarComoFinalizada(status) {
-        if (status) {
-          finalizarButton.innerText = "Cancelar envio";
-          suggestionButton.style.display = "none";
-          feedbackContainer.style.display = "block";
-          fileButton.style.color = "#e63946";
-          fileButton.style.border = "2px solid #e63946";
-          fileButton.disabled = true;
-        } else {
-          finalizarButton.innerText = "Finalizar tarefa";
-          suggestionButton.style.display = "inline-block";
-          feedbackContainer.style.display = "none";
-          fileButton.style.color = "#7B4FC9";
-          fileButton.style.border = "2px solid #7B4FC9";
-          fileButton.disabled = false;
-        }
-      }
-    }
-
-    const popup = document.getElementById("popupSucesso");
-    const feedbackSend = document.querySelector("#feedbackContainer button[type='submit']");
-    if (feedbackSend && popup) {
-      feedbackSend.addEventListener("click", function (e) {
-        e.preventDefault();
-        document.getElementById("feedbackDesc").value = '';
-        console.log("Feedback de tarefa enviado");
-        popup.classList.add("show");
-        setTimeout(() => {
-          popup.classList.remove("show");
-        }, 2000);
-      });
-    }
-
-    const reportSend = document.querySelector("#report button[type='submit']");
-    const reportCard = document.getElementById("report");
-    if (reportSend && reportCard && popup) {
-      reportSend.addEventListener("click", function (e) {
-        e.preventDefault();
-        reportCard.close();
-        document.getElementById("reportTask").value = '';
-        document.getElementById("reportDesc").value = '';
-        console.log("Ticket de report enviado");
-        popup.classList.add("show");
-        setTimeout(() => {
-          popup.classList.remove("show");
-        }, 2000);
-      });
-    }
-
-    const suggestionSend = document.querySelector("#suggestion button[type='submit']");
-    const suggestionCard = document.getElementById("suggestion");
-    if (suggestionSend && suggestionCard && popup) {
-      suggestionSend.addEventListener("click", function (e) {
-        e.preventDefault();
-        suggestionCard.close();
-        document.getElementById("suggestionTask").value = '';
-        document.getElementById("suggestionDesc").value = '';
-        console.log("Sugestão enviada");
-        popup.classList.add("show");
-        setTimeout(() => {
-          popup.classList.remove("show");
-        }, 2000);
-      });
-    }
   }
 });
+const API_BASE = "http://localhost:3000";
+
+async function carregarFotoPerfil() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const resposta = await fetch(`${API_BASE}/usuarios/me/avatar`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (resposta.status === 404) return null;
+    if (!resposta.ok) throw new Error("Erro ao carregar foto");
+
+    const { url } = await resposta.json();
+    return new URL(url, API_BASE).href;
+  } catch (error) {
+    console.error("Erro ao buscar foto de perfil", error);
+    return null;
+  }
+}
+
+async function carregarDadosConta() {
+  const token = localStorage.getItem("token");
+  if (!token) return console.error("Token não encontrado");
+
+  try {
+      const res = await fetch(`${API_BASE}/usuarios/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Erro ao carregar conta");
+
+      const u = await res.json();
+
+      document.getElementById("accountNome").value = u.nome || "";
+      document.getElementById("accountEmail").value = u.email || "";
+      document.getElementById("accountTelefone").value = u.telefone || "";
+
+      if (typeof carregarFotoPerfil === 'function') {
+          const fotoUrl = await carregarFotoPerfil();
+          if (fotoUrl) {
+              document.getElementById("profilePreview").src = fotoUrl;
+          }
+      }
+  } catch (e) {
+      console.error(e);
+  }
+}

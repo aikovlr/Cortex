@@ -1,8 +1,9 @@
 /* Texto Tarefa */
 
-.main h1 {
-  font-size: 1.8rem;
-  margin-bottom: 8px;
+#titulo-tarefa,
+#responsavel,
+#vencimento {
+  margin-bottom: 4px;
 }
 
 .main small {
@@ -53,7 +54,7 @@
 }
 
 /* RESPONSIVE: em telas pequenas empilha os botões de footer, evita que os botões quebrem completamente em telas menores  */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .task-box {
     padding: 16px;
   }

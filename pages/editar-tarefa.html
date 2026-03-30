@@ -4,12 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equipe - Cortex</title>
+  <title>Editar Tarefa - Cortex</title>
   <link rel="stylesheet" href="../css/globalstyles.css">
-  <link rel="stylesheet" href="../css/equipe.css">
-  <script src="../js/equipe.js" defer></script>
+  <link rel="stylesheet" href="../css/editar-tarefa.css">
+  <link rel="stylesheet" href="../css/uploadpreview.css">
   <script src="../js/globaljs.js" defer></script>
   <script src="../js/auth.js" defer></script>
+  <script src="../js/uploadpreview.js" defer></script>
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 </head>
 
 <body>
@@ -54,7 +56,7 @@
 
   <!-- Main -->
   <header>
-    <button id="sidebar-toggle">☰</button>
+    <button id="btn-back">⬅</button>
     <img src="../images/cortex deitado.png" alt="Cortex deitado" id="logo-mobile">
     <div class="user-profile">
       <img src="../images/perfil.png" alt="Foto do usuário" id="userPhoto">
@@ -73,34 +75,81 @@
   </header>
 
   <main>
-    <!-- Barra de busca -->
-    <div class="search-container">
-      <input type="text" placeholder="Pesquisar equipe" id='search-input'>
-      <button class="add-btn" onclick="toggleForm()">+</button>
+    <input type="text" id="titulo-tarefa" placeholder="Título da tarefa">
+
+    <div class="task-box">
+      <div class="task-box-content">
+        <label for="descricao-tarefa">Descrição:</label>
+        <textarea id="descricao-tarefa" placeholder="Descrição da tarefa"></textarea>
+
+        <div class="additional-fields">
+          <label for="dt_vencimento">Data de vencimento:</label>
+          <input type="date" id="dt_vencimento">
+
+          <label for="pontuacao">Pontuação:</label>
+          <input type="number" id="pontuacao" min="0" max="100" placeholder="0">
+
+          <label for="prioridade">Prioridade:</label>
+          <select id="prioridade">
+            <option value="baixa">Baixa</option>
+            <option value="media">Média</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente</option>
+          </select>
+        </div>
+
+        <!-- LISTA DE ANEXOS EXISTENTES -->
+        <div id="anexosContainer" class="preview-taskgrid"></div>
+      </div>
+
+      <div class="task-box-actions">
+        <div id="uploadArea">
+
+          <input type="file" id="fileInput" multiple accept="image/*, video/*, audio/*, .pdf, .doc, .docx, .zip" hidden>
+          <div class="upload-message">
+            <p id="selectFile" class="btn-file">Anexar arquivos</p>
+          </div>
+
+          <div id="uploadViewer" class="file-viewer hidden">
+            <div class="viewer-content">
+              <button id="closeUploadViewer" class="viewer-close">✕</button>
+              <div id="uploadViewerBody"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="btn-green salvar" id="salvar">Salvar alterações</button>
     </div>
+</div>
 
-    <!-- Container de equipes -->
-    <div id="equipes-container">
-      <!-- Equipes serão inseridas aqui dinamicamente -->
-    </div>
+<!-- NOVOS ANEXOS -->
+<div id="previewContainer" class="preview-grid"></div>
 
-    <!-- Card de cadastro (escondido inicialmente) -->
-    <dialog id="formCard" class="form-card">
-      <button type="button" class="close-btn" onclick="toggleForm()">×</button>
-      <h3>Criar equipe</h3>
-      <form id="memberForm">
-        <label>Nome*</label>
-        <input type="text" name="nome" id="nome" required>
-
-        <label>Descrição (opcional)</label>
-        <input type="text" name="descricao" id="descricao">
-
-        <button type="submit" class="button">Salvar</button>
-      </form>
+<button class="btn-red excluir" id="excluir">Excluir tarefa</button>
+    <!-- Modal de confirmação de exclusão -->
+    <dialog class="card" id="confirmDelete">
+      <h2 class="card-title">Confirmar exclusão</h2>
+      <p>Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.</p>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn-red" onclick="confirmarExclusao()">Confirmar</button>
+        <button class="btn-green" onclick="fecharModalDelete()">Cancelar</button>
+      </div>
     </dialog>
+
+    <!-- Modal de sucesso de exclusão -->
+    <dialog class="card" id="successDelete">
+      <h2 class="card-title">Sucesso</h2>
+      <p>Tarefa excluída com sucesso!</p>
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn-green" onclick="fecharModalSuccess()">OK</button>
+      </div>
+    </dialog>
+
+    <div id="popupSucesso">Ação realizada com sucesso!</div>
+
   </main>
-
-  <div id="popupSucesso">Membro cadastrado com sucesso!</div>
-
+  <script src="../js/editar-tarefa.js" defer></script>
 </body>
+
 </html>

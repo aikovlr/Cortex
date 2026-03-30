@@ -1,5 +1,10 @@
 // preencher dados da tarefa na página
+document.addEventListener("DOMContentLoaded", () => {
+    carregarTarefa();
+});
+
 async function carregarTarefa() {
+
     const params = new URLSearchParams(window.location.search);
     const id_tarefa = params.get("id");
 
@@ -8,26 +13,31 @@ async function carregarTarefa() {
         return;
     }
 
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        console.error("Token não encontrado");
+        return;
+    }
+
     try {
         const resposta = await fetch(`http://localhost:3000/tarefas/${id_tarefa}`, {
-            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${token}`
             }
         });
 
         if (!resposta.ok) {
-            console.error("Erro ao carregar tarefa. Tente novamente mais tarde.");
+            const erro = await resposta.json().catch(() => ({}));
+            console.error("Erro ao carregar tarefa:", resposta.status, erro);
             return;
         }
 
-        const tarefas = await resposta.json();
+        const tarefa = await resposta.json();
 
-        // GET anexo
         const resAnexos = await fetch(`http://localhost:3000/anexo/${id_tarefa}`, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${token}`
             }
         });
 
@@ -36,30 +46,47 @@ async function carregarTarefa() {
         if (resAnexos.ok) {
             anexos = await resAnexos.json();
         } else {
-            console.error("Erro ao buscar anexos");
+            console.error("Erro ao buscar anexos:", resAnexos.status);
         }
 
-        injetarTarefa(tarefas, anexos);
-        console.log("tarefa", tarefas);
+        injetarTarefa(tarefa, anexos);
+
+        console.log("TAREFA:", tarefa);
         console.log("ANEXOS:", anexos);
 
     } catch (error) {
-        console.error("Erro ao carregar tarefa:", error);
+        console.error("Erro geral:", error);
     }
 }
 
-function injetarTarefa(tarefas, anexos = []) {
+function injetarTarefa(tarefa, anexos = []) {
 
     const titulo = document.getElementById("titulo-tarefa");
     const descricao = document.getElementById("descricao-tarefa");
-    const equipeResponsavel = document.getElementById("responsavel");
+    const criador = document.getElementById("responsavel");
     const vencimento = document.getElementById("vencimento");
 
-    titulo.innerHTML = tarefas.titulo;
-    descricao.innerHTML = `<strong>Instruções:</strong><br>${tarefas.descricao}`;
-    equipeResponsavel.innerHTML = `<strong>Atribuída por:</strong> ${tarefas.criador_nome} - ${tarefas.equipe_nome}`;
-    vencimento.innerHTML = `<strong>Vence em:</strong> ${new Date(tarefas.dt_vencimento).toLocaleString("pt-BR")}`;
+    // título
+    titulo.innerText = tarefa.titulo || "Sem título";
 
+    // descrição
+    descricao.innerHTML = tarefa.descricao
+        ? `<strong>Instruções:</strong><br>${tarefa.descricao}`
+        : "<strong>Sem descrição</strong>";
+
+    // responsável (usuário OU equipe)
+    criador.innerHTML = `
+        <strong>Atribuida por:</strong> 
+        ${tarefa.criador_nome || "Não definido"}
+        ${tarefa.equipe_nome ? ` - ${tarefa.equipe_nome}` : ""}
+        `;
+
+    // vencimento
+    vencimento.innerHTML = tarefa.dt_vencimento
+        ? `<strong>Vence em:</strong> ${new Date(tarefa.dt_vencimento).toLocaleString("pt-BR")}`
+        : "<strong>Sem vencimento</strong>";
+
+    // anexos
     renderAnexosTarefa(anexos);
 }
 

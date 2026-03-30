@@ -111,7 +111,6 @@ function debounce(func, delay) {
 }
 
 async function performSearch(value) {
-  console.log('Buscando por:', value);
 
   try {
     const resposta = await fetch(`http://localhost:3000/equipe?search=${encodeURIComponent(value)}`, {

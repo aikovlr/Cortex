@@ -61,14 +61,18 @@ function injetarTarefa(tarefas) {
         classeStatus = "status atrasada";
     }
 
+    const href = `pages/tarefa.html?id=${tarefa.id_tarefa}`;
+    tr.classList.add("row-link");
     tr.innerHTML = `
-        <td><a href="../pages/tarefa.html?id=${tarefa.id_tarefa}">
-        ${tarefa.titulo}
-        </a></td>
+        <td>${tarefa.titulo}</td>
         <td>${formatarData(tarefa.dt_vencimento)}</td>
         <td><span class="${classeStatus}">${tarefa.status}</span></td>
         <td>${tarefa.prioridade}</td>
       `;
+    tr.addEventListener("click", (e) => {
+      if (e.target.closest("a, button")) return;
+      window.location.href = href;
+    });
 
     tbody.appendChild(tr);
   })
@@ -77,7 +81,7 @@ function injetarTarefa(tarefas) {
 // lista as tarefas
 async function listarTarefas() {
   try {
-    const resposta = await fetch('http://localhost:3000/tarefas', {
+    const resposta = await fetch('http://localhost:3000/tarefas?tipo_tarefa=atribuida', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -113,10 +117,9 @@ function debounce(func, delay) {
 }
 
 async function performSearch(value) {
-  console.log('Buscando por:', value);
 
   try {
-    const resposta = await fetch(`http://localhost:3000/tarefas?search=${encodeURIComponent(value)}`, {
+    const resposta = await fetch(`http://localhost:3000/tarefas?tipo_tarefa=atribuida&search=${encodeURIComponent(value)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

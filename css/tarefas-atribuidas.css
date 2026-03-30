@@ -1,0 +1,33 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+#mensagemErro {
+  color: red;
+  text-align: center;
+}
+
+.task-table thead:hover,
+.task-table tbody tr:hover {
+  background-color: rgba(123, 79, 201, 0.3);
+  transition: background-color 0.3s;
+}
+
+.task-table tbody tr.row-link {
+  cursor: pointer;
+}
+
+.detail-btn {
+  background: #7B4FC9;
+  color: #F5F5F5;
+  cursor: pointer;
+  transition: color 0.3s;
+}
