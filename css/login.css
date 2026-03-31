@@ -9,3 +9,34 @@
   margin-top: 10px;
   text-align: center;
 }
+@media (min-width: 1024px) {
+header {
+  background-color: #12192C;
+  padding: 0 10px;
+  position: relative;
+  height: 60px;
+}
+
+#userName {
+  display: none;
+}
+
+#logoutBtn {
+  display: none;
+}
+
+.user-profile {
+  margin-left: 0;
+}
+
+#logo-mobile {
+  width: 200px;
+  height: auto;
+  margin: 0 auto;
+  display: block;
+}
+
+main {
+  margin: 0;
+}
+}

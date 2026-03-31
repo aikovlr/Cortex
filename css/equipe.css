@@ -10,6 +10,18 @@
     justify-content: center;
   }
 
+  .request-container {
+    flex-direction: column;
+    gap: 5px !important;
+    margin-bottom: 20px;
+  }
+
+  #delete-request,
+  #admin-request {
+    margin: 0 !important;
+    max-width: 400px !important;
+  }
+
   .team-card {
     margin: 0 !important;
   }
@@ -50,16 +62,96 @@
 }
 
 #isAdmin {
- max-width: 20px;
+  max-width: 20px;
 }
 
-td, th {
+td,
+th {
   padding: 8px 8px;
   text-align: start;
   border-bottom: 1px solid #eee;
 }
 
-#mensagemErro {
-  color: red;
+tr input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.checkbox-cell {
+  width: 20px;
   text-align: center;
+}
+
+#mensagemErro {
+  color: #cc0000;
+  text-align: center;
+}
+
+#delete-request,
+#admin-request {
+  align-self: center;
+  display: none;
+  border-radius: 8px;
+  align-items: center;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.5);
+  max-width: 800px;
+  padding: 10px 20px;
+}
+
+#delete-request {
+  background: #cc0000;
+  margin-left: auto;
+}
+
+#admin-request {
+  background: #7b4fc9;
+  margin-right: auto;
+}
+
+#delete-request p,
+#admin-request p {
+  color: white;
+  font-size: 16px;
+  margin: 5px 10px;
+}
+
+#delete-request button,
+#admin-request button {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  padding: 10px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0;
+  margin-left: auto;
+}
+
+#delete-request button:hover,
+#admin-request button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#delete-request svg,
+#admin-request svg {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.request-container {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+#teamTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+@media (max-width: 440px) {
+  #teamTable {
+    display: block;
+    overflow-x: auto;
+  }
 }

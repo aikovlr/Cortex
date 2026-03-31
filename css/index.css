@@ -43,7 +43,7 @@ td .status {
 }
 
 .status.atrasada {
-  background: red;
+  background: #cc0000;
 }
 
 .task-table a {
@@ -62,7 +62,7 @@ td .status {
 }
 
 #mensagemErro {
-  color: red;
+  color: #cc0000;
   text-align: center;
 }
 

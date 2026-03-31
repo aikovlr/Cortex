@@ -9,8 +9,8 @@ if (!token) {
 // Logout
 document.getElementById('logoutBtn').addEventListener('click', () => {
   // Remove token e dados do usuário do localStorage
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('userData');
+  localStorage.removeItem('token');
+  localStorage.removeItem('userName');
   
   // Redireciona pra página de login
   window.location.href = '../pages/login.html';

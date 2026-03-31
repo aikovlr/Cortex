@@ -27,7 +27,7 @@ async function carregarTarefaParaEdicao() {
     }
 
     try {
-        const resposta = await fetch(`http://localhost:3000/tarefas/${id_tarefa}`, {
+        const resposta = await fetch(`${API_BASE}/tarefas/${id_tarefa}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -41,7 +41,7 @@ async function carregarTarefaParaEdicao() {
 
         const tarefa = await resposta.json();
 
-        const resAnexos = await fetch(`http://localhost:3000/anexo/${id_tarefa}`, {
+        const resAnexos = await fetch(`${API_BASE}/anexo/${id_tarefa}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -147,7 +147,7 @@ function renderAnexosEdicao(anexos) {
         name.textContent = anexo.nome_original;
 
         const download = document.createElement("a");
-        download.href = `http://localhost:3000/anexo/download/${nomeArquivo}`;
+        download.href = `${API_BASE}/anexo/download/${nomeArquivo}`;
         download.classList.add("anexo-download");
         download.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" class="svg">
@@ -207,7 +207,7 @@ async function excluirTarefa() {
     }
 
     try {
-        const resposta = await fetch(`http://localhost:3000/tarefas/${id_tarefa}`, {
+        const resposta = await fetch(`${API_BASE}/tarefas/${id_tarefa}`, {
             method: "DELETE",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -252,7 +252,7 @@ async function confirmarExclusao() {
     if (!id_tarefa || !token) return;
 
     try {
-        const resposta = await fetch(`http://localhost:3000/tarefas/${id_tarefa}`, {
+        const resposta = await fetch(`${API_BASE}/tarefas/${id_tarefa}`, {
             method: "DELETE",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -285,7 +285,7 @@ async function salvarAlteracoes() {
 
     try {
         // Atualizar tarefa
-        const resposta = await fetch(`http://localhost:3000/tarefas/${id_tarefa}`, {
+        const resposta = await fetch(`${API_BASE}/tarefas/${id_tarefa}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -312,7 +312,7 @@ async function salvarAlteracoes() {
                 formData.append("anexo", file);
             });
 
-            const resUpload = await fetch(`http://localhost:3000/tarefas/${id_tarefa}/anexo`, {
+            const resUpload = await fetch(`${API_BASE}/tarefas/${id_tarefa}/anexo`, {
                 method: "PUT",
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -331,7 +331,7 @@ async function salvarAlteracoes() {
 
         // Deletar anexos marcados
         for (const id_anexo of anexosParaDeletar) {
-            await fetch(`http://localhost:3000/tarefas/${id_tarefa}/anexo/${id_anexo}`, {
+            await fetch(`${API_BASE}/tarefas/${id_tarefa}/anexo/${id_anexo}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`

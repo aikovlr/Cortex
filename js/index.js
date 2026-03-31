@@ -81,7 +81,7 @@ function injetarTarefa(tarefas) {
 // lista as tarefas
 async function listarTarefas() {
   try {
-    const resposta = await fetch('http://localhost:3000/tarefas?tipo_tarefa=atribuida', {
+    const resposta = await fetch(`${API_BASE}/tarefas?tipo_tarefa=atribuida`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ function debounce(func, delay) {
 async function performSearch(value) {
 
   try {
-    const resposta = await fetch(`http://localhost:3000/tarefas?tipo_tarefa=atribuida&search=${encodeURIComponent(value)}`, {
+    const resposta = await fetch(`${API_BASE}/tarefas?tipo_tarefa=atribuida&search=${encodeURIComponent(value)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -155,13 +155,14 @@ document.getElementById("formCard").addEventListener("submit", async function (e
 
   const dados = new FormData(e.target);
   const mensagemErro = document.getElementById("mensagemErro");
+  const dia = new Date(dados.get("dataEntrega"));
 
   const tipo = dados.get("tipo_atribuicao");
 
   const dataForms = {
     titulo: dados.get("titulo"),
     descricao: dados.get("descricao"),
-    dt_vencimento: dados.get("dataEntrega"),
+    dt_vencimento: dia.toISOString(),
     pontuacao: dados.get("pontuacao"),
     prioridade: dados.get("prioridade"),
     tipo_atribuicao: tipo
@@ -176,7 +177,7 @@ document.getElementById("formCard").addEventListener("submit", async function (e
   }
 
   try {
-    const resposta = await fetch('http://localhost:3000/tarefa', {
+    const resposta = await fetch(`${API_BASE}/tarefa`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -201,7 +202,7 @@ document.getElementById("formCard").addEventListener("submit", async function (e
         formData.append("anexo", file);
       }
 
-      const resUpload = await fetch(`http://localhost:3000/tarefas/${tarefa.id}/anexo`, {
+      const resUpload = await fetch(`${API_BASE}/tarefas/${tarefa.id}/anexo`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${localStorage.getItem("token")}`
@@ -233,7 +234,7 @@ document.getElementById("formCard").addEventListener("submit", async function (e
 });
 
 async function carregarEquipes() {
-  const resposta = await fetch('http://localhost:3000/equipe', {
+  const resposta = await fetch(`${API_BASE}/equipe`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

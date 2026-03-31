@@ -206,6 +206,6 @@ input[type="radio"], input[type="checkbox"] {
 
 #cancelBtn {
   margin-left: 5px;
-  background-color: red;
+  background-color: #cc0000;
   color: #fff;
 }

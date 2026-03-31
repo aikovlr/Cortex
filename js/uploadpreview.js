@@ -268,7 +268,7 @@ function renderAnexosTarefa(anexos) {
         name.textContent = anexo.nome_original;
 
         const download = document.createElement("a");
-        download.href = `http://localhost:3000/anexo/download/${nomeArquivo}`;
+        download.href = `${API_BASE}/anexo/download/${nomeArquivo}`;
         download.classList.add("anexo-download");
         download.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" class="svg">

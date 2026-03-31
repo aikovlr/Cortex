@@ -1,3 +1,6 @@
+const telInput = document.getElementById("accountTelefone")
+VMasker(telInput).maskPattern("99 99999-9999")
+
 // Funções de suporte
 function alternarModoEdicao(editando) {
     const camposTexto = ["accountNome", "accountTelefone", "accountEmail"];
@@ -38,8 +41,29 @@ document.addEventListener("DOMContentLoaded", () => {
     accountForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        const popupErro = document.getElementById("popupErro");
+        const popupSucesso = document.getElementById("popupSucesso");
+        popupErro.classList.remove("show");
+        popupSucesso.classList.remove("show");
+
         const token = localStorage.getItem("token");
         const formData = new FormData(accountForm);
+
+        // Validação da senha
+        const senhaNova = formData.get("senhaNova");
+        const senhaConfirm = formData.get("senhaConfirm");
+        if (senhaNova && senhaNova.length < 8) {
+            popupErro.textContent = "A nova senha deve ter pelo menos 8 caracteres.";
+            popupErro.classList.add("show");
+            setTimeout(() => popupErro.classList.remove("show"), 3000);
+            return;
+        }
+        if (senhaNova !== senhaConfirm) {
+            popupErro.textContent = "As senhas não coincidem.";
+            popupErro.classList.add("show");
+            setTimeout(() => popupErro.classList.remove("show"), 3000);
+            return;
+        }
 
         // Ajuste do nome do campo para o Multer
         const arquivo = formData.get("foto");
@@ -58,16 +82,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const contentType = res.headers.get("content-type");
             if (res.ok && contentType && contentType.includes("application/json")) {
+                popupSucesso.classList.add("show");
+                setTimeout(() => popupSucesso.classList.remove("show"), 3000);
                 alternarModoEdicao(false);
                 carregarDadosConta();
-                window.location.reload();
+                setTimeout(() => window.location.reload(), 2000); // Delay reload to show message
             } else {
                 const textoErro = await res.text();
                 console.error("Erro do servidor:", textoErro);
-                alert("Erro ao salvar alterações.");
+                popupErro.textContent = "Erro ao salvar alterações.";
+                popupErro.classList.add("show");
+                setTimeout(() => popupErro.classList.remove("show"), 3000);
             }
         } catch (error) {
             console.error("Erro na requisição:", error);
+            popupErro.textContent = "Erro na requisição.";
+            popupErro.classList.add("show");
+            setTimeout(() => popupErro.classList.remove("show"), 3000);
         }
     });
 
@@ -86,10 +117,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     const textoErro = await res.text();
                     console.error("Erro do servidor:", textoErro);
-                    alert("Erro ao remover foto.");
+                    const popupErro = document.getElementById("popupErro");
+                    popupErro.textContent = "Erro ao remover foto.";
+                    popupErro.classList.add("show");
+                    setTimeout(() => popupErro.classList.remove("show"), 3000);
                 }
             } catch (error) {
                 console.error("Erro na requisição:", error);
+                const popupErro = document.getElementById("popupErro");
+                popupErro.textContent = "Erro na requisição.";
+                popupErro.classList.add("show");
+                setTimeout(() => popupErro.classList.remove("show"), 3000);
             }
         });
     }

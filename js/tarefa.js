@@ -21,7 +21,7 @@ async function carregarTarefa() {
     }
 
     try {
-        const resposta = await fetch(`http://localhost:3000/tarefas/${id_tarefa}`, {
+        const resposta = await fetch(`${API_BASE}/tarefas/${id_tarefa}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -35,7 +35,7 @@ async function carregarTarefa() {
 
         const tarefa = await resposta.json();
 
-        const resAnexos = await fetch(`http://localhost:3000/anexo/${id_tarefa}`, {
+        const resAnexos = await fetch(`${API_BASE}/anexo/${id_tarefa}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

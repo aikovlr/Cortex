@@ -38,7 +38,7 @@ function injetarTarefasAtribuidas(tarefas) {
 
 async function listarTarefasAtribuidas() {
   try {
-    const resposta = await fetch('http://localhost:3000/tarefas?tipo_tarefa=criada', {
+    const resposta = await fetch(`${API_BASE}/tarefas?tipo_tarefa=criada`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ async function performSearch(value) {
   console.log('Buscando por:', value);
 
   try {
-    const resposta = await fetch(`http://localhost:3000/tarefas?tipo_tarefa=criada&search=${encodeURIComponent(value)}`, {
+    const resposta = await fetch(`${API_BASE}/tarefas?tipo_tarefa=criada&search=${encodeURIComponent(value)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

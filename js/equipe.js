@@ -11,7 +11,7 @@ function toggleForm() {
 // injeta as equipes na tabela na formatação correta
 async function listarEquipes() {
   try {
-    const resposta = await fetch('http://localhost:3000/equipe', {
+    const resposta = await fetch(`${API_BASE}/equipe`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ document.getElementById("formCard").addEventListener("submit", async function (e
   const descricao = dados.get("descricao");
 
   try {
-    const resposta = await fetch('http://localhost:3000/equipe', {
+    const resposta = await fetch(`${API_BASE}/equipe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,11 +85,16 @@ document.getElementById("formCard").addEventListener("submit", async function (e
 
   } catch (error) {
     console.error("Erro ao criar equipe. Tente novamente mais tarde.", error);
+    const popupErro = document.getElementById("popupErro");
+    popupErro.textContent = "Erro ao criar equipe.";
+    popupErro.classList.add("show");
+    setTimeout(() => popupErro.classList.remove("show"), 3000);
     return;
   }
 
   console.log("TOKEN:", localStorage.getItem("token"));
   const popup = document.getElementById("popupSucesso");
+  popup.textContent = "Equipe criada com sucesso!";
   popup.classList.add("show");
 
   setTimeout(() => {
@@ -113,7 +118,7 @@ function debounce(func, delay) {
 async function performSearch(value) {
 
   try {
-    const resposta = await fetch(`http://localhost:3000/equipe?search=${encodeURIComponent(value)}`, {
+    const resposta = await fetch(`${API_BASE}/equipe?search=${encodeURIComponent(value)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

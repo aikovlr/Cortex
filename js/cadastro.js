@@ -43,7 +43,7 @@ document.getElementById("cadastroForm").addEventListener("submit", async functio
 
   // Envia os dados para o servidor/db
   try {
-    const resposta = await fetch("http://localhost:3000/usuarios", {
+    const resposta = await fetch(`${API_BASE}/usuarios`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ dataForms }), // ok com o servidor atual; ou JSON.stringify(dataForms) se preferir plano
@@ -59,7 +59,7 @@ document.getElementById("cadastroForm").addEventListener("submit", async functio
     if (file && file.size > 0 && token) {
       const fd = new FormData();
       fd.append("anexo", file);
-      const fotoUpload = await fetch("http://localhost:3000/usuarios/anexo", {
+      const fotoUpload = await fetch(`${API_BASE}/usuarios/anexo`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: fd,
