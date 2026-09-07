@@ -29,7 +29,7 @@ export default function Sidebar() {
                         <div className={`${styles.menuItem} ${selected === "gerenciar-tarefas" ? styles.selected : ""}`}
                             onClick={() => setSelected("gerenciar-tarefas")}>
                             <Image src="clipboard-data.svg" alt="Minhas tarefas" width={24} height={24} />
-                            Gerenciar
+                            Gerenciar tarefas
                         </div>
                     </Link>
 

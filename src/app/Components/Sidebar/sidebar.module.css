@@ -32,10 +32,13 @@
     padding: 10px 10px;
     transition: background-color 0.5s ease;
     border-radius: 10px;
+    gap: 5px;
 }
 
 .menuItem:hover{
     background-color: rgba(255, 255, 255, 0.1);
+    margin-left: 20px;
+    transition: background-color 0.5s ease, margin-left 0.5s ease;
 }
 
 .menuItem.selected{
@@ -56,6 +59,17 @@
 }
 
 .logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-left: auto;
     cursor: pointer;
+}
+
+.logout:hover {
+    background-color: rgba(214, 49, 49, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    margin-right: 2px;
+    transition: background-color 0.3s ease, margin-right 0.5s ease;
 }

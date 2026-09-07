@@ -14,6 +14,8 @@ pnpm dev
 bun dev
 ```
 
+`npm start` also starts the development server with automatic updates. Use `npm run build` followed by `npm run start:prod` to serve a production build.
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.

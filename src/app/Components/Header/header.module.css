@@ -1,0 +1,47 @@
+.header, .titulo, .iconButtons, .toggleButton, .themeButton, .notificationButton {
+    display: flex;
+}
+
+.header {
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.titulo {
+    flex-direction: column;
+    margin-right: auto;
+    margin-left: 20px;
+}
+
+.titulo p {
+    color: var(--cinzaTexto);
+    letter-spacing: 0.17em;
+    font-size: 9px;
+    font-weight: 700;
+    margin: 0px;
+}
+
+.titulo text {
+    letter-spacing: -0.04em;
+    font-size: 24px;
+    font-weight: 750;
+    margin: 2px 0px 0px;
+}
+
+.toggleButton, .themeButton, .notificationButton {
+    cursor: pointer;
+}
+
+.themeButton, .notificationButton {
+    margin-left: 15px;
+}
+
+.toggleButton:hover, .themeButton:hover, .notificationButton:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    margin-bottom: 5px;
+    transition: background-color 0.3s ease, margin-bottom 0.5s ease;
+}
