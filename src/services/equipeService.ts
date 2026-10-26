@@ -68,8 +68,8 @@ export const equipeService = {
   ): Promise<ConsultaMembroEquipeDTO> {
     const payload =
       typeof dados === 'number'
-        ? { usuarioId: dados, cargo: cargoLegacy }
-        : { ...dados, cargo: dados.cargo || 'Membro' };
+        ? { equipeId, usuarioId: dados, cargo: cargoLegacy }
+        : { equipeId, ...dados, cargo: dados.cargo || 'Membro' };
 
     return apiFetch<ConsultaMembroEquipeDTO>(`/api/equipe/${equipeId}/membros`, {
       method: 'POST',

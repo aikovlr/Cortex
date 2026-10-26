@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Header from '@/app/Components/Header/header';
 import { TaskEditModal } from '@/components/tasks/TaskEditModal/TaskEditModal';
+import { SearchBar } from '@/components/common/SearchBar/SearchBar';
+import { EmptyState } from '@/components/common/EmptyState/EmptyState';
+import { FileTextIcon, SpinnerIcon } from '@/components/common/Icons/Icons';
 import { ConsultaTarefaDTO } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -78,35 +81,30 @@ export default function TarefasAtribuidasPage() {
       <Header titulo="Tarefas atribuídas" subtitulo="Workspace / Cortex" />
 
       <main className={styles.container}>
-        {/* Barra de Pesquisa */}
+        {/* Barra de Pesquisa Padronizada */}
         <div className={styles.toolbar}>
-          <div className={styles.searchInputWrapper}>
-            <span className={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Pesquisar tarefa criada..."
-              value={termoBusca}
-              onChange={(e) => setTermoBusca(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
+          <SearchBar
+            value={termoBusca}
+            onChange={setTermoBusca}
+            placeholder="Pesquisar tarefa criada..."
+            maxWidth={480}
+          />
         </div>
 
         {/* Tabela de Tarefas Criadas / Atribuídas (Charter 6.2) */}
         <div className={styles.tableCard}>
           {loading ? (
-            <div className={styles.emptyState}>
-              <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
-              <p>Carregando tarefas atribuídas...</p>
-            </div>
+            <EmptyState
+              icon={<SpinnerIcon size={32} color="var(--cortex-purple)" />}
+              title="Carregando tarefas atribuídas..."
+              description="Aguarde um momento enquanto carregamos as tarefas."
+            />
           ) : tarefas.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div style={{ fontSize: '36px' }}>📝</div>
-              <h3 className={styles.emptyTitle}>Nenhuma tarefa atribuída</h3>
-              <p className={styles.emptySubtitle}>
-                Você ainda não criou nem atribuiu nenhuma tarefa a membros ou equipes.
-              </p>
-            </div>
+            <EmptyState
+              icon={<FileTextIcon size={32} color="var(--cortex-purple)" />}
+              title="Nenhuma tarefa atribuída"
+              description="Você ainda não criou nem atribuiu nenhuma tarefa a membros ou equipes."
+            />
           ) : (
             <table className={styles.table}>
               <thead>

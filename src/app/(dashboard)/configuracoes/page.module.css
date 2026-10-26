@@ -2,7 +2,7 @@
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   flex: 1;
 }
 
@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid var(--cortex-border);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   padding-bottom: 4px;
 }
 
@@ -30,13 +30,13 @@
 }
 
 .tabBtn:hover {
-  color: var(--cortex-white);
-  background: rgba(255, 255, 255, 0.04);
+  color: #12192C;
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .tabBtnActive {
-  color: var(--cortex-white);
-  background: rgba(123, 79, 201, 0.15);
+  color: var(--cortex-purple);
+  background: rgba(123, 79, 201, 0.1);
   font-weight: 600;
 }
 
@@ -47,28 +47,28 @@
 }
 
 .card {
-  background-color: var(--cortex-dark-card);
-  border: 1px solid var(--cortex-border);
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
 }
 
 .cardHeader {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   padding-bottom: 14px;
 }
 
 .cardTitle {
   font-size: 17px;
   font-weight: 600;
-  color: var(--cortex-white);
+  color: #12192C;
 }
 
 .cardSubtitle {
@@ -91,11 +91,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--cortex-white);
+  color: #ffffff;
   font-size: 26px;
   font-weight: 700;
   overflow: hidden;
-  border: 2px solid var(--cortex-border);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .avatarImage {
@@ -111,9 +112,9 @@
 }
 
 .uploadBtn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--cortex-border);
-  color: var(--cortex-white);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #12192C;
   font-size: 13px;
   font-weight: 500;
   padding: 8px 14px;
@@ -122,11 +123,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .uploadBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: #f7f8fc;
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .formGrid {
@@ -143,29 +146,32 @@
 
 .label {
   font-size: 13px;
-  font-weight: 500;
-  color: var(--cortex-white);
+  font-weight: 600;
+  color: #12192C;
 }
 
 .input {
   width: 100%;
   height: 44px;
-  background-color: var(--cortex-dark-input);
-  border: 1px solid var(--cortex-border);
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   padding: 0 14px;
-  color: var(--cortex-white);
+  color: #12192C;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input:focus {
   border-color: var(--cortex-purple);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow);
 }
 
 .input:disabled {
-  opacity: 0.6;
+  background-color: #f8fafc;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
@@ -183,21 +189,21 @@
 }
 
 .verified {
-  background: rgba(19, 64, 17, 0.4);
-  color: #38c172;
-  border: 1px solid #38c172;
+  background: rgba(19, 64, 17, 0.1);
+  color: #155724;
+  border: 1px solid #c3e6cb;
 }
 
 .unverified {
-  background: rgba(214, 49, 49, 0.2);
-  color: #ff9999;
-  border: 1px solid var(--cortex-red-danger);
+  background: rgba(214, 49, 49, 0.08);
+  color: #721C24;
+  border: 1px solid #f5c6cb;
 }
 
 /* Área de perigo */
 .dangerCard {
-  border-color: rgba(214, 49, 49, 0.4);
-  background: rgba(214, 49, 49, 0.04);
+  border-color: rgba(214, 49, 49, 0.25);
+  background: rgba(214, 49, 49, 0.02);
 }
 
 .dangerTitle {
@@ -206,7 +212,7 @@
 
 .deleteBtn {
   background-color: var(--cortex-red-danger);
-  color: var(--cortex-white);
+  color: #ffffff;
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -226,8 +232,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .toggleRow:last-child {
@@ -242,8 +248,8 @@
 
 .toggleTitle {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--cortex-white);
+  font-weight: 600;
+  color: #12192C;
 }
 
 .toggleDesc {
@@ -271,8 +277,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--cortex-dark-input);
-  border: 1px solid var(--cortex-border);
+  background-color: #cbd5e1;
+  border: 1px solid #cbd5e1;
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -287,6 +293,7 @@
   background-color: white;
   transition: 0.3s;
   border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 input:checked + .slider {
@@ -306,24 +313,25 @@ input:checked + .slider:before {
 }
 
 .fontSizeOption {
-  background-color: var(--cortex-dark-input);
-  border: 1.5px solid var(--cortex-border);
+  background-color: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   padding: 16px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
-  color: var(--cortex-white);
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  color: #12192C;
   font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .fontSizeOption:hover {
-  border-color: rgba(123, 79, 201, 0.5);
+  border-color: rgba(123, 79, 201, 0.4);
 }
 
 .fontSizeOptionActive {
   border-color: var(--cortex-purple);
-  background-color: rgba(123, 79, 201, 0.12);
-  color: var(--cortex-white);
+  background-color: rgba(123, 79, 201, 0.08);
+  color: var(--cortex-purple);
   font-weight: 700;
 }

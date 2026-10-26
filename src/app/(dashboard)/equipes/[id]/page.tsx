@@ -6,6 +6,13 @@ import Header from '@/app/Components/Header/header';
 import { Badge } from '@/components/common/Badge/Badge';
 import { AddMemberModal } from '@/components/teams/AddMemberModal/AddMemberModal';
 import {
+  TrashIcon,
+  UserIcon,
+  AlertTriangleIcon,
+  CheckIcon,
+  PlusIcon,
+} from '@/components/common/Icons/Icons';
+import {
   ConsultaEquipeDTO,
   ConsultaMembroEquipeDTO,
   ConsultaTicketReporteDTO,
@@ -190,7 +197,13 @@ export default function EquipeDetalhesPage({
                 disabled={deletingTeam}
                 title="Excluir equipe permanentemente (Apenas Dono)"
               >
-                {deletingTeam ? 'Excluindo...' : '🗑️ Excluir equipe'}
+                {deletingTeam ? (
+                  'Excluindo...'
+                ) : (
+                  <>
+                    <TrashIcon size={16} /> Excluir equipe
+                  </>
+                )}
               </button>
             )}
 
@@ -200,7 +213,7 @@ export default function EquipeDetalhesPage({
                 className={styles.addMemberBtn}
                 onClick={() => setIsAddMemberOpen(true)}
               >
-                + Adicionar membro
+                <PlusIcon size={16} /> Adicionar membro
               </button>
             )}
           </div>
@@ -243,8 +256,8 @@ export default function EquipeDetalhesPage({
                               className={styles.avatar}
                             />
                           ) : (
-                            <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px' }}>
-                              👤
+                            <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cortex-purple)' }}>
+                              <UserIcon size={16} />
                             </div>
                           )}
                           <div className={styles.memberText}>
@@ -300,15 +313,16 @@ export default function EquipeDetalhesPage({
         {/* Seção de Tickets de Reporte da Equipe (RF008) */}
         {isAdminOrOwner && tickets.length > 0 && (
           <section className={styles.ticketSection}>
-            <h3 className={styles.ticketTitle}>
-              🚨 Tickets de Problemas Reportados na Equipe ({tickets.length})
+            <h3 className={styles.ticketTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangleIcon size={18} color="var(--cortex-red-danger)" />
+              Tickets de Problemas Reportados na Equipe ({tickets.length})
             </h3>
             <div className={styles.ticketGrid}>
               {tickets.map((ticket) => (
                 <div key={ticket.id} className={styles.ticketCard}>
                   <div className={styles.ticketHeader}>
-                    <span className={styles.ticketAuthor}>
-                      👤 {ticket.usuario?.nome || 'Membro'}
+                    <span className={styles.ticketAuthor} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <UserIcon size={14} /> {ticket.usuario?.nome || 'Membro'}
                     </span>
                     <Badge type="prioridade" value="Urgente" />
                   </div>
@@ -317,8 +331,9 @@ export default function EquipeDetalhesPage({
                     type="button"
                     className={styles.resolveTicketBtn}
                     onClick={() => handleFecharTicket(ticket.id)}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
-                    ✔ Marcar como resolvido
+                    <CheckIcon size={16} /> Marcar como resolvido
                   </button>
                 </div>
               ))}

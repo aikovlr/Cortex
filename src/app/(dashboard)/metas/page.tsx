@@ -5,6 +5,8 @@ import Header from '@/app/Components/Header/header';
 import { metaService } from '@/services/metaService';
 import { ConsultaMetaDTO, ConsultaTarefaDTO } from '@/types/api';
 import { Badge } from '@/components/common/Badge/Badge';
+import { SearchBar } from '@/components/common/SearchBar/SearchBar';
+import { CalendarIcon } from '@/components/common/Icons/Icons';
 import { GoalCreateModal } from '@/components/goals/GoalCreateModal/GoalCreateModal';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
@@ -153,31 +155,14 @@ export default function MetasPage() {
     <>
       <Header titulo="Metas" subtitulo="Workspace / Cortex" />
       <main className={styles.container}>
-        {/* Barra de Ações Superior */}
+        {/* Barra de Ações Superior Padronizada */}
         <div className={styles.topBar}>
-          <div className={styles.searchWrapper}>
-            <svg
-              className={styles.searchIcon}
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Buscar por meta ou tarefa vinculada..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Buscar por meta ou tarefa vinculada..."
+            maxWidth={420}
+          />
 
           <button
             type="button"
@@ -298,8 +283,8 @@ export default function MetasPage() {
                         value={concluida ? 'Concluida' : 'Pendente'}
                       />
                       {meta.dataFechamento && (
-                        <span className={styles.dateLimit}>
-                          📅 Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}
+                        <span className={styles.dateLimit} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <CalendarIcon size={13} /> Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}
                         </span>
                       )}
                     </div>

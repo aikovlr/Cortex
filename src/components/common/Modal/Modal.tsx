@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useCallback } from 'react';
+import { XIcon } from '@/components/common/Icons/Icons';
 import styles from './Modal.module.css';
 
 export interface ModalProps {
@@ -60,7 +61,7 @@ export const Modal: React.FC<ModalProps> = ({
             onClick={onClose}
             aria-label="Fechar"
           >
-            ✕
+            <XIcon size={18} />
           </button>
         </div>
 

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { ProblemDetailsError } from '@/services/api';
+import { CameraIcon, CheckIcon, XIcon } from '@/components/common/Icons/Icons';
 import styles from './registro.module.css';
 
 export default function RegistroPage() {
@@ -97,7 +98,9 @@ export default function RegistroPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={fotoPreview} alt="Preview Foto" className={styles.avatarPreview} />
             ) : (
-              <div className={styles.avatarPlaceholder}>📷</div>
+              <div className={styles.avatarPlaceholder} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cortex-gray-text)' }}>
+                <CameraIcon size={24} />
+              </div>
             )}
             <div className={styles.avatarUploadInfo}>
               <label htmlFor="fotoInput" className={styles.uploadLabel}>
@@ -176,17 +179,17 @@ export default function RegistroPage() {
 
             {/* Checklist de requisitos da senha (RN02) */}
             <div className={styles.passwordRequirements}>
-              <span className={`${styles.reqItem} ${hasMinLength ? styles.reqItemValid : ''}`}>
-                {hasMinLength ? '✔' : '✖'} Mínimo 8 caracteres
+              <span className={`${styles.reqItem} ${hasMinLength ? styles.reqItemValid : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {hasMinLength ? <CheckIcon size={13} /> : <XIcon size={13} />} Mínimo 8 caracteres
               </span>
-              <span className={`${styles.reqItem} ${hasUpperCase ? styles.reqItemValid : ''}`}>
-                {hasUpperCase ? '✔' : '✖'} Letra maiúscula
+              <span className={`${styles.reqItem} ${hasUpperCase ? styles.reqItemValid : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {hasUpperCase ? <CheckIcon size={13} /> : <XIcon size={13} />} Letra maiúscula
               </span>
-              <span className={`${styles.reqItem} ${hasLowerCase ? styles.reqItemValid : ''}`}>
-                {hasLowerCase ? '✔' : '✖'} Letra minúscula
+              <span className={`${styles.reqItem} ${hasLowerCase ? styles.reqItemValid : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {hasLowerCase ? <CheckIcon size={13} /> : <XIcon size={13} />} Letra minúscula
               </span>
-              <span className={`${styles.reqItem} ${hasNumber && hasSymbol ? styles.reqItemValid : ''}`}>
-                {hasNumber && hasSymbol ? '✔' : '✖'} Número e símbolo
+              <span className={`${styles.reqItem} ${hasNumber && hasSymbol ? styles.reqItemValid : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {hasNumber && hasSymbol ? <CheckIcon size={13} /> : <XIcon size={13} />} Número e símbolo
               </span>
             </div>
           </div>

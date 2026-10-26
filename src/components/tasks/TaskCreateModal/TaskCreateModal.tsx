@@ -10,6 +10,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { usuarioService } from '@/services/usuarioService';
 import { equipeService } from '@/services/equipeService';
 import { useToast } from '@/contexts/ToastContext';
+import { PaperclipIcon, XIcon } from '@/components/common/Icons/Icons';
 import styles from './TaskCreateModal.module.css';
 
 interface TaskCreateModalProps {
@@ -230,8 +231,9 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
 
         <div className={styles.uploadWrapper}>
           <label className={styles.textareaLabel}>Anexar arquivos</label>
-          <label className={styles.uploadButton}>
-            📎 Escolher arquivos para anexar
+          <label className={styles.uploadButton} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <PaperclipIcon size={16} />
+            <span>Escolher arquivos para anexar</span>
             <input
               type="file"
               multiple
@@ -249,8 +251,9 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
                     type="button"
                     className={styles.removeFileBtn}
                     onClick={() => handleRemoveFile(idx)}
+                    aria-label="Remover anexo"
                   >
-                    ✖
+                    <XIcon size={12} />
                   </button>
                 </div>
               ))}

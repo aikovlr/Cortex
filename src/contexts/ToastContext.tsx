@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { CheckCircleIcon, XCircleIcon, InfoIcon } from '@/components/common/Icons/Icons';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -84,7 +85,15 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 animation: 'slideUp 0.3s ease-out',
               }}
             >
-              <span>{toast.type === 'success' ? '✔' : toast.type === 'error' ? '✖' : 'ℹ'}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                {toast.type === 'success' ? (
+                  <CheckCircleIcon size={18} color="#ffffff" />
+                ) : toast.type === 'error' ? (
+                  <XCircleIcon size={18} color="#ffffff" />
+                ) : (
+                  <InfoIcon size={18} color="#ffffff" />
+                )}
+              </span>
               <span>{toast.message}</span>
             </div>
           );

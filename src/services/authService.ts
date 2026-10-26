@@ -76,7 +76,7 @@ export const authService = {
       console.log(
         `%c[DEV - CORTEX]%c Código de verificação para %c${email || 'usuário atual'}%c:\n` +
         `%c ${result.codigoDev} %c\n` +
-        `⏱️ Tempo limite de expiração: ${result.expiraEmMinutos || 15} minutos.`,
+        `Tempo limite de expiração: ${result.expiraEmMinutos || 15} minutos.`,
         'background: #7B4FC9; color: #fff; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
         'color: inherit;',
         'color: #a78bfa; font-weight: bold;',

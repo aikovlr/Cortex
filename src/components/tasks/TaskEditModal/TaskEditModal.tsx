@@ -10,6 +10,7 @@ import { Prioridade, ConsultaSugestaoDTO } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
 import { sugestaoService } from '@/services/sugestaoService';
 import { useToast } from '@/contexts/ToastContext';
+import { PaperclipIcon, FileTextIcon, UserIcon } from '@/components/common/Icons/Icons';
 import styles from './TaskEditModal.module.css';
 
 interface TaskEditModalProps {
@@ -258,8 +259,9 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
           <div className={styles.uploadWrapper}>
             <label className={styles.textareaLabel}>Adicionar novos anexos</label>
-            <label className={styles.uploadButton}>
-              📎 Selecionar arquivos
+            <label className={styles.uploadButton} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <PaperclipIcon size={16} />
+              <span>Selecionar arquivos</span>
               <input
                 type="file"
                 multiple
@@ -270,8 +272,9 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
             {novosAnexos.length > 0 && (
               <div className={styles.existingFiles}>
                 {novosAnexos.map((f, i) => (
-                  <span key={i} className={styles.fileTag}>
-                    📄 {f.name}
+                  <span key={i} className={styles.fileTag} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <FileTextIcon size={14} />
+                    <span>{f.name}</span>
                   </span>
                 ))}
               </div>
@@ -296,8 +299,9 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
               {sugestoes.map((sug) => (
                 <div key={sug.id} className={styles.suggestionCard}>
                   <div className={styles.suggestionHeader}>
-                    <span className={styles.suggestionAuthor}>
-                      👤 {sug.usuario?.nome || 'Responsável'}
+                    <span className={styles.suggestionAuthor} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <UserIcon size={14} />
+                      <span>{sug.usuario?.nome || 'Responsável'}</span>
                     </span>
                     <Badge type="status" value={sug.status} />
                   </div>

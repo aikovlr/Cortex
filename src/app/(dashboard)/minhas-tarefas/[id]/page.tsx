@@ -9,6 +9,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { useToast } from '@/contexts/ToastContext';
 import { SuggestionModal } from '@/components/tasks/SuggestionModal/SuggestionModal';
 import { ReportTicketModal } from '@/components/tasks/ReportTicketModal/ReportTicketModal';
+import { UserIcon, PaperclipIcon } from '@/components/common/Icons/Icons';
 import styles from './page.module.css';
 
 export default function DetalhesTarefaPage() {
@@ -215,8 +216,9 @@ export default function DetalhesTarefaPage() {
                 </h2>
                 <div className={styles.attachmentsList}>
                   {tarefa.responsaveis.map((resp) => (
-                    <div key={resp.id} className={styles.attachmentCard}>
-                      👤 {resp.usuario?.nome || `Usuário #${resp.usuarioId}`}
+                    <div key={resp.id} className={styles.attachmentCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <UserIcon size={16} color="var(--cortex-purple)" />
+                      <span>{resp.usuario?.nome || `Usuário #${resp.usuarioId}`}</span>
                     </div>
                   ))}
                 </div>
@@ -234,8 +236,9 @@ export default function DetalhesTarefaPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className={styles.attachmentCard}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
-                      <span className={styles.attachmentIcon}>📎</span>
+                      <PaperclipIcon size={16} color="var(--cortex-purple)" />
                       <span>{anexo.nomeOriginal}</span>
                     </a>
                   ))}

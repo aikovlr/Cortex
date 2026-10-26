@@ -84,7 +84,7 @@ function LoginForm() {
             console.log(
               `%c[DEV - CORTEX]%c Código de verificação para %c${email}%c:\n` +
               `%c ${devCode} %c\n` +
-              `⏱️ Tempo limite de expiração: 15 minutos (gerado automaticamente no login).`,
+              `Tempo limite de expiração: 15 minutos (gerado automaticamente no login).`,
               'background: #7B4FC9; color: #fff; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
               'color: inherit;',
               'color: #a78bfa; font-weight: bold;',

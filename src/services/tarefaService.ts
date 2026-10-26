@@ -97,7 +97,7 @@ export const tarefaService = {
   async atribuirResponsavel(tarefaId: number, usuarioId: number): Promise<ConsultaResponsavelTarefaDTO> {
     return apiFetch<ConsultaResponsavelTarefaDTO>(`/api/tarefa/${tarefaId}/responsaveis`, {
       method: 'POST',
-      body: JSON.stringify({ usuarioId }),
+      body: JSON.stringify({ tarefaId, usuarioId }),
     });
   },
 

@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/app/Components/Header/header';
 import { TeamCreateModal } from '@/components/teams/TeamCreateModal/TeamCreateModal';
+import { SearchBar } from '@/components/common/SearchBar/SearchBar';
+import { EmptyState } from '@/components/common/EmptyState/EmptyState';
+import { UsersIcon, PlusIcon, SpinnerIcon } from '@/components/common/Icons/Icons';
 import { ConsultaEquipeDTO } from '@/types/api';
 import { equipeService } from '@/services/equipeService';
 import styles from './page.module.css';
@@ -62,18 +65,14 @@ export default function EquipesPage() {
       <Header titulo="Equipes" subtitulo="Workspace / Cortex" />
 
       <main className={styles.container}>
-        {/* Barra de Busca + Botão Adicionar */}
+        {/* Barra de Busca Padronizada + Botão Adicionar */}
         <div className={styles.toolbar}>
-          <div className={styles.searchInputWrapper}>
-            <span className={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Pesquisar equipe..."
-              value={termoBusca}
-              onChange={(e) => setTermoBusca(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
+          <SearchBar
+            value={termoBusca}
+            onChange={setTermoBusca}
+            placeholder="Pesquisar equipe..."
+            maxWidth={480}
+          />
 
           <button
             type="button"
@@ -82,31 +81,32 @@ export default function EquipesPage() {
             title="Criar nova equipe"
             aria-label="Criar nova equipe"
           >
-            +
+            <PlusIcon size={20} color="#ffffff" />
           </button>
         </div>
 
         {/* Grid de Cards de Equipes (Charter 6.3) */}
         {loading ? (
-          <div className={styles.emptyState}>
-            <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
-            <p>Carregando equipes...</p>
-          </div>
+          <EmptyState
+            icon={<SpinnerIcon size={32} color="var(--cortex-purple)" />}
+            title="Carregando equipes..."
+            description="Aguarde um momento enquanto buscamos as equipes."
+          />
         ) : equipesFiltradas.length === 0 ? (
-          <div className={styles.emptyState}>
-            <div style={{ fontSize: '36px' }}>👥</div>
-            <h3 className={styles.emptyTitle}>Nenhuma equipe encontrada</h3>
-            <p className={styles.emptySubtitle}>
-              Você ainda não faz parte de nenhuma equipe ou não há correspondências para a busca.
-            </p>
-            <button
-              type="button"
-              className={styles.createFirstBtn}
-              onClick={() => setIsCreateOpen(true)}
-            >
-              + Criar equipe
-            </button>
-          </div>
+          <EmptyState
+            icon={<UsersIcon size={32} color="var(--cortex-purple)" />}
+            title="Nenhuma equipe encontrada"
+            description="Você ainda não faz parte de nenhuma equipe ou não há correspondências para a busca."
+            action={
+              <button
+                type="button"
+                className={styles.createFirstBtn}
+                onClick={() => setIsCreateOpen(true)}
+              >
+                <PlusIcon size={16} /> Criar equipe
+              </button>
+            }
+          />
         ) : (
           <div className={styles.grid}>
             {equipesFiltradas.map((equipe) => (
@@ -117,7 +117,9 @@ export default function EquipesPage() {
               >
                 <div className={styles.cardHeader}>
                   <h3 className={styles.cardTitle}>{equipe.nome}</h3>
-                  <div className={styles.cardIcon}>👥</div>
+                  <div className={styles.cardIcon}>
+                    <UsersIcon size={18} color="var(--cortex-purple)" />
+                  </div>
                 </div>
 
                 <div className={styles.cardMeta}>

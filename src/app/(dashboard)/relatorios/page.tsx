@@ -144,25 +144,25 @@ export default function RelatoriosPage() {
       <main className={styles.container}>
       {/* Barra de Seleção de Relatório (Responsável vs Criador vs Equipe) */}
       <div className={styles.topBar}>
-        <div className={styles.viewSelector}>
+        <div className={styles.tabsHeader}>
           <button
             type="button"
             onClick={() => setView('personal')}
-            className={`${styles.viewBtn} ${view === 'personal' ? styles.viewBtnActive : ''}`}
+            className={`${styles.tabBtn} ${view === 'personal' ? styles.tabBtnActive : ''}`}
           >
             Tarefas Onde Sou Responsável
           </button>
           <button
             type="button"
             onClick={() => setView('created')}
-            className={`${styles.viewBtn} ${view === 'created' ? styles.viewBtnActive : ''}`}
+            className={`${styles.tabBtn} ${view === 'created' ? styles.tabBtnActive : ''}`}
           >
             Tarefas Criadas por Mim
           </button>
           <button
             type="button"
             onClick={() => setView('team')}
-            className={`${styles.viewBtn} ${view === 'team' ? styles.viewBtnActive : ''}`}
+            className={`${styles.tabBtn} ${view === 'team' ? styles.tabBtnActive : ''}`}
           >
             Desempenho por Equipe
           </button>

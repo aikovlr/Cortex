@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/app/Components/Header/header';
 import { Badge } from '@/components/common/Badge/Badge';
+import { SearchBar } from '@/components/common/SearchBar/SearchBar';
+import { EmptyState } from '@/components/common/EmptyState/EmptyState';
+import { PlusIcon, ClipboardIcon, SpinnerIcon } from '@/components/common/Icons/Icons';
 import { TaskCreateModal } from '@/components/tasks/TaskCreateModal/TaskCreateModal';
 import { ConsultaTarefaDTO, StatusTarefa, Prioridade } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
@@ -108,39 +111,33 @@ export default function MinhasTarefasPage() {
       <Header titulo="Minhas tarefas" subtitulo="Workspace / Cortex" />
 
       <main className={styles.container}>
-        {/* Abas no padrão visual de Relatórios e Configurações */}
-        <div className={styles.topBar}>
-          <div className={styles.viewSelector}>
-            <button
-              type="button"
-              onClick={() => setAbaAtiva('pendentes')}
-              className={`${styles.viewBtn} ${abaAtiva === 'pendentes' ? styles.viewBtnActive : ''}`}
-            >
-              Tarefas Pendentes e Atrasadas ({totalPendentesEAtrasadas})
-            </button>
-            <button
-              type="button"
-              onClick={() => setAbaAtiva('concluidas')}
-              className={`${styles.viewBtn} ${abaAtiva === 'concluidas' ? styles.viewBtnActive : ''}`}
-            >
-              Tarefas Concluídas ({totalConcluidas})
-            </button>
-          </div>
+        {/* Abas Padronizadas no estilo de Configurações */}
+        <div className={styles.tabsHeader}>
+          <button
+            type="button"
+            onClick={() => setAbaAtiva('pendentes')}
+            className={`${styles.tabBtn} ${abaAtiva === 'pendentes' ? styles.tabBtnActive : ''}`}
+          >
+            Tarefas Pendentes e Atrasadas ({totalPendentesEAtrasadas})
+          </button>
+          <button
+            type="button"
+            onClick={() => setAbaAtiva('concluidas')}
+            className={`${styles.tabBtn} ${abaAtiva === 'concluidas' ? styles.tabBtnActive : ''}`}
+          >
+            Tarefas Concluídas ({totalConcluidas})
+          </button>
         </div>
 
         {/* Barra de Ferramentas: Busca + Filtros + Botão Adicionar */}
         <div className={styles.toolbar}>
           <div className={styles.searchFilters}>
-            <div className={styles.searchInputWrapper}>
-              <span className={styles.searchIcon}>🔍</span>
-              <input
-                type="text"
-                placeholder="Pesquisar tarefa..."
-                value={termoBusca}
-                onChange={(e) => setTermoBusca(e.target.value)}
-                className={styles.searchInput}
-              />
-            </div>
+            <SearchBar
+              value={termoBusca}
+              onChange={setTermoBusca}
+              placeholder="Pesquisar tarefa..."
+              maxWidth={360}
+            />
 
             {abaAtiva === 'pendentes' && (
               <select
@@ -174,47 +171,51 @@ export default function MinhasTarefasPage() {
             title="Criar nova tarefa"
             aria-label="Criar nova tarefa"
           >
-            +
+            <PlusIcon size={20} color="#ffffff" />
           </button>
         </div>
 
         {/* Tabela de Tarefas */}
         <div className={styles.tableCard}>
           {loading ? (
-            <div className={styles.emptyState}>
-              <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
-              <p>Carregando suas tarefas...</p>
-            </div>
+            <EmptyState
+              icon={<SpinnerIcon size={32} color="var(--cortex-purple)" />}
+              title="Carregando tarefas..."
+              description="Aguarde um momento enquanto buscamos suas tarefas no servidor."
+            />
           ) : tarefasExibidas.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div style={{ fontSize: '36px' }}>📋</div>
-              <h3 className={styles.emptyTitle}>
-                {abaAtiva === 'pendentes'
+            <EmptyState
+              icon={<ClipboardIcon size={32} color="var(--cortex-purple)" />}
+              title={
+                abaAtiva === 'pendentes'
                   ? 'Nenhuma tarefa pendente ou atrasada'
-                  : 'Nenhuma tarefa concluída'}
-              </h3>
-              <p className={styles.emptySubtitle}>
-                {abaAtiva === 'pendentes'
+                  : 'Nenhuma tarefa concluída'
+              }
+              description={
+                abaAtiva === 'pendentes'
                   ? 'Você não possui tarefas pendentes no momento ou nenhuma corresponde aos filtros aplicados.'
-                  : 'Você ainda não concluiu nenhuma tarefa ou nenhuma corresponde aos filtros aplicados.'}
-              </p>
-              {abaAtiva === 'pendentes' && (
-                <button
-                  type="button"
-                  className={styles.createFirstBtn}
-                  onClick={() => setIsCreateOpen(true)}
-                >
-                  + Criar primeira tarefa
-                </button>
-              )}
-            </div>
+                  : 'Você ainda não concluiu nenhuma tarefa ou nenhuma corresponde aos filtros aplicados.'
+              }
+              action={
+                abaAtiva === 'pendentes' ? (
+                  <button
+                    type="button"
+                    className={styles.createFirstBtn}
+                    onClick={() => setIsCreateOpen(true)}
+                  >
+                    <PlusIcon size={16} /> Criar primeira tarefa
+                  </button>
+                ) : undefined
+              }
+            />
           ) : (
             <table className={styles.table}>
               <thead>
                 <tr>
                   <th className={styles.th}>Tarefa</th>
                   <th className={styles.th}>Vencimento</th>
-                  <th className={styles.th}>Status e Prioridade</th>
+                  <th className={styles.th}>Status</th>
+                  <th className={styles.th}>Prioridade</th>
                 </tr>
               </thead>
               <tbody>
@@ -248,13 +249,14 @@ export default function MinhasTarefasPage() {
                       </td>
 
                       <td className={styles.td}>
-                        <div className={styles.badgesWrapper}>
-                          <Badge
-                            type="status"
-                            value={vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status}
-                          />
-                          <Badge type="prioridade" value={tarefa.prioridade} />
-                        </div>
+                        <Badge
+                          type="status"
+                          value={vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status}
+                        />
+                      </td>
+
+                      <td className={styles.td}>
+                        <Badge type="prioridade" value={tarefa.prioridade} />
                       </td>
                     </tr>
                   );

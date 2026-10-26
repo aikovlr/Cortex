@@ -9,6 +9,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { useToast } from '@/contexts/ToastContext';
 import { SuggestionModal } from '../SuggestionModal/SuggestionModal';
 import { ReportTicketModal } from '../ReportTicketModal/ReportTicketModal';
+import { PaperclipIcon } from '@/components/common/Icons/Icons';
 import styles from './TaskDetailsModal.module.css';
 
 interface TaskDetailsModalProps {
@@ -185,8 +186,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                       target="_blank"
                       rel="noopener noreferrer"
                       className={styles.attachmentItem}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
-                      📎 {anexo.nomeOriginal}
+                      <PaperclipIcon size={14} color="var(--cortex-purple)" />
+                      <span>{anexo.nomeOriginal}</span>
                     </a>
                   ))}
                 </div>

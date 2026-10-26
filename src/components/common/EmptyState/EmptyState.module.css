@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 56px 24px;
+  gap: 16px;
+  width: 100%;
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: rgba(123, 79, 201, 0.08);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #12192C;
+  margin: 0;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--cortex-gray-text);
+  max-width: 440px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.actionWrapper {
+  margin-top: 8px;
+}
