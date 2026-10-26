@@ -1,0 +1,281 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.viewSelector {
+  display: flex;
+  align-items: center;
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.viewBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-gray-text);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewBtnActive {
+  background-color: var(--cortex-purple);
+  color: var(--cortex-white);
+  font-weight: 600;
+}
+
+.filtersBar {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cortex-white);
+}
+
+.filterInput {
+  height: 38px;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--cortex-white);
+  font-size: 13px;
+  outline: none;
+  color-scheme: dark;
+}
+
+.filterInput:focus {
+  border-color: var(--cortex-purple);
+}
+
+.filterBtn {
+  height: 38px;
+  padding: 0 16px;
+  background-color: var(--cortex-purple);
+  color: var(--cortex-white);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filterBtn:hover {
+  background-color: var(--cortex-purple-hover);
+}
+
+/* Painel de Métricas / KPIs */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.kpiCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.kpiIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(123, 79, 201, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cortex-purple);
+}
+
+.kpiInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpiValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--cortex-white);
+  line-height: 1.2;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+  margin-top: 2px;
+}
+
+/* Gráficos e Distribuição */
+.distributionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.distCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.distTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cortex-white);
+}
+
+.distList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.distRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.distHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--cortex-white);
+}
+
+.distCount {
+  color: var(--cortex-gray-text);
+  font-weight: 600;
+}
+
+.distBarTrack {
+  height: 6px;
+  background-color: var(--cortex-dark-input);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.distBarFill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--cortex-purple);
+  transition: width 0.4s ease;
+}
+
+/* Tabela de Membros (RN10) */
+.tableContainer {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.tableHeaderSection {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--cortex-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tableTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cortex-white);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th {
+  padding: 14px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cortex-gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--cortex-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.td {
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--cortex-white);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tr:last-child .td {
+  border-bottom: none;
+}
+
+.tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.progressSmall {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressSmallTrack {
+  width: 80px;
+  height: 6px;
+  background-color: var(--cortex-dark-input);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressSmallFill {
+  height: 100%;
+  background-color: #10b981;
+  border-radius: 3px;
+}

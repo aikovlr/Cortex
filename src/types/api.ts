@@ -7,7 +7,12 @@ export type StatusTarefa = 'Pendente' | 'Atrasada' | 'Concluida';
 export type Prioridade = 'Baixa' | 'Media' | 'Alta' | 'Urgente';
 export type CargoEquipe = 'Dono' | 'Admin' | 'Membro';
 export type StatusSugestao = 'Pendente' | 'Aprovada' | 'Rejeitada';
-export type CanalNotificacao = 'Email' | 'Push' | 'Sms';
+export const CanalNotificacao = {
+  Email: 'Email',
+  Push: 'Push',
+  Sms: 'Sms',
+} as const;
+export type CanalNotificacao = (typeof CanalNotificacao)[keyof typeof CanalNotificacao];
 export type TipoEntidade = 'Tarefa' | 'ResponsavelTarefa' | 'Usuario';
 
 export interface ConsultaAnexoDTO {
