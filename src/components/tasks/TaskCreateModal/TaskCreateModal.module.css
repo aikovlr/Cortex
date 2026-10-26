@@ -1,0 +1,129 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radioLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.radioOptions {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--cortex-white);
+  cursor: pointer;
+}
+
+.radioItem input[type="radio"] {
+  accent-color: var(--cortex-purple);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.textareaWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.textareaLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--cortex-white);
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.textarea:focus {
+  border-color: var(--cortex-purple);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow);
+}
+
+.uploadWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px dashed var(--cortex-border);
+  background-color: var(--cortex-dark-input);
+  color: var(--cortex-purple);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.uploadButton:hover {
+  background-color: rgba(123, 79, 201, 0.1);
+}
+
+.fileList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.fileTag {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--cortex-white);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.removeFileBtn {
+  background: none;
+  border: none;
+  color: #ff8585;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}

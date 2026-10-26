@@ -1,0 +1,106 @@
+.metaInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--cortex-dark-input);
+  border-radius: 10px;
+  border: 1px solid var(--cortex-border);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.creatorText {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
+}
+
+.creatorText strong {
+  color: var(--cortex-white);
+}
+
+.dueDateText {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cortex-white);
+  letter-spacing: 0.02em;
+}
+
+.instructionBox {
+  padding: 14px 16px;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: pre-wrap;
+  min-height: 80px;
+}
+
+.attachmentsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attachmentItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--cortex-white);
+  text-decoration: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.attachmentItem:hover {
+  border-color: var(--cortex-purple);
+  background-color: rgba(123, 79, 201, 0.12);
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.leftActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
