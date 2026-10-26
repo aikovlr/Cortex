@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal/Modal';
-import { Select } from '@/components/common/Select/Select';
+import { Input } from '@/components/common/Input/Input';
 import { Button } from '@/components/common/Button/Button';
 import { equipeService } from '@/services/equipeService';
-import { usuarioService } from '@/services/usuarioService';
-import { ConsultaUsuarioDTO } from '@/types/api';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './AddMemberModal.module.css';
 
@@ -24,42 +22,26 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   onSuccess,
 }) => {
   const { showToast } = useToast();
-  const [usuarios, setUsuarios] = useState<ConsultaUsuarioDTO[]>([]);
-  const [usuarioId, setUsuarioId] = useState<number | ''>('');
+  const [email, setEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    if (isOpen) {
-      usuarioService
-        .listarUsuarios()
-        .then((dados) => {
-          if (isMounted) setUsuarios(dados);
-        })
-        .catch(() => {});
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [isOpen]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!usuarioId) {
-      showToast('Selecione um usuário para adicionar.', 'error');
+    const emailLimpo = email.trim();
+    if (!emailLimpo) {
+      showToast('Digite o e-mail do usuário para adicionar.', 'error');
       return;
     }
 
     try {
       setSubmitting(true);
-      await equipeService.adicionarMembro(
-        equipeId,
-        Number(usuarioId),
-        isAdmin ? 'Admin' : 'Membro'
-      );
+      await equipeService.adicionarMembro(equipeId, {
+        email: emailLimpo,
+        cargo: isAdmin ? 'Admin' : 'Membro',
+      });
       showToast('Membro adicionado com sucesso à equipe!', 'success');
-      setUsuarioId('');
+      setEmail('');
       setIsAdmin(false);
       onSuccess();
       onClose();
@@ -91,15 +73,14 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       }
     >
       <form onSubmit={handleSubmit} className={styles.form}>
-        <Select
-          label="Email / Nome do Usuário *"
+        <Input
+          label="E-mail do usuário *"
+          type="email"
+          placeholder="exemplo@cortex.com"
           required
-          value={usuarioId}
-          onChange={(e) => setUsuarioId(e.target.value ? Number(e.target.value) : '')}
-          options={[
-            { value: '', label: 'Selecione o usuário...' },
-            ...usuarios.map((u) => ({ value: u.id, label: `${u.nome} — ${u.email}` })),
-          ]}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoFocus
         />
 
         <label className={styles.checkboxWrapper}>

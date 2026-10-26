@@ -36,6 +36,7 @@ export default function EquipeDetalhesPage({
 
   // Modal adicionar membro
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [deletingTeam, setDeletingTeam] = useState(false);
 
   // Permissões do usuário atual nesta equipe
   const meuMembro = membros.find((m) => m.usuarioId === usuario?.id);
@@ -115,6 +116,28 @@ export default function EquipeDetalhesPage({
     }
   };
 
+  const handleExcluirEquipe = async () => {
+    if (!equipe) return;
+    const confirmacao = window.confirm(
+      `Tem certeza de que deseja excluir a equipe "${equipe.nome}"? Esta ação é irreversível e removerá todos os membros e vínculos associados.`
+    );
+    if (!confirmacao) return;
+
+    try {
+      setDeletingTeam(true);
+      await equipeService.excluirEquipe(equipeId);
+      showToast('Equipe excluída com sucesso!', 'success');
+      router.push('/equipes');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao excluir equipe.', 'error');
+      }
+      setDeletingTeam(false);
+    }
+  };
+
   const handleFecharTicket = async (ticketId: number) => {
     try {
       await ticketService.fecharTicket(ticketId);
@@ -158,15 +181,29 @@ export default function EquipeDetalhesPage({
             </span>
           </div>
 
-          {isAdminOrOwner && (
-            <button
-              type="button"
-              className={styles.addMemberBtn}
-              onClick={() => setIsAddMemberOpen(true)}
-            >
-              + Adicionar membro
-            </button>
-          )}
+          <div className={styles.actionsWrapper}>
+            {isOwner && (
+              <button
+                type="button"
+                className={styles.deleteTeamBtn}
+                onClick={handleExcluirEquipe}
+                disabled={deletingTeam}
+                title="Excluir equipe permanentemente (Apenas Dono)"
+              >
+                {deletingTeam ? 'Excluindo...' : '🗑️ Excluir equipe'}
+              </button>
+            )}
+
+            {isAdminOrOwner && (
+              <button
+                type="button"
+                className={styles.addMemberBtn}
+                onClick={() => setIsAddMemberOpen(true)}
+              >
+                + Adicionar membro
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Tabela de Membros (Charter 6.3.2) */}

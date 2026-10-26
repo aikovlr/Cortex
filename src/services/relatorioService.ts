@@ -13,6 +13,7 @@ export interface FiltroRelatorioQuery {
   prioridade?: string;
   equipeId?: number;
   responsavelId?: number;
+  criadorId?: number;
   dataInicio?: string;
   dataFim?: string;
 }

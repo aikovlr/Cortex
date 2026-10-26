@@ -16,6 +16,7 @@ export default function MinhasTarefasPage() {
 
   const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const [abaAtiva, setAbaAtiva] = useState<'pendentes' | 'concluidas'>('pendentes');
   const [termoBusca, setTermoBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [filtroPrioridade, setFiltroPrioridade] = useState<string>('todas');
@@ -30,7 +31,6 @@ export default function MinhasTarefasPage() {
       .listarTarefas({
         responsavelId: usuario.id,
         termoBusca: termoBusca.trim() || undefined,
-        status: filtroStatus !== 'todos' ? (filtroStatus as StatusTarefa) : undefined,
         prioridade: filtroPrioridade !== 'todas' ? (filtroPrioridade as Prioridade) : undefined,
       })
       .then((dados) => {
@@ -42,7 +42,7 @@ export default function MinhasTarefasPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [usuario, termoBusca, filtroStatus, filtroPrioridade]);
+  }, [usuario, termoBusca, filtroPrioridade]);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,7 +52,6 @@ export default function MinhasTarefasPage() {
       .listarTarefas({
         responsavelId: usuario.id,
         termoBusca: termoBusca.trim() || undefined,
-        status: filtroStatus !== 'todos' ? (filtroStatus as StatusTarefa) : undefined,
         prioridade: filtroPrioridade !== 'todas' ? (filtroPrioridade as Prioridade) : undefined,
       })
       .then((dados) => {
@@ -71,7 +70,7 @@ export default function MinhasTarefasPage() {
     return () => {
       isMounted = false;
     };
-  }, [usuario, termoBusca, filtroStatus, filtroPrioridade]);
+  }, [usuario, termoBusca, filtroPrioridade]);
 
   const formatarData = (isoDate: string) => {
     const data = new Date(isoDate);
@@ -87,11 +86,48 @@ export default function MinhasTarefasPage() {
     return new Date(isoDate) < new Date();
   };
 
+  // Filtragem pelas duas abas
+  const totalPendentesEAtrasadas = tarefas.filter((t) => t.status !== 'Concluida').length;
+  const totalConcluidas = tarefas.filter((t) => t.status === 'Concluida').length;
+
+  const tarefasPendentes = tarefas.filter((t) => {
+    if (t.status === 'Concluida') return false;
+    const vencida = isVencida(t.dataVencimento, t.status);
+    const statusReal = vencida ? 'Atrasada' : t.status;
+    if (filtroStatus === 'Pendente') return statusReal === 'Pendente';
+    if (filtroStatus === 'Atrasada') return statusReal === 'Atrasada';
+    return true;
+  });
+
+  const tarefasConcluidas = tarefas.filter((t) => t.status === 'Concluida');
+
+  const tarefasExibidas = abaAtiva === 'pendentes' ? tarefasPendentes : tarefasConcluidas;
+
   return (
     <>
       <Header titulo="Minhas tarefas" subtitulo="Workspace / Cortex" />
 
       <main className={styles.container}>
+        {/* Abas no padrão visual de Relatórios e Configurações */}
+        <div className={styles.topBar}>
+          <div className={styles.viewSelector}>
+            <button
+              type="button"
+              onClick={() => setAbaAtiva('pendentes')}
+              className={`${styles.viewBtn} ${abaAtiva === 'pendentes' ? styles.viewBtnActive : ''}`}
+            >
+              Tarefas Pendentes e Atrasadas ({totalPendentesEAtrasadas})
+            </button>
+            <button
+              type="button"
+              onClick={() => setAbaAtiva('concluidas')}
+              className={`${styles.viewBtn} ${abaAtiva === 'concluidas' ? styles.viewBtnActive : ''}`}
+            >
+              Tarefas Concluídas ({totalConcluidas})
+            </button>
+          </div>
+        </div>
+
         {/* Barra de Ferramentas: Busca + Filtros + Botão Adicionar */}
         <div className={styles.toolbar}>
           <div className={styles.searchFilters}>
@@ -106,16 +142,17 @@ export default function MinhasTarefasPage() {
               />
             </div>
 
-            <select
-              value={filtroStatus}
-              onChange={(e) => setFiltroStatus(e.target.value)}
-              className={styles.filterSelect}
-            >
-              <option value="todos">Todos os status</option>
-              <option value="Pendente">Pendente</option>
-              <option value="Atrasada">Atrasada</option>
-              <option value="Concluida">Concluída</option>
-            </select>
+            {abaAtiva === 'pendentes' && (
+              <select
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+                className={styles.filterSelect}
+              >
+                <option value="todos">Todos os status</option>
+                <option value="Pendente">Apenas Pendente</option>
+                <option value="Atrasada">Apenas Atrasada</option>
+              </select>
+            )}
 
             <select
               value={filtroPrioridade}
@@ -141,27 +178,35 @@ export default function MinhasTarefasPage() {
           </button>
         </div>
 
-        {/* Tabela de Tarefas no Padrão do Charter */}
+        {/* Tabela de Tarefas */}
         <div className={styles.tableCard}>
           {loading ? (
             <div className={styles.emptyState}>
               <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
               <p>Carregando suas tarefas...</p>
             </div>
-          ) : tarefas.length === 0 ? (
+          ) : tarefasExibidas.length === 0 ? (
             <div className={styles.emptyState}>
               <div style={{ fontSize: '36px' }}>📋</div>
-              <h3 className={styles.emptyTitle}>Nenhuma tarefa encontrada</h3>
+              <h3 className={styles.emptyTitle}>
+                {abaAtiva === 'pendentes'
+                  ? 'Nenhuma tarefa pendente ou atrasada'
+                  : 'Nenhuma tarefa concluída'}
+              </h3>
               <p className={styles.emptySubtitle}>
-                Você não possui tarefas atribuídas no momento ou nenhuma corresponde aos filtros aplicados.
+                {abaAtiva === 'pendentes'
+                  ? 'Você não possui tarefas pendentes no momento ou nenhuma corresponde aos filtros aplicados.'
+                  : 'Você ainda não concluiu nenhuma tarefa ou nenhuma corresponde aos filtros aplicados.'}
               </p>
-              <button
-                type="button"
-                className={styles.createFirstBtn}
-                onClick={() => setIsCreateOpen(true)}
-              >
-                + Criar primeira tarefa
-              </button>
+              {abaAtiva === 'pendentes' && (
+                <button
+                  type="button"
+                  className={styles.createFirstBtn}
+                  onClick={() => setIsCreateOpen(true)}
+                >
+                  + Criar primeira tarefa
+                </button>
+              )}
             </div>
           ) : (
             <table className={styles.table}>
@@ -169,12 +214,11 @@ export default function MinhasTarefasPage() {
                 <tr>
                   <th className={styles.th}>Tarefa</th>
                   <th className={styles.th}>Vencimento</th>
-                  <th className={styles.th}>Status</th>
-                  <th className={styles.th}>Prioridade</th>
+                  <th className={styles.th}>Status e Prioridade</th>
                 </tr>
               </thead>
               <tbody>
-                {tarefas.map((tarefa) => {
+                {tarefasExibidas.map((tarefa) => {
                   const vencida = isVencida(tarefa.dataVencimento, tarefa.status);
 
                   return (
@@ -204,14 +248,13 @@ export default function MinhasTarefasPage() {
                       </td>
 
                       <td className={styles.td}>
-                        <Badge
-                          type="status"
-                          value={vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status}
-                        />
-                      </td>
-
-                      <td className={styles.td}>
-                        <Badge type="prioridade" value={tarefa.prioridade} />
+                        <div className={styles.badgesWrapper}>
+                          <Badge
+                            type="status"
+                            value={vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status}
+                          />
+                          <Badge type="prioridade" value={tarefa.prioridade} />
+                        </div>
                       </td>
                     </tr>
                   );

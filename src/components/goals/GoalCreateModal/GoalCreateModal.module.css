@@ -66,3 +66,86 @@
   color: var(--cortex-gray-text);
   line-height: 1.3;
 }
+
+.taskListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.taskItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.taskItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.taskItemSelected {
+  background: rgba(123, 79, 201, 0.2);
+  border: 1px solid rgba(123, 79, 201, 0.4);
+}
+
+.taskCheckbox {
+  accent-color: var(--cortex-purple);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.taskInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 8px;
+}
+
+.taskTitle {
+  font-size: 13px;
+  color: var(--cortex-white);
+  font-weight: 500;
+}
+
+.taskBadge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cortex-gray-text);
+}
+
+.selectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.toggleAllBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-purple);
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+
+.toggleAllBtn:hover {
+  text-decoration: underline;
+}

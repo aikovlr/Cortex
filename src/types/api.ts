@@ -137,13 +137,15 @@ export interface ConsultaMetaDTO {
   tarefaId: number;
   usuarioId: number;
   tarefa?: { id: number; titulo: string; status?: string } | null;
+  tarefas?: ConsultaTarefaDTO[];
   usuario?: { id: number; nome: string } | null;
 }
 
 export interface CriarMetaDTO {
   nome: string;
   dataFechamento?: string;
-  tarefaId: number;
+  tarefaId?: number;
+  tarefaIds?: number[];
 }
 
 export interface AtualizarMetaDTO {

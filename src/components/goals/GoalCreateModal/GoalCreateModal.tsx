@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button/Button';
 import { metaService } from '@/services/metaService';
 import { tarefaService } from '@/services/tarefaService';
 import { ConsultaTarefaDTO } from '@/types/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './GoalCreateModal.module.css';
 
@@ -25,10 +26,13 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
   tarefaIdPredefinida,
   tarefasDisponiveis,
 }) => {
+  const { usuario } = useAuth();
   const { showToast } = useToast();
 
   const [nome, setNome] = useState('');
-  const [tarefaId, setTarefaId] = useState<number | ''>(tarefaIdPredefinida || '');
+  const [selectedTaskIds, setSelectedTaskIds] = useState<number[]>(
+    tarefaIdPredefinida ? [tarefaIdPredefinida] : []
+  );
   const [dataFechamento, setDataFechamento] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -58,11 +62,16 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
 
       try {
         setLoadingTarefas(true);
-        const res = await tarefaService.listarTarefas();
+        // Exibir somente as tarefas nas quais o usuário autenticado é responsável
+        const res = await tarefaService.listarTarefas({
+          responsavelId: usuario?.id,
+        });
         if (isMounted) {
           setTarefas(res);
-          if (!tarefaIdPredefinida && res.length > 0) {
-            setTarefaId(res[0].id);
+          if (tarefaIdPredefinida) {
+            setSelectedTaskIds([tarefaIdPredefinida]);
+          } else if (res.length > 0 && selectedTaskIds.length === 0) {
+            setSelectedTaskIds([res[0].id]);
           }
         }
       } catch {
@@ -81,6 +90,20 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
     };
   }, [isOpen, tarefaIdPredefinida, tarefasDisponiveis]);
 
+  const toggleTask = (id: number) => {
+    setSelectedTaskIds((prev) =>
+      prev.includes(id) ? prev.filter((tId) => tId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTaskIds.length === tarefas.length) {
+      setSelectedTaskIds([]);
+    } else {
+      setSelectedTaskIds(tarefas.map((t) => t.id));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -89,9 +112,9 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
       return;
     }
 
-    // RN07: Seleção de Tarefa vinculada obrigatória
-    if (!tarefaId) {
-      showToast('A meta deve estar vinculada a uma tarefa válida (RN07).', 'error');
+    // RN07: Seleção de Tarefa vinculada obrigatória (uma ou mais)
+    if (selectedTaskIds.length === 0) {
+      showToast('A meta deve estar vinculada a pelo menos uma tarefa válida (RN07).', 'error');
       return;
     }
 
@@ -111,13 +134,14 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
       setSubmitting(true);
       await metaService.criar({
         nome: nome.trim(),
-        tarefaId: Number(tarefaId),
+        tarefaIds: selectedTaskIds,
         dataFechamento: dataFechamento ? new Date(dataFechamento).toISOString() : undefined,
       });
 
       showToast('Meta criada com sucesso!', 'success');
       setNome('');
       setDataFechamento('');
+      setSelectedTaskIds([]);
       onSuccess();
       onClose();
     } catch (err: unknown) {
@@ -144,7 +168,7 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
           <Button
             variant="primary"
             onClick={handleSubmit}
-            disabled={submitting || !nome.trim() || !tarefaId}
+            disabled={submitting || !nome.trim() || selectedTaskIds.length === 0}
           >
             {submitting ? 'Salvando...' : 'Criar Meta'}
           </Button>
@@ -153,38 +177,66 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
     >
       <form onSubmit={handleSubmit} className={styles.form}>
         <Input
-          label="Nome da Meta"
+          label="Nome da Meta *"
           placeholder="Ex: Entregar módulo de pagamentos"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           required
+          autoFocus
         />
 
         <div className={styles.field}>
-          <label className={styles.label}>
-            Tarefa Vinculada <span className={styles.required}>*</span>
-          </label>
-          <select
-            className={styles.select}
-            value={tarefaId}
-            onChange={(e) => setTarefaId(Number(e.target.value))}
-            disabled={loadingTarefas || submitting || !!tarefaIdPredefinida}
-            required
-          >
-            {tarefas.length === 0 ? (
-              <option value="">
-                {loadingTarefas ? 'Carregando tarefas...' : 'Nenhuma tarefa disponível'}
-              </option>
-            ) : (
-              tarefas.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.titulo} ({t.status})
-                </option>
-              ))
+          <div className={styles.selectionHeader}>
+            <label className={styles.label}>
+              Tarefas Vinculadas ({selectedTaskIds.length} selecionada{selectedTaskIds.length !== 1 ? 's' : ''}) <span className={styles.required}>*</span>
+            </label>
+            {tarefas.length > 1 && (
+              <button
+                type="button"
+                className={styles.toggleAllBtn}
+                onClick={toggleSelectAll}
+              >
+                {selectedTaskIds.length === tarefas.length ? 'Desmarcar todas' : 'Selecionar todas'}
+              </button>
             )}
-          </select>
+          </div>
+
+          <div className={styles.taskListContainer}>
+            {loadingTarefas ? (
+              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
+                Carregando tarefas disponíveis...
+              </div>
+            ) : tarefas.length === 0 ? (
+              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
+                Nenhuma tarefa disponível para vinculação.
+              </div>
+            ) : (
+              tarefas.map((t) => {
+                const isSelected = selectedTaskIds.includes(t.id);
+                return (
+                  <div
+                    key={t.id}
+                    className={`${styles.taskItem} ${isSelected ? styles.taskItemSelected : ''}`}
+                    onClick={() => toggleTask(t.id)}
+                  >
+                    <input
+                      type="checkbox"
+                      className={styles.taskCheckbox}
+                      checked={isSelected}
+                      onChange={() => {}} // tratado no onClick do container
+                      aria-label={`Selecionar tarefa ${t.titulo}`}
+                    />
+                    <div className={styles.taskInfo}>
+                      <span className={styles.taskTitle}>{t.titulo}</span>
+                      <span className={styles.taskBadge}>{t.status}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
           <span className={styles.helpText}>
-            Regra RN07: Toda meta deve obrigatoriamente estar associada a uma tarefa existente.
+            Regra RN07: Toda meta deve obrigatoriamente estar associada a pelo menos uma tarefa existente. Você pode selecionar múltiplas tarefas.
           </span>
         </div>
 

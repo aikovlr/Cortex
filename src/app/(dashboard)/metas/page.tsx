@@ -3,19 +3,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Header from '@/app/Components/Header/header';
 import { metaService } from '@/services/metaService';
-import { ConsultaMetaDTO } from '@/types/api';
+import { ConsultaMetaDTO, ConsultaTarefaDTO } from '@/types/api';
 import { Badge } from '@/components/common/Badge/Badge';
 import { GoalCreateModal } from '@/components/goals/GoalCreateModal/GoalCreateModal';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
-
-interface TaskGroup {
-  tarefaId: number;
-  tarefaNome: string;
-  tarefaStatus?: string;
-  metas: ConsultaMetaDTO[];
-  percentual: number;
-}
 
 export default function MetasPage() {
   const { showToast } = useToast();
@@ -73,19 +65,17 @@ export default function MetasPage() {
     };
   }, [showToast]);
 
-  // Alterna o status de conclusão da meta (RN08)
+  // Alterna o status concluída da meta
   const handleToggleConcluida = async (meta: ConsultaMetaDTO) => {
     const novoStatus = !meta.concluida;
 
-    // Atualização otimista na interface
+    // Atualização otimista
     setMetas((prev) =>
       prev.map((m) => (m.id === meta.id ? { ...m, concluida: novoStatus } : m))
     );
 
     try {
-      await metaService.atualizar(meta.id, {
-        concluida: novoStatus,
-      });
+      await metaService.alternarConclusao(meta.id, novoStatus);
       showToast(
         novoStatus ? 'Meta marcada como concluída!' : 'Meta reaberta!',
         'success'
@@ -120,48 +110,42 @@ export default function MetasPage() {
     }
   };
 
-  // Filtragem e agrupamento de metas por Tarefa vinculada (Charter 6.5)
-  const taskGroups = useMemo<TaskGroup[]>(() => {
-    const filtradas = metas.filter((m) => {
-      const matchMeta = m.nome.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchTarefa = m.tarefa?.titulo?.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchMeta || matchTarefa;
+  // Extrai as tarefas vinculadas a uma meta
+  const getTarefasDaMeta = useCallback((meta: ConsultaMetaDTO): ConsultaTarefaDTO[] => {
+    if (meta.tarefas && meta.tarefas.length > 0) return meta.tarefas;
+    if (meta.tarefa) return [meta.tarefa as ConsultaTarefaDTO];
+    return [];
+  }, []);
+
+  // Calcula o percentual de conclusão da meta com base nas suas tarefas
+  const getProgressoMeta = useCallback((meta: ConsultaMetaDTO) => {
+    const tarefas = getTarefasDaMeta(meta);
+    if (tarefas.length === 0) return meta.concluida ? 100 : 0;
+    const concluidas = tarefas.filter((t) => t.status === 'Concluida').length;
+    return Math.round((concluidas / tarefas.length) * 100);
+  }, [getTarefasDaMeta]);
+
+  const isMetaConcluida = useCallback((meta: ConsultaMetaDTO) => {
+    if (meta.concluida) return true;
+    const tarefas = getTarefasDaMeta(meta);
+    return tarefas.length > 0 && tarefas.every((t) => t.status === 'Concluida');
+  }, [getTarefasDaMeta]);
+
+  // Filtragem por busca
+  const metasFiltradas = useMemo(() => {
+    if (!searchTerm.trim()) return metas;
+    const termo = searchTerm.toLowerCase();
+    return metas.filter((m) => {
+      const matchNome = m.nome.toLowerCase().includes(termo);
+      const tarefas = getTarefasDaMeta(m);
+      const matchTarefa = tarefas.some((t) => t.titulo.toLowerCase().includes(termo));
+      return matchNome || matchTarefa;
     });
-
-    const groupsMap = new Map<number, TaskGroup>();
-
-    filtradas.forEach((meta) => {
-      const tId = meta.tarefaId;
-      const tNome = meta.tarefa?.titulo || `Tarefa #${tId}`;
-      const tStatus = meta.tarefa?.status || 'Pendente';
-
-      if (!groupsMap.has(tId)) {
-        groupsMap.set(tId, {
-          tarefaId: tId,
-          tarefaNome: tNome,
-          tarefaStatus: tStatus,
-          metas: [],
-          percentual: 0,
-        });
-      }
-
-      groupsMap.get(tId)!.metas.push(meta);
-    });
-
-    // Calcula o percentual de conclusão por tarefa
-    const result = Array.from(groupsMap.values());
-    result.forEach((group) => {
-      const total = group.metas.length;
-      const concluidas = group.metas.filter((m) => m.concluida).length;
-      group.percentual = total > 0 ? Math.round((concluidas / total) * 100) : 0;
-    });
-
-    return result;
-  }, [metas, searchTerm]);
+  }, [metas, searchTerm, getTarefasDaMeta]);
 
   // Métricas gerais de gamificação
   const totalMetas = metas.length;
-  const metasConcluidas = metas.filter((m) => m.concluida).length;
+  const metasConcluidas = metas.filter((m) => isMetaConcluida(m)).length;
   const metasPendentes = totalMetas - metasConcluidas;
   const percentualGeral = totalMetas > 0 ? Math.round((metasConcluidas / totalMetas) * 100) : 0;
 
@@ -170,179 +154,166 @@ export default function MetasPage() {
       <Header titulo="Metas" subtitulo="Workspace / Cortex" />
       <main className={styles.container}>
         {/* Barra de Ações Superior */}
-      <div className={styles.topBar}>
-        <div className={styles.searchWrapper}>
-          <svg
-            className={styles.searchIcon}
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Buscar por meta ou tarefa vinculada..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className={styles.createBtn}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Criar Meta
-        </button>
-      </div>
-
-      {/* Painel de Gamificação / KPIs */}
-      <div className={styles.metricsGrid}>
-        <div className={styles.metricCard}>
-          <div className={styles.metricIcon}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        <div className={styles.topBar}>
+          <div className={styles.searchWrapper}>
+            <svg
+              className={styles.searchIcon}
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
             </svg>
+            <input
+              type="text"
+              placeholder="Buscar por meta ou tarefa vinculada..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={styles.searchInput}
+            />
           </div>
-          <div className={styles.metricInfo}>
-            <span className={styles.metricValue}>{totalMetas}</span>
-            <span className={styles.metricLabel}>Total de Metas</span>
-          </div>
-        </div>
 
-        <div className={styles.metricCard}>
-          <div className={styles.metricIcon} style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-          <div className={styles.metricInfo}>
-            <span className={styles.metricValue}>{metasConcluidas}</span>
-            <span className={styles.metricLabel}>Metas Concluídas</span>
-          </div>
-        </div>
-
-        <div className={styles.metricCard}>
-          <div className={styles.metricIcon} style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-          </div>
-          <div className={styles.metricInfo}>
-            <span className={styles.metricValue}>{metasPendentes}</span>
-            <span className={styles.metricLabel}>Metas em Andamento</span>
-          </div>
-        </div>
-
-        <div className={styles.metricCard}>
-          <div className={styles.metricIcon} style={{ background: 'rgba(123, 79, 201, 0.12)', color: 'var(--cortex-purple)' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </div>
-          <div className={styles.metricInfo}>
-            <span className={styles.metricValue}>{percentualGeral}%</span>
-            <span className={styles.metricLabel}>Taxa de Conclusão</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Conteúdo Principal: Grupos por Tarefa */}
-      {loading ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--cortex-gray-text)' }}>
-          Carregando metas e progresso...
-        </div>
-      ) : taskGroups.length === 0 ? (
-        <div className={styles.emptyState}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--cortex-gray-text)" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="10" />
-            <path d="m9 12 2 2 4-4" />
-          </svg>
-          <h3 className={styles.emptyTitle}>Nenhuma meta encontrada</h3>
-          <p className={styles.emptyText}>
-            Vincule metas às suas tarefas para acompanhar seu progresso e atingir objetivos estratégicos.
-          </p>
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
             className={styles.createBtn}
-            style={{ marginTop: '12px' }}
           >
-            Criar Minha Primeira Meta
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Criar Meta
           </button>
         </div>
-      ) : (
-        <div className={styles.groupsContainer}>
-          {taskGroups.map((group) => (
-            <div key={group.tarefaId} className={styles.taskGroupCard}>
-              <div className={styles.groupHeader}>
-                <div className={styles.groupTitleWrapper}>
-                  <span className={styles.taskName}>{group.tarefaNome}</span>
-                  {group.tarefaStatus && (
-                    <Badge type="status" value={group.tarefaStatus} />
-                  )}
-                </div>
 
-                <div className={styles.groupProgressWrapper}>
-                  <div className={styles.progressBarTrack}>
-                    <div
-                      className={styles.progressBarFill}
-                      style={{ width: `${group.percentual}%` }}
-                    />
-                  </div>
-                  <span className={styles.progressPercentage}>{group.percentual}%</span>
-                </div>
-              </div>
+        {/* Painel de Gamificação / KPIs */}
+        <div className={styles.metricsGrid}>
+          <div className={styles.metricCard}>
+            <div className={styles.metricIcon}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+            <div className={styles.metricInfo}>
+              <span className={styles.metricValue}>{totalMetas}</span>
+              <span className={styles.metricLabel}>Total de Metas</span>
+            </div>
+          </div>
 
-              <div className={styles.goalsList}>
-                {group.metas.map((meta) => (
-                  <div key={meta.id} className={styles.goalItem}>
-                    <div className={styles.goalLeft}>
+          <div className={styles.metricCard}>
+            <div className={styles.metricIcon} style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <div className={styles.metricInfo}>
+              <span className={styles.metricValue}>{metasConcluidas}</span>
+              <span className={styles.metricLabel}>Metas Concluídas</span>
+            </div>
+          </div>
+
+          <div className={styles.metricCard}>
+            <div className={styles.metricIcon} style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <div className={styles.metricInfo}>
+              <span className={styles.metricValue}>{metasPendentes}</span>
+              <span className={styles.metricLabel}>Metas em Andamento</span>
+            </div>
+          </div>
+
+          <div className={styles.metricCard}>
+            <div className={styles.metricIcon} style={{ background: 'rgba(123, 79, 201, 0.12)', color: 'var(--cortex-purple)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+            </div>
+            <div className={styles.metricInfo}>
+              <span className={styles.metricValue}>{percentualGeral}%</span>
+              <span className={styles.metricLabel}>Taxa de Conclusão</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Conteúdo Principal: Lista de Metas com Tarefas Vinculadas */}
+        {loading ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--cortex-gray-text)' }}>
+            Carregando metas e progresso...
+          </div>
+        ) : metasFiltradas.length === 0 ? (
+          <div className={styles.emptyState}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--cortex-gray-text)" strokeWidth="1.5">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            <h3 className={styles.emptyTitle}>Nenhuma meta encontrada</h3>
+            <p className={styles.emptyText}>
+              Crie metas e vincule uma ou mais tarefas para acompanhar seu progresso e atingir objetivos estratégicos.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className={styles.createBtn}
+              style={{ marginTop: '12px' }}
+            >
+              Criar Minha Primeira Meta
+            </button>
+          </div>
+        ) : (
+          <div className={styles.groupsContainer}>
+            {metasFiltradas.map((meta) => {
+              const tarefas = getTarefasDaMeta(meta);
+              const progresso = getProgressoMeta(meta);
+              const concluida = isMetaConcluida(meta);
+
+              return (
+                <div key={meta.id} className={styles.taskGroupCard}>
+                  <div className={styles.groupHeader}>
+                    <div className={styles.groupTitleWrapper}>
                       <input
                         type="checkbox"
-                        checked={meta.concluida}
+                        checked={concluida}
                         onChange={() => handleToggleConcluida(meta)}
                         className={styles.checkbox}
                         title={
-                          meta.concluida
+                          concluida
                             ? 'Clique para marcar como pendente'
                             : 'Clique para concluir meta'
                         }
                       />
-                      <span
-                        className={`${styles.goalName} ${
-                          meta.concluida ? styles.goalNameCompleted : ''
-                        }`}
-                      >
+                      <span className={`${styles.taskName} ${concluida ? styles.goalNameCompleted : ''}`}>
                         {meta.nome}
                       </span>
-                    </div>
-
-                    <div className={styles.goalRight}>
+                      <Badge
+                        type="status"
+                        value={concluida ? 'Concluida' : 'Pendente'}
+                      />
                       {meta.dataFechamento && (
                         <span className={styles.dateLimit}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                          </svg>
-                          Limite: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}
+                          📅 Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}
                         </span>
                       )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className={styles.groupProgressWrapper}>
+                        <div className={styles.progressBarTrack}>
+                          <div
+                            className={styles.progressBarFill}
+                            style={{ width: `${progresso}%` }}
+                          />
+                        </div>
+                        <span className={styles.progressPercentage}>{progresso}%</span>
+                      </div>
 
                       <button
                         type="button"
@@ -357,12 +328,47 @@ export default function MetasPage() {
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+
+                  <div className={styles.goalsList}>
+                    <div style={{ padding: '8px 16px 4px', fontSize: '12px', fontWeight: 600, color: 'var(--cortex-gray-text)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Tarefas Vinculadas ({tarefas.length})
+                    </div>
+
+                    {tarefas.length === 0 ? (
+                      <div style={{ padding: '12px 16px', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
+                        Nenhuma tarefa vinculada a esta meta.
+                      </div>
+                    ) : (
+                      tarefas.map((tarefa) => (
+                        <div key={tarefa.id} className={styles.goalItem}>
+                          <div className={styles.goalLeft}>
+                            <Badge type="status" value={tarefa.status} />
+                            <span
+                              className={`${styles.goalName} ${
+                                tarefa.status === 'Concluida' ? styles.goalNameCompleted : ''
+                              }`}
+                            >
+                              {tarefa.titulo}
+                            </span>
+                          </div>
+
+                          <div className={styles.goalRight}>
+                            <Badge type="prioridade" value={tarefa.prioridade} />
+                            {tarefa.dataVencimento && (
+                              <span className={styles.dateLimit}>
+                                Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       {/* Modal de Criação de Meta */}

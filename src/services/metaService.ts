@@ -59,6 +59,13 @@ export const metaService = {
   },
 
   /**
+   * Alterna o status de conclusão da meta
+   */
+  async alternarConclusao(id: number, concluida: boolean): Promise<ConsultaMetaDTO> {
+    return this.atualizar(id, { concluida });
+  },
+
+  /**
    * Exclui uma meta existente.
    */
   async deletar(id: number): Promise<void> {

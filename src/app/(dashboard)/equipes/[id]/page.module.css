@@ -48,6 +48,39 @@
   color: var(--cortex-gray-text);
 }
 
+.actionsWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deleteTeamBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background-color: rgba(214, 49, 49, 0.08);
+  color: var(--cortex-red-danger, #d63131);
+  border: 1px solid rgba(214, 49, 49, 0.25);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteTeamBtn:hover:not(:disabled) {
+  background-color: #d63131;
+  color: #ffffff;
+  border-color: #d63131;
+  transform: translateY(-1px);
+}
+
+.deleteTeamBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .addMemberBtn {
   display: inline-flex;
   align-items: center;

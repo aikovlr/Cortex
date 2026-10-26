@@ -59,12 +59,21 @@ export const equipeService = {
   },
 
   /**
-   * Adiciona um novo membro à equipe
+   * Adiciona um novo membro à equipe por ID ou E-mail
    */
-  async adicionarMembro(equipeId: number, usuarioId: number, cargo: CargoEquipe = 'Membro'): Promise<ConsultaMembroEquipeDTO> {
+  async adicionarMembro(
+    equipeId: number,
+    dados: { usuarioId?: number; email?: string; cargo?: CargoEquipe } | number,
+    cargoLegacy: CargoEquipe = 'Membro'
+  ): Promise<ConsultaMembroEquipeDTO> {
+    const payload =
+      typeof dados === 'number'
+        ? { usuarioId: dados, cargo: cargoLegacy }
+        : { ...dados, cargo: dados.cargo || 'Membro' };
+
     return apiFetch<ConsultaMembroEquipeDTO>(`/api/equipe/${equipeId}/membros`, {
       method: 'POST',
-      body: JSON.stringify({ usuarioId, cargo }),
+      body: JSON.stringify(payload),
     });
   },
 

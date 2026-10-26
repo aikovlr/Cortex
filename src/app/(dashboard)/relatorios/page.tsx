@@ -10,12 +10,14 @@ import {
   ConsultaEquipeDTO,
 } from '@/types/api';
 import { Badge } from '@/components/common/Badge/Badge';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
 
-type ReportView = 'personal' | 'team';
+type ReportView = 'personal' | 'created' | 'team';
 
 export default function RelatoriosPage() {
+  const { usuario } = useAuth();
   const { showToast } = useToast();
 
   const [view, setView] = useState<ReportView>('personal');
@@ -25,8 +27,8 @@ export default function RelatoriosPage() {
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
 
-  // Dados do Relatório Pessoal (RN09)
-  const [relatorioPessoal, setRelatorioPessoal] = useState<RelatorioTarefasDTO | null>(null);
+  // Dados do Relatório de Tarefas (Responsável ou Criadas)
+  const [relatorioTarefas, setRelatorioTarefas] = useState<RelatorioTarefasDTO | null>(null);
 
   // Dados do Relatório de Equipe (RN10)
   const [equipes, setEquipes] = useState<ConsultaEquipeDTO[]>([]);
@@ -62,8 +64,17 @@ export default function RelatoriosPage() {
       setLoading(true);
 
       if (view === 'personal') {
-        const dados = await relatorioService.obterRelatorioTarefas(filtro);
-        setRelatorioPessoal(dados);
+        const dados = await relatorioService.obterRelatorioTarefas({
+          ...filtro,
+          responsavelId: usuario?.id,
+        });
+        setRelatorioTarefas(dados);
+      } else if (view === 'created') {
+        const dados = await relatorioService.obterRelatorioTarefas({
+          ...filtro,
+          criadorId: usuario?.id,
+        });
+        setRelatorioTarefas(dados);
       } else if (view === 'team' && equipeSelecionadaId) {
         const dados = await relatorioService.obterRelatorioEquipe(Number(equipeSelecionadaId), filtro);
         setRelatorioEquipe(dados);
@@ -77,7 +88,7 @@ export default function RelatoriosPage() {
     } finally {
       setLoading(false);
     }
-  }, [view, equipeSelecionadaId, dataInicio, dataFim, showToast]);
+  }, [view, equipeSelecionadaId, dataInicio, dataFim, usuario?.id, showToast]);
 
   useEffect(() => {
     let isMounted = true;
@@ -89,8 +100,17 @@ export default function RelatoriosPage() {
       try {
         setLoading(true);
         if (view === 'personal') {
-          const dados = await relatorioService.obterRelatorioTarefas(filtro);
-          if (isMounted) setRelatorioPessoal(dados);
+          const dados = await relatorioService.obterRelatorioTarefas({
+            ...filtro,
+            responsavelId: usuario?.id,
+          });
+          if (isMounted) setRelatorioTarefas(dados);
+        } else if (view === 'created') {
+          const dados = await relatorioService.obterRelatorioTarefas({
+            ...filtro,
+            criadorId: usuario?.id,
+          });
+          if (isMounted) setRelatorioTarefas(dados);
         } else if (view === 'team' && equipeSelecionadaId) {
           const dados = await relatorioService.obterRelatorioEquipe(Number(equipeSelecionadaId), filtro);
           if (isMounted) setRelatorioEquipe(dados);
@@ -113,16 +133,16 @@ export default function RelatoriosPage() {
     return () => {
       isMounted = false;
     };
-  }, [view, equipeSelecionadaId, dataInicio, dataFim, showToast]);
+  }, [view, equipeSelecionadaId, dataInicio, dataFim, usuario?.id, showToast]);
 
   // Métricas ativas
-  const metricas = view === 'personal' ? relatorioPessoal : relatorioEquipe?.metricasGerais;
+  const metricas = view === 'team' ? relatorioEquipe?.metricasGerais : relatorioTarefas;
 
   return (
     <>
       <Header titulo="Relatórios" subtitulo="Workspace / Cortex" />
       <main className={styles.container}>
-      {/* Barra de Seleção de Relatório (Pessoal vs Equipe) */}
+      {/* Barra de Seleção de Relatório (Responsável vs Criador vs Equipe) */}
       <div className={styles.topBar}>
         <div className={styles.viewSelector}>
           <button
@@ -130,7 +150,14 @@ export default function RelatoriosPage() {
             onClick={() => setView('personal')}
             className={`${styles.viewBtn} ${view === 'personal' ? styles.viewBtnActive : ''}`}
           >
-            Meu Desempenho (Individual)
+            Tarefas Onde Sou Responsável
+          </button>
+          <button
+            type="button"
+            onClick={() => setView('created')}
+            className={`${styles.viewBtn} ${view === 'created' ? styles.viewBtnActive : ''}`}
+          >
+            Tarefas Criadas por Mim
           </button>
           <button
             type="button"
@@ -407,11 +434,15 @@ export default function RelatoriosPage() {
             </div>
           )}
 
-          {/* TABELA DE TAREFAS DETALHADAS (Modo Pessoal - RN09) */}
-          {view === 'personal' && metricas.tarefas && (
+          {/* TABELA DE TAREFAS DETALHADAS (Modo Responsável ou Criador) */}
+          {(view === 'personal' || view === 'created') && metricas.tarefas && (
             <div className={styles.tableContainer}>
               <div className={styles.tableHeaderSection}>
-                <h3 className={styles.tableTitle}>Tarefas no Período</h3>
+                <h3 className={styles.tableTitle}>
+                  {view === 'personal'
+                    ? 'Tarefas Onde Sou Responsável'
+                    : 'Tarefas Criadas por Mim (Atribuídas)'}
+                </h3>
                 <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
                   Total: {metricas.tarefas.length} tarefas
                 </span>
