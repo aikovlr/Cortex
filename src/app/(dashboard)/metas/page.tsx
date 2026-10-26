@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import Header from '@/app/Components/Header/header';
 import { metaService } from '@/services/metaService';
 import { ConsultaMetaDTO } from '@/types/api';
 import { Badge } from '@/components/common/Badge/Badge';
@@ -165,8 +166,10 @@ export default function MetasPage() {
   const percentualGeral = totalMetas > 0 ? Math.round((metasConcluidas / totalMetas) * 100) : 0;
 
   return (
-    <div className={styles.container}>
-      {/* Barra de Ações Superior */}
+    <>
+      <Header titulo="Metas" subtitulo="Workspace / Cortex" />
+      <main className={styles.container}>
+        {/* Barra de Ações Superior */}
       <div className={styles.topBar}>
         <div className={styles.searchWrapper}>
           <svg
@@ -360,6 +363,7 @@ export default function MetasPage() {
           ))}
         </div>
       )}
+      </main>
 
       {/* Modal de Criação de Meta */}
       <GoalCreateModal
@@ -367,6 +371,6 @@ export default function MetasPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={carregarMetas}
       />
-    </div>
+    </>
   );
 }

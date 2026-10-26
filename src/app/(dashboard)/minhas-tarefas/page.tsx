@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/app/Components/Header/header';
 import { Badge } from '@/components/common/Badge/Badge';
 import { TaskCreateModal } from '@/components/tasks/TaskCreateModal/TaskCreateModal';
-import { TaskDetailsModal } from '@/components/tasks/TaskDetailsModal/TaskDetailsModal';
 import { ConsultaTarefaDTO, StatusTarefa, Prioridade } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './page.module.css';
 
 export default function MinhasTarefasPage() {
+  const router = useRouter();
   const { usuario } = useAuth();
 
   const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>([]);
@@ -21,7 +22,6 @@ export default function MinhasTarefasPage() {
 
   // Modais
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   const recarregar = useCallback(() => {
     if (!usuario) return;
@@ -181,7 +181,7 @@ export default function MinhasTarefasPage() {
                     <tr
                       key={tarefa.id}
                       className={styles.tr}
-                      onClick={() => setSelectedTaskId(tarefa.id)}
+                      onClick={() => router.push(`/minhas-tarefas/${tarefa.id}`)}
                     >
                       <td className={styles.td}>
                         <div className={styles.taskTitleCol}>
@@ -227,14 +227,6 @@ export default function MinhasTarefasPage() {
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onSuccess={recarregar}
-      />
-
-      {/* Modal Visualizar Tarefa (Charter 6.1.2) */}
-      <TaskDetailsModal
-        tarefaId={selectedTaskId}
-        isOpen={selectedTaskId !== null}
-        onClose={() => setSelectedTaskId(null)}
-        onTaskUpdated={recarregar}
       />
     </>
   );

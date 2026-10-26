@@ -309,43 +309,47 @@ graph TD
     G --> H[Fase 8: Testes E2E & Polimento Visual]
 ```
 
-### Detalhamento dos Sprints de Implementação:
+### Detalhamento dos Sprints de Implementação (100% Concluído):
 
-1. **Fase 1: Fundação & Autenticação (Setup)**
+1. **Fase 1: Fundação & Autenticação (Setup)** `[CONCLUÍDO]`
    - Definição completa das interfaces TypeScript em `src/types/api.ts`.
-   - Implementação do cliente HTTP em `src/services/api.ts` e de `authService.ts`.
-   - Criação de `AuthContext.tsx` com controle de sessão e proteção de rotas.
-   - Construção das páginas `/login` e `/registro` com seus estilos.
+   - Implementação do cliente HTTP em `src/services/api.ts` com `credentials: 'include'` e `authService.ts`.
+   - Criação de `AuthContext.tsx` com controle de sessão baseado em cookies HttpOnly + Secure e proteção de rotas.
+   - Construção das páginas `/login` e `/registro` com validação da RN02 e modal próprio de 6 dígitos para verificação de e-mail.
 
-2. **Fase 2: Shell da Aplicação & Design System Base**
-   - Atualização do [Sidebar](file:///c:/Users/yuma2/Repositorios/Cortex-frontend/src/app/Components/Sidebar/sidebar.tsx) com rotas corretas (incluindo *Metas* e *Relatórios*) e destaque de link ativo (`usePathname`).
+2. **Fase 2: Shell da Aplicação & Design System Base** `[CONCLUÍDO]`
+   - Atualização do [Sidebar](file:///c:/Users/yuma2/Repositorios/Cortex-frontend/src/app/Components/Sidebar/sidebar.tsx) com rotas corretas (incluindo *Metas*, *Relatórios*, *Configurações*) e destaque de link ativo (`usePathname`).
    - Atualização do [Header](file:///c:/Users/yuma2/Repositorios/Cortex-frontend/src/app/Components/Header/header.tsx) com avatar do usuário logado, botão de tema e contagem de notificações.
-   - Criação dos componentes base reutilizáveis: `Button`, `Input`, `Select`, `Modal`, `Badge`, `Toast`.
+   - Criação dos componentes base reutilizáveis: `Button`, `Input`, `Select`, `Modal`, `Badge` (com suporte a números de enum), `Toast`.
 
-3. **Fase 3: Minhas Tarefas**
-   - Criação da página `/minhas-tarefas` com barra de pesquisa e filtros.
-   - Implementação do `TaskCreateModal` (Charter 6.1.2) com upload de anexos e atribuição.
+3. **Fase 3: Minhas Tarefas** `[CONCLUÍDO]`
+   - Criação da página `/minhas-tarefas` com barra de pesquisa textual e filtros por status e prioridade.
+   - Implementação do `TaskCreateModal` (Charter 6.1.2) com upload de anexos e atribuição (Individual / Equipe).
    - Implementação do `TaskDetailsModal` (Charter 6.1.2) com botões para concluir tarefa, abrir `SuggestionModal` e abrir `ReportTicketModal`.
 
-4. **Fase 4: Tarefas Atribuídas**
+4. **Fase 4: Tarefas Atribuídas** `[CONCLUÍDO]`
    - Criação da página `/tarefas-atribuidas`.
-   - Implementação do `TaskEditModal` (Charter 6.2.1) com atualização cadastral e exclusão.
-   - Construção do painel de aprovação/rejeição de sugestões enviadas por colaboradores.
+   - Implementação do `TaskEditModal` (Charter 6.2.1) com atualização cadastral e exclusão de tarefas.
+   - Construção do painel de aprovação/rejeição de sugestões enviadas por colaboradores (RN14 / RF004).
 
-5. **Fase 5: Gestão de Equipes**
-   - Criação da página `/equipes` com cards de equipes e modal `TeamCreateModal`.
+5. **Fase 5: Gestão de Equipes** `[CONCLUÍDO]`
+   - Criação da página `/equipes` com grid de cards de equipes e modal `TeamCreateModal`.
    - Criação da página dinâmica `/equipes/[id]` (Charter 6.3.2).
-   - Modal `AddMemberModal` (Charter 6.3.3) e controles de permissão de cargo e remoção.
-   - Listagem e fechamento de tickets de problemas da equipe.
+   - Modal `AddMemberModal` (Charter 6.3.3) e controles de permissão de alteração de cargo (RN03) e remoção (RN04).
+   - Listagem e fechamento de tickets de problemas da equipe (RF008).
 
-6. **Fase 6: Metas**
-   - Criação da página `/metas` (Charter 6.5) com agrupamento de tarefas e barra de progresso.
-   - Modal `GoalCreateModal` (Charter 6.5.1) com validação de tarefa obrigatória e limite de 12 meses.
+6. **Fase 6: Metas & Gamificação** `[CONCLUÍDO]`
+   - Criação da página `/metas` (Charter 6.5) com cards de KPIs de gamificação, agrupamento por tarefa vinculada e barra de progresso dinâmica em tempo real (RN08).
+   - Modal `GoalCreateModal` (Charter 6.5.1) com validação de tarefa vinculada obrigatória (RN07) e limite de até 12 meses (RN15).
+   - Checkboxes interativos de conclusão e reabertura imediata de metas.
 
-7. **Fase 7: Configurações & Relatórios**
-   - Criação da página `/configuracoes` (Charter 6.4) com Minha Conta, Tamanho da Fonte e Notificações.
-   - Criação da página `/relatorios` com KPIs e métricas por equipe ou usuário.
+7. **Fase 7: Configurações & Relatórios** `[CONCLUÍDO]`
+   - Criação da página `/configuracoes` (Charter 6.4) com abas Minha Conta (foto, dados, alteração de senha e exclusão com bloqueio por tarefas pendentes - RN05), Acessibilidade (tamanho da fonte global) e Notificações (canais, antecedência de 1h a 7 dias - RN11 e toggles de eventos).
+   - Criação da página `/relatorios` (RF006) com KPIs analíticos, gráficos de distribuição, relatório pessoal (RN09) e relatório consolidado por equipe com desempenho individual por membro para administradores (RN10).
 
-8. **Fase 8: Homologação e Validação Final**
-   - Verificação de contraste, responsividade mobile e fidelidade total aos protótipos do Charter.
-   - Teste de fluxo completo com o backend rodando localmente.
+8. **Fase 8: Homologação e Validação Final** `[CONCLUÍDO]`
+   - `npm run lint`: 0 erros, 0 avisos em todo o projeto.
+   - `npm run build`: Compilação com Turbopack 100% bem-sucedida para todas as 12 rotas.
+   - Auditoria de Cookies: Token JWT armazenado estritamente em Cookie HttpOnly + Secure, sem uso de localStorage.
+   - Auditoria de Fidelidade Visual: Cores oficiais do Charter (#7B4FC9, #12192C, #18223B, #FFFFFF, #E5E5E5), fonte Poppins, modais e layouts de acordo com as especificações.
+

@@ -1,7 +1,9 @@
 .container {
+  padding: 24px 32px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  flex: 1;
 }
 
 .topBar {

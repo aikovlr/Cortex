@@ -11,7 +11,7 @@ import styles from './TeamCreateModal.module.css';
 interface TeamCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (novaEquipe?: import('@/types/api').ConsultaEquipeDTO) => void;
 }
 
 export const TeamCreateModal: React.FC<TeamCreateModalProps> = ({
@@ -32,10 +32,10 @@ export const TeamCreateModal: React.FC<TeamCreateModalProps> = ({
 
     try {
       setSubmitting(true);
-      await equipeService.criarEquipe({ nome: nome.trim() });
+      const novaEquipe = await equipeService.criarEquipe({ nome: nome.trim() });
       showToast('Equipe criada com sucesso!', 'success');
       setNome('');
-      onSuccess();
+      onSuccess(novaEquipe);
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {

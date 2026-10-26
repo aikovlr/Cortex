@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Header from '@/app/Components/Header/header';
 import { useAuth } from '@/contexts/AuthContext';
 import { usuarioService } from '@/services/usuarioService';
 import { authService } from '@/services/authService';
@@ -228,8 +229,10 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className={styles.container}>
-      {/* Abas de Navegação das Configurações */}
+    <>
+      <Header titulo="Configurações" subtitulo="Workspace / Cortex" />
+      <main className={styles.container}>
+        {/* Abas de Navegação das Configurações */}
       <div className={styles.tabsHeader}>
         <button
           type="button"
@@ -644,6 +647,7 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
       )}
-    </div>
+      </main>
+    </>
   );
 }

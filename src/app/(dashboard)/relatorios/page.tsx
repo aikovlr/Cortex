@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Header from '@/app/Components/Header/header';
 import { relatorioService, FiltroRelatorioQuery } from '@/services/relatorioService';
 import { equipeService } from '@/services/equipeService';
 import {
@@ -118,7 +119,9 @@ export default function RelatoriosPage() {
   const metricas = view === 'personal' ? relatorioPessoal : relatorioEquipe?.metricasGerais;
 
   return (
-    <div className={styles.container}>
+    <>
+      <Header titulo="Relatórios" subtitulo="Workspace / Cortex" />
+      <main className={styles.container}>
       {/* Barra de Seleção de Relatório (Pessoal vs Equipe) */}
       <div className={styles.topBar}>
         <div className={styles.viewSelector}>
@@ -456,6 +459,7 @@ export default function RelatoriosPage() {
           )}
         </>
       )}
-    </div>
+      </main>
+    </>
   );
 }

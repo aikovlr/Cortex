@@ -15,19 +15,19 @@ export default function EquipesPage() {
   const [termoBusca, setTermoBusca] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const recarregar = useCallback(() => {
-    setLoading(true);
-    equipeService
-      .listarMinhasEquipes()
-      .then((dados) => {
-        setEquipes(dados);
-      })
-      .catch(() => {
-        setEquipes([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+  const recarregar = useCallback(async (novaEquipe?: ConsultaEquipeDTO) => {
+    if (novaEquipe) {
+      setEquipes((prev) => [novaEquipe, ...prev.filter((eq) => eq.id !== novaEquipe.id)]);
+    }
+    try {
+      setLoading(true);
+      const dados = await equipeService.listarMinhasEquipes();
+      setEquipes(dados);
+    } catch {
+      // Mantém a lista atual caso a requisição falhe
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
