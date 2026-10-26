@@ -1,0 +1,291 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  flex: 1;
+  min-width: 260px;
+  max-width: 420px;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  height: 42px;
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 10px;
+  padding: 0 14px 0 38px;
+  color: var(--cortex-white);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--cortex-purple);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cortex-gray-text);
+  pointer-events: none;
+}
+
+.createBtn {
+  height: 42px;
+  padding: 0 18px;
+  background-color: var(--cortex-purple);
+  color: var(--cortex-white);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(123, 79, 201, 0.3);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.createBtn:hover {
+  background-color: var(--cortex-purple-hover);
+  transform: translateY(-1px);
+}
+
+/* Painel de Gamificação / Métricas */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.metricCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.metricIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(123, 79, 201, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cortex-purple);
+}
+
+.metricInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.metricValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--cortex-white);
+  line-height: 1.2;
+}
+
+.metricLabel {
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+  margin-top: 2px;
+}
+
+/* Grupos de Metas por Tarefa (Charter 6.5) */
+.groupsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.taskGroupCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease;
+}
+
+.taskGroupCard:hover {
+  border-color: rgba(123, 79, 201, 0.4);
+}
+
+.groupHeader {
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--cortex-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.groupTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.taskName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cortex-white);
+}
+
+.groupProgressWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 180px;
+}
+
+.progressBarTrack {
+  flex: 1;
+  height: 8px;
+  background-color: var(--cortex-dark-input);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #7B4FC9 0%, #10b981 100%);
+  border-radius: 4px;
+  transition: width 0.4s ease-out;
+}
+
+.progressPercentage {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cortex-white);
+  min-width: 38px;
+  text-align: right;
+}
+
+.goalsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.goalItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 16px;
+  transition: background-color 0.15s ease;
+}
+
+.goalItem:last-child {
+  border-bottom: none;
+}
+
+.goalItem:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.goalLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cortex-purple);
+  cursor: pointer;
+}
+
+.goalName {
+  font-size: 14px;
+  color: var(--cortex-white);
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.goalNameCompleted {
+  color: var(--cortex-gray-text);
+  text-decoration: line-through;
+}
+
+.goalRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dateLimit {
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-gray-text);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.deleteBtn:hover {
+  color: var(--cortex-red-danger);
+  background-color: rgba(214, 49, 49, 0.1);
+}
+
+.emptyState {
+  padding: 60px 20px;
+  text-align: center;
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emptyTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cortex-white);
+}
+
+.emptyText {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
+  max-width: 400px;
+}

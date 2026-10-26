@@ -131,7 +131,7 @@ export interface ConsultaMetaDTO {
   concluida?: boolean;
   tarefaId: number;
   usuarioId: number;
-  tarefa?: { id: number; titulo: string } | null;
+  tarefa?: { id: number; titulo: string; status?: string } | null;
   usuario?: { id: number; nome: string } | null;
 }
 
@@ -139,6 +139,14 @@ export interface CriarMetaDTO {
   nome: string;
   dataFechamento?: string;
   tarefaId: number;
+}
+
+export interface AtualizarMetaDTO {
+  nome?: string;
+  dataFechamento?: string;
+  concluida?: boolean;
+  tarefaId?: number;
+  usuarioId?: number;
 }
 
 export interface ConsultaSugestaoDTO {
@@ -216,3 +224,4 @@ export interface RelatorioEquipeDTO {
   metricasGerais: RelatorioTarefasDTO;
   desempenhoMembros: DesempenhoMembroDTO[];
 }
+
