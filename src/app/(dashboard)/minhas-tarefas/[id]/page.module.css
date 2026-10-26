@@ -223,6 +223,16 @@
   color: var(--cortex-purple);
 }
 
+.emptyAttachments {
+  padding: 24px;
+  background-color: var(--cortex-dark-input);
+  border: 1px dashed var(--cortex-border);
+  border-radius: 10px;
+  color: var(--cortex-gray-text);
+  font-size: 14px;
+  text-align: center;
+}
+
 .loadingWrapper {
   padding: 60px 20px;
   text-align: center;

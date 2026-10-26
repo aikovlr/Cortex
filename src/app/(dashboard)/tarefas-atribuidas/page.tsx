@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/app/Components/Header/header';
-import { TaskEditModal } from '@/components/tasks/TaskEditModal/TaskEditModal';
 import { SearchBar } from '@/components/common/SearchBar/SearchBar';
 import { EmptyState } from '@/components/common/EmptyState/EmptyState';
 import { FileTextIcon, SpinnerIcon } from '@/components/common/Icons/Icons';
@@ -12,14 +12,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import styles from './page.module.css';
 
 export default function TarefasAtribuidasPage() {
+  const router = useRouter();
   const { usuario } = useAuth();
 
   const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [termoBusca, setTermoBusca] = useState('');
 
-  // Modal de Edição (Charter 6.2.1)
-  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   const recarregar = useCallback(() => {
     if (!usuario) return;
@@ -41,31 +40,9 @@ export default function TarefasAtribuidasPage() {
   }, [usuario, termoBusca]);
 
   useEffect(() => {
-    let isMounted = true;
-    if (!usuario) return;
+    recarregar();
+  }, [recarregar]);
 
-    tarefaService
-      .listarTarefas({
-        criadorId: usuario.id,
-        termoBusca: termoBusca.trim() || undefined,
-      })
-      .then((dados) => {
-        if (isMounted) {
-          setTarefas(dados);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setTarefas([]);
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [usuario, termoBusca]);
 
   const formatarData = (isoDate: string) => {
     const data = new Date(isoDate);
@@ -117,7 +94,12 @@ export default function TarefasAtribuidasPage() {
               </thead>
               <tbody>
                 {tarefas.map((tarefa) => (
-                  <tr key={tarefa.id} className={styles.tr}>
+                  <tr
+                    key={tarefa.id}
+                    className={styles.tr}
+                    onClick={() => router.push(`/tarefas-atribuidas/${tarefa.id}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <td className={styles.td}>
                       <div className={styles.taskTitleCol}>
                         <span className={styles.taskTitle}>{tarefa.titulo}</span>
@@ -140,9 +122,12 @@ export default function TarefasAtribuidasPage() {
                       <button
                         type="button"
                         className={styles.editButton}
-                        onClick={() => setSelectedTaskId(tarefa.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/tarefas-atribuidas/${tarefa.id}`);
+                        }}
                       >
-                        Editar
+                        Gerenciar
                       </button>
                     </td>
                   </tr>
@@ -152,14 +137,6 @@ export default function TarefasAtribuidasPage() {
           )}
         </div>
       </main>
-
-      {/* Modal de Edição de Tarefa (Charter 6.2.1) */}
-      <TaskEditModal
-        tarefaId={selectedTaskId}
-        isOpen={selectedTaskId !== null}
-        onClose={() => setSelectedTaskId(null)}
-        onSuccess={recarregar}
-      />
     </>
   );
 }

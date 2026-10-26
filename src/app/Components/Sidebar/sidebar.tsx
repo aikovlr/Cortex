@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,6 +10,11 @@ import styles from './sidebar.module.css';
 export default function Sidebar() {
   const pathname = usePathname();
   const { usuario, logout } = useAuth();
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [usuario?.fotoPerfil?.urlCaminho]);
 
   const menuItems = [
     {
@@ -86,12 +91,13 @@ export default function Sidebar() {
       </nav>
 
       <div className={styles.footer}>
-        {usuario?.fotoPerfil?.urlCaminho ? (
+        {usuario?.fotoPerfil?.urlCaminho && !imgError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={usuario.fotoPerfil.urlCaminho}
             alt={usuario.nome}
             className={styles.avatar}
+            onError={() => setImgError(true)}
           />
         ) : (
           <Image
@@ -102,6 +108,7 @@ export default function Sidebar() {
             className={styles.avatar}
           />
         )}
+
 
         <div className={styles.userInfo}>
           <span className={styles.userName}>

@@ -9,7 +9,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { useToast } from '@/contexts/ToastContext';
 import { SuggestionModal } from '../SuggestionModal/SuggestionModal';
 import { ReportTicketModal } from '../ReportTicketModal/ReportTicketModal';
-import { PaperclipIcon } from '@/components/common/Icons/Icons';
+import { AttachmentGallery } from '../AttachmentGallery/AttachmentGallery';
 import styles from './TaskDetailsModal.module.css';
 
 interface TaskDetailsModalProps {
@@ -178,21 +178,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             {tarefa.anexos && tarefa.anexos.length > 0 && (
               <div className={styles.section}>
                 <h3 className={styles.sectionTitle}>Anexos ({tarefa.anexos.length})</h3>
-                <div className={styles.attachmentsList}>
-                  {tarefa.anexos.map((anexo) => (
-                    <a
-                      key={anexo.id}
-                      href={anexo.urlCaminho}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.attachmentItem}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                    >
-                      <PaperclipIcon size={14} color="var(--cortex-purple)" />
-                      <span>{anexo.nomeOriginal}</span>
-                    </a>
-                  ))}
-                </div>
+                <AttachmentGallery anexos={tarefa.anexos} />
               </div>
             )}
           </div>

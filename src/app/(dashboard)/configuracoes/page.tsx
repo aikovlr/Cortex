@@ -36,18 +36,21 @@ export default function ConfiguracoesPage() {
   const [telefone, setTelefone] = useState(usuario?.telefone || '');
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(usuario?.fotoPerfil?.urlCaminho || null);
+  const [fotoError, setFotoError] = useState(false);
   const [savingPerfil, setSavingPerfil] = useState(false);
 
-  // Sincroniza dados quando o usuário autenticado carrega
-  const [prevUserId, setPrevUserId] = useState<number | undefined>(usuario?.id);
-  if (usuario && usuario.id !== prevUserId) {
-    setPrevUserId(usuario.id);
-    setNome(usuario.nome);
-    setTelefone(usuario.telefone || '');
-    if (usuario.fotoPerfil?.urlCaminho) {
-      setFotoPreview(usuario.fotoPerfil.urlCaminho);
+  // Sincroniza dados quando o usuário autenticado carrega ou é atualizado
+  useEffect(() => {
+    if (usuario) {
+      setNome(usuario.nome);
+      setTelefone(usuario.telefone || '');
+      if (usuario.fotoPerfil?.urlCaminho) {
+        setFotoPreview(usuario.fotoPerfil.urlCaminho);
+        setFotoError(false);
+      }
     }
-  }
+  }, [usuario]);
+
 
   // Estados de Alteração de Senha
   const [senhaAtual, setSenhaAtual] = useState('');
@@ -115,6 +118,7 @@ export default function ConfiguracoesPage() {
       const file = e.target.files[0];
       setFotoFile(file);
       setFotoPreview(URL.createObjectURL(file));
+      setFotoError(false);
     }
   };
 
@@ -133,8 +137,13 @@ export default function ConfiguracoesPage() {
       if (telefone) formData.append('Telefone', telefone.trim());
       if (fotoFile) formData.append('FotoPerfil', fotoFile);
 
-      await usuarioService.atualizarPerfil(formData);
+      const usuarioAtualizado = await usuarioService.atualizarPerfil(formData);
       await recarregarPerfil();
+      setFotoFile(null);
+      if (usuarioAtualizado?.fotoPerfil?.urlCaminho) {
+        setFotoPreview(usuarioAtualizado.fotoPerfil.urlCaminho);
+        setFotoError(false);
+      }
       showToast('Perfil atualizado com sucesso!', 'success');
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -285,7 +294,7 @@ export default function ConfiguracoesPage() {
             <form onSubmit={handleSalvarPerfil} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div className={styles.avatarSection}>
                 <div className={styles.avatarWrapper}>
-                  {fotoPreview ? (
+                  {fotoPreview && !fotoError ? (
                     <Image
                       src={fotoPreview}
                       alt="Foto de Perfil"
@@ -293,6 +302,7 @@ export default function ConfiguracoesPage() {
                       height={76}
                       className={styles.avatarImage}
                       unoptimized
+                      onError={() => setFotoError(true)}
                     />
                   ) : (
                     <span>{usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'U'}</span>

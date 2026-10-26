@@ -9,7 +9,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { useToast } from '@/contexts/ToastContext';
 import { SuggestionModal } from '@/components/tasks/SuggestionModal/SuggestionModal';
 import { ReportTicketModal } from '@/components/tasks/ReportTicketModal/ReportTicketModal';
-import { UserIcon, PaperclipIcon } from '@/components/common/Icons/Icons';
+import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
 import styles from './page.module.css';
 
 export default function DetalhesTarefaPage() {
@@ -209,42 +209,16 @@ export default function DetalhesTarefaPage() {
               </div>
             </div>
 
-            {tarefa.responsaveis && tarefa.responsaveis.length > 0 && (
-              <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>
-                  Membros Responsáveis ({tarefa.responsaveis.length})
-                </h2>
-                <div className={styles.attachmentsList}>
-                  {tarefa.responsaveis.map((resp) => (
-                    <div key={resp.id} className={styles.attachmentCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      <UserIcon size={16} color="var(--cortex-purple)" />
-                      <span>{resp.usuario?.nome || `Usuário #${resp.usuarioId}`}</span>
-                    </div>
-                  ))}
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Anexos ({tarefa.anexos?.length || 0})</h2>
+              {tarefa.anexos && tarefa.anexos.length > 0 ? (
+                <AttachmentGallery anexos={tarefa.anexos} />
+              ) : (
+                <div className={styles.emptyAttachments}>
+                  Nenhum arquivo anexado a esta tarefa.
                 </div>
-              </div>
-            )}
-
-            {tarefa.anexos && tarefa.anexos.length > 0 && (
-              <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Anexos ({tarefa.anexos.length})</h2>
-                <div className={styles.attachmentsList}>
-                  {tarefa.anexos.map((anexo) => (
-                    <a
-                      key={anexo.id}
-                      href={anexo.urlCaminho}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.attachmentCard}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                    >
-                      <PaperclipIcon size={16} color="var(--cortex-purple)" />
-                      <span>{anexo.nomeOriginal}</span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </main>
