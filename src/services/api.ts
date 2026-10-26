@@ -16,13 +16,15 @@ export class ProblemDetailsError extends Error {
   status: number;
   title: string;
   detail: string;
+  data?: Record<string, unknown>;
 
-  constructor(status: number, title: string, detail: string) {
+  constructor(status: number, title: string, detail: string, data?: Record<string, unknown>) {
     super(detail || title || 'Erro na requisição');
     this.name = 'ProblemDetailsError';
     this.status = status;
     this.title = title;
     this.detail = detail;
+    this.data = data;
   }
 }
 
@@ -46,12 +48,14 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     let errorStatus = response.status;
     let errorTitle = response.statusText || 'Erro na requisição';
     let errorDetail = 'Ocorreu um erro ao processar a solicitação.';
+    let errorJsonData: Record<string, unknown> | undefined;
 
     try {
       const errorJson = await response.json();
       errorStatus = errorJson.status || errorStatus;
       errorTitle = errorJson.title || errorTitle;
       errorDetail = errorJson.detail || errorJson.title || errorJson.message || errorDetail;
+      errorJsonData = errorJson;
     } catch {
       // Se não for JSON, mantém as mensagens padrão
     }
@@ -65,7 +69,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
       }
     }
 
-    throw new ProblemDetailsError(errorStatus, errorTitle, errorDetail);
+    throw new ProblemDetailsError(errorStatus, errorTitle, errorDetail, errorJsonData);
   }
 
   if (response.status === 204) {

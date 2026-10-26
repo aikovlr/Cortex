@@ -3,12 +3,51 @@ import styles from './Badge.module.css';
 
 export interface BadgeProps {
   type: 'status' | 'prioridade' | 'cargo';
-  value: string;
+  value: string | number | null | undefined;
   className?: string;
 }
 
+const CARGO_MAP: Record<number, string> = {
+  0: 'Dono',
+  1: 'Admin',
+  2: 'Membro',
+};
+
+const STATUS_MAP: Record<number, string> = {
+  0: 'Pendente',
+  1: 'Atrasada',
+  2: 'Concluída',
+};
+
+const PRIORIDADE_MAP: Record<number, string> = {
+  0: 'Baixa',
+  1: 'Média',
+  2: 'Alta',
+  3: 'Urgente',
+};
+
 export const Badge: React.FC<BadgeProps> = ({ type, value, className = '' }) => {
-  const normalized = value.toLowerCase().replace(/[\s_-]+/g, '');
+  // Converte número em texto amigável conforme o tipo de enum
+  let displayValue = '';
+
+  if (value === null || value === undefined) {
+    displayValue = '-';
+  } else if (typeof value === 'number' || (!isNaN(Number(value)) && String(value).trim() !== '')) {
+    const num = Number(value);
+    if (type === 'cargo') {
+      displayValue = CARGO_MAP[num] ?? String(value);
+    } else if (type === 'status') {
+      displayValue = STATUS_MAP[num] ?? String(value);
+    } else if (type === 'prioridade') {
+      displayValue = PRIORIDADE_MAP[num] ?? String(value);
+    } else {
+      displayValue = String(value);
+    }
+  } else {
+    displayValue = String(value);
+  }
+
+  const normalized = displayValue.toLowerCase().replace(/[\s_-]+/g, '');
 
   let styleClass = styles.membro;
 
@@ -27,5 +66,5 @@ export const Badge: React.FC<BadgeProps> = ({ type, value, className = '' }) => 
     else styleClass = styles.membro;
   }
 
-  return <span className={`${styles.badge} ${styleClass} ${className}`}>{value}</span>;
+  return <span className={`${styles.badge} ${styleClass} ${className}`}>{displayValue}</span>;
 };

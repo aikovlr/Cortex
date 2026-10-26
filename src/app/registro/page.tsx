@@ -21,12 +21,6 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Modal de Verificação pós-cadastro
-  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
-  const [codigoVerificacao, setCodigoVerificacao] = useState('');
-  const [verifyLoading, setVerifyLoading] = useState(false);
-  const [verifySuccess, setVerifySuccess] = useState(false);
-
   // Validação dinâmica da regra RN02 (Requisitos de Senha)
   const hasMinLength = senha.length >= 8;
   const hasUpperCase = /[A-Z]/.test(senha);
@@ -64,8 +58,8 @@ export default function RegistroPage() {
 
       await authService.registrar(formData);
 
-      // Cadastro bem-sucedido: abre modal para digitar o código de verificação
-      setRegisteredEmail(email);
+      // Redireciona para o modal próprio de verificação na tela de login
+      router.push(`/login?email=${encodeURIComponent(email)}&verify=true`);
     } catch (err: unknown) {
       if (err instanceof ProblemDetailsError) {
         setErrorMessage(err.detail || err.title);
@@ -76,26 +70,6 @@ export default function RegistroPage() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleConfirmarCodigo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!registeredEmail || !codigoVerificacao) return;
-
-    try {
-      setVerifyLoading(true);
-      await authService.verificarEmail(codigoVerificacao, registeredEmail);
-      setVerifySuccess(true);
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
-      }
-    } finally {
-      setVerifyLoading(false);
     }
   };
 
@@ -233,47 +207,6 @@ export default function RegistroPage() {
           </Link>
         </div>
       </div>
-
-      {/* Modal pós cadastro para inserção do código enviado por e-mail */}
-      {registeredEmail && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalBox}>
-            <h2 className={styles.modalTitle}>Verifique seu E-mail</h2>
-            <p className={styles.modalText}>
-              Enviamos um código de verificação para <strong>{registeredEmail}</strong>. Digite o código de 6 dígitos abaixo para ativar sua conta:
-            </p>
-
-            {verifySuccess ? (
-              <div style={{ color: '#2ecc71', fontSize: '14px', fontWeight: 600, textAlign: 'center', padding: '10px 0' }}>
-                🎉 Conta ativada com sucesso! Redirecionando para login...
-              </div>
-            ) : (
-              <form onSubmit={handleConfirmarCodigo} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <input
-                  type="text"
-                  placeholder="000000"
-                  required
-                  maxLength={6}
-                  value={codigoVerificacao}
-                  onChange={(e) => setCodigoVerificacao(e.target.value)}
-                  className={styles.input}
-                  style={{ textAlign: 'center', fontSize: '20px', letterSpacing: '6px' }}
-                />
-
-                <div className={styles.modalActions}>
-                  <button
-                    type="submit"
-                    className={styles.confirmBtn}
-                    disabled={verifyLoading || codigoVerificacao.length < 6}
-                  >
-                    {verifyLoading ? 'Validando...' : 'Ativar Minha Conta'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
