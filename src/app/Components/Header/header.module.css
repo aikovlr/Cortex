@@ -1,47 +1,88 @@
-.header, .titulo, .iconButtons, .toggleButton, .themeButton, .notificationButton {
-    display: flex;
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  min-height: 72px;
+  width: 100%;
 }
 
-.header {
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.toggleButton:hover {
+  background-color: rgba(0, 0, 0, 0.06);
 }
 
 .titulo {
-    flex-direction: column;
-    margin-right: auto;
-    margin-left: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-.titulo p {
-    color: var(--cinzaTexto);
-    letter-spacing: 0.17em;
-    font-size: 9px;
-    font-weight: 700;
-    margin: 0px;
+.breadcrumb {
+  color: var(--cortex-gray-text);
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
 }
 
-.titulo text {
-    letter-spacing: -0.04em;
-    font-size: 24px;
-    font-weight: 750;
-    margin: 2px 0px 0px;
+.pageTitle {
+  letter-spacing: -0.03em;
+  font-size: 22px;
+  font-weight: 700;
+  color: #12192C;
+  margin: 2px 0 0;
 }
 
-.toggleButton, .themeButton, .notificationButton {
-    cursor: pointer;
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.themeButton, .notificationButton {
-    margin-left: 15px;
+.iconButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: #f5f6f9;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.toggleButton:hover, .themeButton:hover, .notificationButton:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
-    margin-bottom: 5px;
-    transition: background-color 0.3s ease, margin-bottom 0.5s ease;
+.iconButton:hover {
+  background-color: #ebeef5;
+  transform: translateY(-1px);
+}
+
+.notificationBadge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--cortex-purple);
+  border: 2px solid #ffffff;
 }

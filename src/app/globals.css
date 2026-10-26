@@ -1,34 +1,43 @@
 :root {
-  --background: #3b3b3b;
-  --foreground: #242424;
-  --primary: #7b4fc9;
-  --surface: #ffffff;
-  --muted: #e5e5e5;
-  --cinzaTexto: #898899;
-  --azul: #12192C;
-  --verde: #134011;
-  --vermelho: #D63131;
-}
+  /* Identidade Visual Cortex (Charter Seção 5) */
+  --cortex-purple: #7B4FC9;
+  --cortex-purple-hover: #6a3fb8;
+  --cortex-purple-glow: rgba(123, 79, 201, 0.35);
 
-html {
-  height: 100%;
-}
+  --cortex-dark-blue: #12192C;
+  --cortex-dark-card: #18223B;
+  --cortex-dark-card-hover: #212d4d;
+  --cortex-dark-input: #101626;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+  --cortex-white: #FFFFFF;
+  --cortex-bg-light: #E5E5E5;
+  --cortex-gray-text: #898899;
+  --cortex-border: rgba(255, 255, 255, 0.12);
+  --cortex-border-light: rgba(0, 0, 0, 0.1);
 
-body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-poppins), sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Status e Alertas */
+  --cortex-green-success: #134011;
+  --cortex-green-badge-bg: #D4EDDA;
+  --cortex-green-badge-text: #155724;
+
+  --cortex-red-danger: #D63131;
+  --cortex-red-danger-hover: #ba2525;
+  --cortex-red-badge-bg: #F8D7DA;
+  --cortex-red-badge-text: #721C24;
+
+  --cortex-yellow-badge-bg: #FFF3CD;
+  --cortex-yellow-badge-text: #856404;
+
+  /* Aliases para compatibilidade */
+  --background: var(--cortex-dark-blue);
+  --foreground: var(--cortex-white);
+  --primary: var(--cortex-purple);
+  --surface: var(--cortex-white);
+  --muted: var(--cortex-bg-light);
+  --cinzaTexto: var(--cortex-gray-text);
+  --azul: var(--cortex-dark-blue);
+  --verde: var(--cortex-green-success);
+  --vermelho: var(--cortex-red-danger);
 }
 
 * {
@@ -37,7 +46,56 @@ body {
   margin: 0;
 }
 
+html,
+body {
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--cortex-dark-blue);
+  color: var(--cortex-white);
+  font-family: var(--font-poppins), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 a {
   color: inherit;
   text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(18, 25, 44, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(123, 79, 201, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 79, 201, 0.7);
 }

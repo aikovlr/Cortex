@@ -1,0 +1,67 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* Status */
+.pendente {
+  background-color: #FFF3CD;
+  color: #856404;
+}
+
+.atrasada,
+.emAtraso {
+  background-color: #F8D7DA;
+  color: #721C24;
+}
+
+.concluida {
+  background-color: #D4EDDA;
+  color: #155724;
+}
+
+/* Prioridades */
+.baixa {
+  background-color: rgba(52, 152, 219, 0.15);
+  color: #3498db;
+}
+
+.media {
+  background-color: rgba(243, 156, 18, 0.15);
+  color: #e67e22;
+}
+
+.alta {
+  background-color: rgba(230, 126, 34, 0.2);
+  color: #d35400;
+}
+
+.urgente {
+  background-color: rgba(214, 49, 49, 0.2);
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+/* Cargos */
+.dono {
+  background-color: rgba(123, 79, 201, 0.25);
+  color: #a881fc;
+}
+
+.admin {
+  background-color: rgba(41, 128, 185, 0.25);
+  color: #5dade2;
+}
+
+.membro {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #d5d8dc;
+}

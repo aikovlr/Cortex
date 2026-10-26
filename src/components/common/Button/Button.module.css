@@ -1,0 +1,110 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Tamanhos */
+.sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.md {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.lg {
+  height: 48px;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+/* Variantes */
+.primary {
+  background-color: var(--cortex-purple);
+  color: var(--cortex-white);
+  box-shadow: 0 2px 8px rgba(123, 79, 201, 0.3);
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--cortex-purple-hover);
+  box-shadow: 0 4px 12px rgba(123, 79, 201, 0.45);
+}
+
+.danger {
+  background-color: var(--cortex-red-danger);
+  color: var(--cortex-white);
+}
+
+.danger:hover:not(:disabled) {
+  background-color: var(--cortex-red-danger-hover);
+}
+
+.secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--cortex-white);
+  border-color: var(--cortex-border);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.outline {
+  background-color: transparent;
+  color: var(--cortex-white);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.outline:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--cortex-white);
+}
+
+.outlinePurple {
+  background-color: transparent;
+  color: var(--cortex-purple);
+  border-color: var(--cortex-purple);
+}
+
+.outlinePurple:hover:not(:disabled) {
+  background-color: rgba(123, 79, 201, 0.12);
+}
+
+/* Spinner de carregamento */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

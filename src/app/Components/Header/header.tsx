@@ -1,33 +1,69 @@
 'use client';
 
-import styles from './header.module.css';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { useState } from 'react';
+import styles from './header.module.css';
 
-export default function Header({ titulo }: { titulo: string }) {
-    const [isDarkTheme, setIsDarkTheme] = useState(false);
+export interface HeaderProps {
+  titulo: string;
+  subtitulo?: string;
+  onToggleSidebar?: () => void;
+}
 
-    return (
-        <div className={styles.header}>
-            <div className={styles.toggleButton}>
-                <Image src="/layout-sidebar-right-expand.svg" alt="Menu" width={32} height={32} />
-            </div>
-            
-            <div className={styles.titulo}>
-                <p>Workspace / Cortex</p>
-                <text>{titulo}</text>
-            </div>
+export default function Header({ titulo, subtitulo = 'Workspace / Cortex', onToggleSidebar }: HeaderProps) {
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
-                <Image
-                    className={styles.themeButton}
-                    src={isDarkTheme ? '/sun.svg' : '/moon.svg'}
-                    alt={isDarkTheme ? 'Tema claro' : 'Tema escuro'}
-                    width={32}
-                    height={32}
-                    onClick={() => setIsDarkTheme(!isDarkTheme)}
-                />
-                
-                <Image className={styles.notificationButton} src="/bell.svg" alt="Notificações" width={32} height={32} />
+  return (
+    <header className={styles.header}>
+      <div className={styles.leftSection}>
+        {onToggleSidebar && (
+          <button
+            type="button"
+            className={styles.toggleButton}
+            onClick={onToggleSidebar}
+            aria-label="Alternar barra lateral"
+          >
+            <Image
+              src="/layout-sidebar-right-expand.svg"
+              alt="Menu"
+              width={24}
+              height={24}
+            />
+          </button>
+        )}
+
+        <div className={styles.titulo}>
+          <span className={styles.breadcrumb}>{subtitulo}</span>
+          <h1 className={styles.pageTitle}>{titulo}</h1>
         </div>
-    );
+      </div>
+
+      <div className={styles.rightSection}>
+        <button
+          type="button"
+          className={styles.iconButton}
+          onClick={() => setIsDarkTheme(!isDarkTheme)}
+          title={isDarkTheme ? 'Tema claro' : 'Tema escuro'}
+          aria-label="Alternar tema"
+        >
+          <Image
+            src={isDarkTheme ? '/sun.svg' : '/moon.svg'}
+            alt="Tema"
+            width={20}
+            height={20}
+          />
+        </button>
+
+        <button
+          type="button"
+          className={styles.iconButton}
+          title="Notificações"
+          aria-label="Notificações"
+        >
+          <Image src="/bell.svg" alt="Notificações" width={20} height={20} />
+          <span className={styles.notificationBadge} />
+        </button>
+      </div>
+    </header>
+  );
 }
