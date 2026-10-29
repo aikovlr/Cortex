@@ -23,7 +23,7 @@
 }
 
 .backBtn:hover {
-  color: black;
+  color: var(--text-primary);
 }
 
 .loadingWrapper {
@@ -493,8 +493,8 @@
 }
 
 .tabBtn:hover {
-  color: #12192C;
-  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
 }
 
 .tabBtnActive {

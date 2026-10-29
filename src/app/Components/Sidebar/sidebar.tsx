@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,11 +10,8 @@ import styles from './sidebar.module.css';
 export default function Sidebar() {
   const pathname = usePathname();
   const { usuario, logout } = useAuth();
-  const [imgError, setImgError] = useState(false);
-
-  useEffect(() => {
-    setImgError(false);
-  }, [usuario?.fotoPerfil?.urlCaminho]);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const fotoUrl = usuario?.fotoPerfil?.urlCaminho;
 
   const menuItems = [
     {
@@ -91,13 +88,14 @@ export default function Sidebar() {
       </nav>
 
       <div className={styles.footer}>
-        {usuario?.fotoPerfil?.urlCaminho && !imgError ? (
+        {fotoUrl && failedUrl !== fotoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={usuario.fotoPerfil.urlCaminho}
+            key={fotoUrl}
+            src={fotoUrl}
             alt={usuario.nome}
             className={styles.avatar}
-            onError={() => setImgError(true)}
+            onError={() => setFailedUrl(fotoUrl)}
           />
         ) : (
           <div className={styles.avatarFallback} aria-label={usuario?.nome || 'Usuário'}>

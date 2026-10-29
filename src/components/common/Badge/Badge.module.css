@@ -9,59 +9,60 @@
   line-height: 1;
   text-transform: capitalize;
   white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Status */
 .pendente {
-  background-color: #FFF3CD;
-  color: #856404;
+  background-color: var(--badge-pendente-bg, #FFF3CD);
+  color: var(--badge-pendente-text, #856404);
 }
 
 .atrasada,
 .emAtraso {
-  background-color: #F8D7DA;
-  color: #721C24;
+  background-color: var(--badge-atrasada-bg, #F8D7DA);
+  color: var(--badge-atrasada-text, #721C24);
 }
 
 .concluida {
-  background-color: #D4EDDA;
-  color: #155724;
+  background-color: var(--badge-concluida-bg, #D4EDDA);
+  color: var(--badge-concluida-text, #155724);
 }
 
 /* Prioridades */
 .baixa {
-  background-color: rgba(52, 152, 219, 0.15);
-  color: #3498db;
+  background-color: var(--badge-baixa-bg, rgba(52, 152, 219, 0.15));
+  color: var(--badge-baixa-text, #2980b9);
 }
 
 .media {
-  background-color: rgba(243, 156, 18, 0.15);
-  color: #e67e22;
+  background-color: var(--badge-media-bg, rgba(243, 156, 18, 0.15));
+  color: var(--badge-media-text, #b96500);
 }
 
 .alta {
-  background-color: rgba(230, 126, 34, 0.2);
-  color: #d35400;
+  background-color: var(--badge-alta-bg, rgba(230, 126, 34, 0.2));
+  color: var(--badge-alta-text, #c0392b);
 }
 
 .urgente {
-  background-color: rgba(214, 49, 49, 0.2);
-  color: #e74c3c;
+  background-color: var(--badge-urgente-bg, rgba(214, 49, 49, 0.2));
+  color: var(--badge-urgente-text, #c0392b);
   font-weight: 700;
 }
 
 /* Cargos */
 .dono {
   background-color: rgba(123, 79, 201, 0.25);
-  color: #a881fc;
+  color: #c4b5fd;
 }
 
 .admin {
   background-color: rgba(41, 128, 185, 0.25);
-  color: #5dade2;
+  color: #7dd3fc;
 }
 
 .membro {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #d5d8dc;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Header from '@/app/Components/Header/header';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAccessibility, FontSize } from '@/contexts/AccessibilityContext';
+import { useAccessibility, FontSize, Theme } from '@/contexts/AccessibilityContext';
 import { usuarioService } from '@/services/usuarioService';
 import { authService } from '@/services/authService';
 import { notificacaoService } from '@/services/notificacaoService';
@@ -16,7 +16,7 @@ type ConfigTab = 'account' | 'accessibility' | 'notifications';
 
 export default function ConfiguracoesPage() {
   const { usuario, recarregarPerfil, logout } = useAuth();
-  const { fontSize, setFontSize, highContrast, setHighContrast } = useAccessibility();
+  const { fontSize, setFontSize, highContrast, setHighContrast, theme, setTheme } = useAccessibility();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<ConfigTab>('account');
@@ -88,6 +88,14 @@ export default function ConfiguracoesPage() {
   const handleSelectFontSize = (size: FontSize) => {
     setFontSize(size);
     showToast('Tamanho de fonte atualizado com sucesso!', 'success');
+  };
+
+  const handleSelectTheme = (selectedTheme: Theme) => {
+    setTheme(selectedTheme);
+    showToast(
+      selectedTheme === 'dark' ? 'Tema escuro ativado!' : 'Tema claro ativado!',
+      'info'
+    );
   };
 
   const handleToggleHighContrast = (checked: boolean) => {
@@ -524,6 +532,58 @@ export default function ConfiguracoesPage() {
       {/* CONTEÚDO DA ABA 2: ACESSIBILIDADE */}
       {activeTab === 'accessibility' && (
         <div className={styles.tabContent}>
+          {/* Opção de Tema da Interface */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>Tema da Interface</h2>
+              <p className={styles.cardSubtitle}>
+                Escolha a aparência visual do Cortex de acordo com a sua preferência ou iluminação do ambiente
+              </p>
+            </div>
+
+            <div className={styles.fontSizeGrid}>
+              <div
+                onClick={() => handleSelectTheme('light')}
+                className={`${styles.fontSizeOption} ${theme === 'light' ? styles.fontSizeOptionActive : ''}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={theme === 'light'}
+                onKeyDown={(e) => e.key === 'Enter' && handleSelectTheme('light')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <Image
+                    src="/sun.svg"
+                    alt=""
+                    width={22}
+                    height={22}
+                    style={{ filter: 'var(--icon-filter)' }}
+                  />
+                </div>
+                Modo Claro
+              </div>
+
+              <div
+                onClick={() => handleSelectTheme('dark')}
+                className={`${styles.fontSizeOption} ${theme === 'dark' ? styles.fontSizeOptionActive : ''}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={theme === 'dark'}
+                onKeyDown={(e) => e.key === 'Enter' && handleSelectTheme('dark')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <Image
+                    src="/moon.svg"
+                    alt=""
+                    width={22}
+                    height={22}
+                    style={{ filter: 'var(--icon-filter)' }}
+                  />
+                </div>
+                Modo Escuro
+              </div>
+            </div>
+          </div>
+
           {/* Opção de Alto Contraste */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>

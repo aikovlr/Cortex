@@ -11,33 +11,139 @@
 
   --cortex-white: #FFFFFF;
   --cortex-bg-light: #E5E5E5;
-  --cortex-gray-text: #898899;
   --cortex-border: rgba(255, 255, 255, 0.12);
-  --cortex-border-light: rgba(0, 0, 0, 0.1);
 
-  /* Status e Alertas */
+  /* Status e Alertas Base */
   --cortex-green-success: #134011;
-  --cortex-green-badge-bg: #D4EDDA;
-  --cortex-green-badge-text: #155724;
-
   --cortex-red-danger: #D63131;
   --cortex-red-danger-hover: #ba2525;
-  --cortex-red-badge-bg: #F8D7DA;
-  --cortex-red-badge-text: #721C24;
 
-  --cortex-yellow-badge-bg: #FFF3CD;
-  --cortex-yellow-badge-text: #856404;
+  /* ============================================================
+     Variáveis Semânticas do Tema: MODO CLARO (Padrão)
+     ============================================================ */
+  --bg-main: #f0f2f5;
+  --bg-header: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-secondary: #fafbfc;
+  --bg-surface-hover: #f7f8fc;
+  --bg-input: #ffffff;
+  --bg-input-disabled: #f8fafc;
+  --bg-icon-btn: #f5f6f9;
+  --bg-icon-btn-hover: #ebeef5;
+
+  --border-main: rgba(0, 0, 0, 0.08);
+  --border-light: rgba(0, 0, 0, 0.04);
+  --border-input: rgba(0, 0, 0, 0.12);
+
+  --text-primary: #12192C;
+  --text-secondary: #525064; /* WCAG AA: 5.6:1 contrast against #ffffff, 4.8:1 against #f0f2f5 */
+  --text-muted: #6e6d80;
+
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-input: 0 2px 6px rgba(0, 0, 0, 0.03);
+
+  --icon-filter: none;
+
+  /* Badges em Modo Claro */
+  --badge-pendente-bg: #FFF3CD;
+  --badge-pendente-text: #856404;
+  --badge-concluida-bg: #D4EDDA;
+  --badge-concluida-text: #155724;
+  --badge-atrasada-bg: #F8D7DA;
+  --badge-atrasada-text: #721C24;
+
+  --badge-baixa-bg: rgba(52, 152, 219, 0.15);
+  --badge-baixa-text: #2980b9;
+  --badge-media-bg: rgba(243, 156, 18, 0.15);
+  --badge-media-text: #b96500;
+  --badge-alta-bg: rgba(230, 126, 34, 0.2);
+  --badge-alta-text: #c0392b;
+  --badge-urgente-bg: rgba(214, 49, 49, 0.2);
+  --badge-urgente-text: #c0392b;
+
+  --cortex-gray-text: var(--text-secondary);
+  --cortex-border-light: var(--border-main);
+  --cortex-green-badge-bg: var(--badge-concluida-bg);
+  --cortex-green-badge-text: var(--badge-concluida-text);
+  --cortex-red-badge-bg: var(--badge-atrasada-bg);
+  --cortex-red-badge-text: var(--badge-atrasada-text);
+  --cortex-yellow-badge-bg: var(--badge-pendente-bg);
+  --cortex-yellow-badge-text: var(--badge-pendente-text);
 
   /* Aliases para compatibilidade */
-  --background: var(--cortex-dark-blue);
-  --foreground: var(--cortex-white);
+  --background: var(--bg-main);
+  --foreground: var(--text-primary);
   --primary: var(--cortex-purple);
-  --surface: var(--cortex-white);
+  --surface: var(--bg-surface);
   --muted: var(--cortex-bg-light);
-  --cinzaTexto: var(--cortex-gray-text);
+  --cinzaTexto: var(--text-secondary);
   --azul: var(--cortex-dark-blue);
   --verde: var(--cortex-green-success);
   --vermelho: var(--cortex-red-danger);
+}
+
+/* ============================================================
+   Variáveis Semânticas do Tema: MODO ESCURO
+   Seguindo a paleta oficial Cortex (Charter Seção 5) e WCAG AA/AAA
+   ============================================================ */
+html[data-theme="dark"],
+html.dark {
+  --bg-main: rgb(24, 24, 24);
+  --bg-header: #242424ff;
+  --bg-surface: #282828;
+  --bg-surface-secondary: #2f2f2f;
+  --bg-surface-hover: #353535;
+  --bg-input: #1a1a1a;
+  --bg-input-disabled: #222222;
+  --bg-icon-btn: #2c2c2c;
+  --bg-icon-btn-hover: #363636;
+
+  /* Harmonização para componentes legados */
+
+
+  --border-main: rgba(255, 255, 255, 0.12);
+  --border-light: rgba(255, 255, 255, 0.06);
+  --border-input: rgba(255, 255, 255, 0.16);
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #CBD5E1; /* WCAG AAA: 9.9:1 contra #282828, 11.0:1 contra #202020 */
+  --text-muted: #94A3B8;    /* WCAG AA: 5.8:1 contra #282828, 6.4:1 contra #202020 */
+
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-input: 0 2px 6px rgba(0, 0, 0, 0.25);
+
+  --icon-filter: brightness(0) invert(1);
+
+  /* Badges em Modo Escuro - WCAG AA & AAA */
+  --badge-pendente-bg: rgba(245, 158, 11, 0.22);
+  --badge-pendente-text: #FDE047;
+  --badge-concluida-bg: rgba(16, 185, 129, 0.22);
+  --badge-concluida-text: #6EE7B7;
+  --badge-atrasada-bg: rgba(239, 68, 68, 0.24);
+  --badge-atrasada-text: #FCA5A5;
+
+  --badge-baixa-bg: rgba(59, 130, 246, 0.22);
+  --badge-baixa-text: #93C5FD;
+  --badge-media-bg: rgba(249, 115, 22, 0.22);
+  --badge-media-text: #FDBA74;
+  --badge-alta-bg: rgba(234, 88, 12, 0.24);
+  --badge-alta-text: #FED7AA;
+  --badge-urgente-bg: rgba(220, 38, 38, 0.26);
+  --badge-urgente-text: #FECACA;
+
+  --cortex-gray-text: var(--text-secondary);
+  --cortex-border-light: var(--border-main);
+  --cortex-green-badge-bg: var(--badge-concluida-bg);
+  --cortex-green-badge-text: var(--badge-concluida-text);
+  --cortex-red-badge-bg: var(--badge-atrasada-bg);
+  --cortex-red-badge-text: var(--badge-atrasada-text);
+  --cortex-yellow-badge-bg: var(--badge-pendente-bg);
+  --cortex-yellow-badge-text: var(--badge-pendente-text);
+
+  --background: var(--bg-main);
+  --foreground: var(--text-primary);
+  --surface: var(--bg-surface);
+  --cinzaTexto: var(--text-secondary);
 }
 
 * {
@@ -73,6 +179,12 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+}
+
+/* Acessibilidade WCAG 2.4.7: Focus visível */
+:focus-visible {
+  outline: 2px solid var(--cortex-purple);
+  outline-offset: 2px;
 }
 
 input,
@@ -172,24 +284,55 @@ html[data-font-size="large"] p {
 }
 
 /* ============================================================
-   Acessibilidade: Modo de Alto Contraste (Focado no Texto)
-   Apenas ajusta o contraste, cor e peso da tipografia,
-   sem adicionar bordas ou contornos aos blocos de texto.
+   Acessibilidade: Modo de Alto Contraste (Modo Claro)
    ============================================================ */
-html.high-contrast,
-html[data-high-contrast="true"] {
+html.high-contrast:not([data-theme="dark"]):not(.dark),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) {
   --cortex-gray-text: #000000 !important;
   --cinzaTexto: #000000 !important;
+  --text-secondary: #000000 !important;
 }
 
-/* Textos no conteúdo principal (área clara do dashboard) */
-html.high-contrast [class*="mainContent"],
-html[data-high-contrast="true"] [class*="mainContent"] {
+/* Textos na área clara do dashboard (excluindo containers escuros/azuis) */
+html.high-contrast:not([data-theme="dark"]):not(.dark) [class*="mainContent"]:not(
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="sugestaoCard"],
+    [class*="loadingWrapper"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="dialog"],
+    [class*="addResponsavelModal"],
+    [class*="confirmModal"],
+    [class*="emptySugestoes"],
+    [class*="loadingScreen"]
+  )
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) [class*="mainContent"]:not(
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="sugestaoCard"],
+    [class*="loadingWrapper"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="dialog"],
+    [class*="addResponsavelModal"],
+    [class*="confirmModal"],
+    [class*="emptySugestoes"],
+    [class*="loadingScreen"]
+  )
+) {
   color: #000000 !important;
 }
 
-/* Títulos, subtítulos, descrições, labels e textos gerais em preto puro e nítido */
-html.high-contrast :is(
+/* Títulos, subtítulos, descrições, labels e textos gerais em superfícies claras */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
   h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
   [class*="pageTitle"],
   [class*="cardTitle"],
@@ -198,8 +341,41 @@ html.high-contrast :is(
   [class*="toggleDesc"],
   [class*="breadcrumb"],
   [class*="label"]
+):not(
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="sugestaoCard"],
+    [class*="loadingWrapper"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="dialog"],
+    [class*="addResponsavelModal"],
+    [class*="confirmModal"],
+    [class*="emptySugestoes"],
+    [class*="loadingScreen"],
+    [class*="btnPrimary"],
+    [class*="btnSave"],
+    [class*="btnComplete"],
+    [class*="btnDelete"],
+    [class*="btnCancelDelivery"],
+    [class*="createBtn"],
+    [class*="addButton"],
+    [class*="editButton"],
+    [class*="filterBtn"],
+    [class*="deleteBtn"],
+    [class*="deleteTeamBtn"],
+    [class*="addMemberBtn"],
+    [class*="createFirstBtn"],
+    [class*="resolveTicketBtn"],
+    [style*="--cortex-dark"],
+    [style*="#12192C"],
+    [style*="#18223B"]
+  ) *
 ),
-html[data-high-contrast="true"] :is(
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
   h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
   [class*="pageTitle"],
   [class*="cardTitle"],
@@ -208,53 +384,542 @@ html[data-high-contrast="true"] :is(
   [class*="toggleDesc"],
   [class*="breadcrumb"],
   [class*="label"]
+):not(
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="sugestaoCard"],
+    [class*="loadingWrapper"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="dialog"],
+    [class*="addResponsavelModal"],
+    [class*="confirmModal"],
+    [class*="emptySugestoes"],
+    [class*="loadingScreen"],
+    [class*="btnPrimary"],
+    [class*="btnSave"],
+    [class*="btnComplete"],
+    [class*="btnDelete"],
+    [class*="btnCancelDelivery"],
+    [class*="createBtn"],
+    [class*="addButton"],
+    [class*="editButton"],
+    [class*="filterBtn"],
+    [class*="deleteBtn"],
+    [class*="deleteTeamBtn"],
+    [class*="addMemberBtn"],
+    [class*="createFirstBtn"],
+    [class*="resolveTicketBtn"],
+    [style*="--cortex-dark"],
+    [style*="#12192C"],
+    [style*="#18223B"]
+  ) *
 ) {
   color: #000000 !important;
   outline: none !important;
   text-shadow: none !important;
 }
 
-/* Reforço de peso para maior legibilidade */
-html.high-contrast :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]),
-html[data-high-contrast="true"] :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]) {
+/* Reforço de peso para maior legibilidade em superfícies claras */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+) {
   font-weight: 700 !important;
 }
 
-html.high-contrast :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]),
-html[data-high-contrast="true"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]) {
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+) {
   font-weight: 500 !important;
   opacity: 0.95 !important;
 }
 
-html.high-contrast :is(label, [class*="label"], [class*="toggleTitle"]),
-html[data-high-contrast="true"] :is(label, [class*="label"], [class*="toggleTitle"]) {
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(label, [class*="label"], [class*="toggleTitle"]):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(label, [class*="label"], [class*="toggleTitle"]):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+) {
   font-weight: 600 !important;
 }
 
-/* Abas de navegação em alto contraste */
-html.high-contrast [class*="tabBtn"],
-html[data-high-contrast="true"] [class*="tabBtn"] {
+/* Abas de navegação em alto contraste sobre fundo claro */
+html.high-contrast:not([data-theme="dark"]):not(.dark) [class*="tabBtn"]:not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"]) *
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) [class*="tabBtn"]:not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"]) *
+) {
   color: #000000 !important;
   font-weight: 600 !important;
 }
 
-html.high-contrast [class*="tabBtnActive"],
-html[data-high-contrast="true"] [class*="tabBtnActive"] {
+html.high-contrast:not([data-theme="dark"]):not(.dark) [class*="tabBtnActive"]:not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"]) *
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) [class*="tabBtnActive"]:not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"]) *
+) {
   color: #581c87 !important;
   font-weight: 700 !important;
   border-bottom: 2px solid #581c87 !important;
 }
 
-/* Área escura da Sidebar: texto em branco de alto contraste */
-html.high-contrast [class*="sidebar"] :is(span, p, a),
-html[data-high-contrast="true"] [class*="sidebar"] :is(span, p, a) {
+/* Inputs e selects em superfícies claras */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(input, select, textarea):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(input, select, textarea):not(
+  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+) {
+  color: #000000 !important;
+  font-weight: 500 !important;
+}
+
+/* ============================================================
+   Acessibilidade: Containers com Fundo Azul / Escuro no Modo Claro
+   (Sidebar, DetailsCard, ResponsaveisSection, ResponseCard, Modais, etc.)
+   Garante texto em branco 100% visível, nítido e em conformidade WCAG AAA
+   ============================================================ */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"],
+  [class*="addResponsavelModal"],
+  [class*="confirmModal"],
+  [class*="emptySugestoes"],
+  [class*="loadingScreen"],
+  [style*="--cortex-dark"],
+  [style*="#12192C"],
+  [style*="#18223B"]
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"],
+  [class*="addResponsavelModal"],
+  [class*="confirmModal"],
+  [class*="emptySugestoes"],
+  [class*="loadingScreen"],
+  [style*="--cortex-dark"],
+  [style*="#12192C"],
+  [style*="#18223B"]
+) {
+  --cortex-gray-text: #e2e8f0 !important;
+  --cinzaTexto: #e2e8f0 !important;
+  --text-secondary: #e2e8f0 !important;
+  --text-primary: #ffffff !important;
+  --foreground: #ffffff !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Todos os textos, títulos, subtítulos, labels e links dentro de containers azuis */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"],
+  [class*="addResponsavelModal"],
+  [class*="confirmModal"],
+  [class*="emptySugestoes"],
+  [class*="loadingScreen"],
+  [style*="--cortex-dark"],
+  [style*="#12192C"],
+  [style*="#18223B"]
+) :is(
+  h1, h2, h3, h4, h5, h6, p, span:not([class*="badge"]), label, a, button,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"],
+  [class*="taskTitle"],
+  [class*="sectionTitle"],
+  [class*="sectionSubtitle"],
+  [class*="tabBtn"],
+  [class*="tabCount"],
+  [class*="anexoNome"],
+  [class*="anexoCard"],
+  [class*="responsavelNome"],
+  [class*="responsavelEmail"],
+  [class*="authorName"],
+  [class*="authorRole"],
+  [class*="descText"],
+  [class*="ticketDesc"],
+  [class*="sugestaoDesc"],
+  [class*="metaValue"],
+  [class*="metaLabel"],
+  [class*="menuItem"],
+  [class*="userName"],
+  [class*="userEmail"],
+  [class*="brandText"],
+  [class*="emptyBox"],
+  [class*="ptsBadge"],
+  [class*="gradeBadge"],
+  [class*="fileTag"],
+  [class*="link"]
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"],
+  [class*="addResponsavelModal"],
+  [class*="confirmModal"],
+  [class*="emptySugestoes"],
+  [class*="loadingScreen"],
+  [style*="--cortex-dark"],
+  [style*="#12192C"],
+  [style*="#18223B"]
+) :is(
+  h1, h2, h3, h4, h5, h6, p, span:not([class*="badge"]), label, a, button,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"],
+  [class*="taskTitle"],
+  [class*="sectionTitle"],
+  [class*="sectionSubtitle"],
+  [class*="tabBtn"],
+  [class*="tabCount"],
+  [class*="anexoNome"],
+  [class*="anexoCard"],
+  [class*="responsavelNome"],
+  [class*="responsavelEmail"],
+  [class*="authorName"],
+  [class*="authorRole"],
+  [class*="descText"],
+  [class*="ticketDesc"],
+  [class*="sugestaoDesc"],
+  [class*="metaValue"],
+  [class*="metaLabel"],
+  [class*="menuItem"],
+  [class*="userName"],
+  [class*="userEmail"],
+  [class*="brandText"],
+  [class*="emptyBox"],
+  [class*="ptsBadge"],
+  [class*="gradeBadge"],
+  [class*="fileTag"],
+  [class*="link"]
+) {
+  color: #ffffff !important;
+  outline: none !important;
+  text-shadow: none !important;
+}
+
+/* Títulos e rótulos de campos dentro de containers azuis (reforço semântico) */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"]
+) :is(h1, h2, h3, label, [class*="taskTitle"], [class*="sectionTitle"], [class*="label"], [class*="cardTitle"]),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"]
+) :is(h1, h2, h3, label, [class*="taskTitle"], [class*="sectionTitle"], [class*="label"], [class*="cardTitle"]) {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Inputs, selects e textareas dentro de containers azuis */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"]
+) :is(input, select, textarea),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"]
+) :is(input, select, textarea) {
+  color: #ffffff !important;
+  background-color: var(--cortex-dark-input) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+  font-weight: 600 !important;
+}
+
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="modal"],
+  [class*="Modal"]
+) select option,
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="modal"],
+  [class*="Modal"]
+) select option {
+  color: #ffffff !important;
+  background-color: #12192C !important;
+}
+
+/* Botões coloridos (roxo, esmeralda, vermelho) com texto em branco de alto contraste */
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
+  [class*="btnPrimary"],
+  [class*="btnSave"],
+  [class*="btnComplete"],
+  [class*="btnDelete"],
+  [class*="btnCancelDelivery"],
+  [class*="createBtn"],
+  [class*="addButton"],
+  [class*="editButton"],
+  [class*="filterBtn"],
+  [class*="deleteBtn"],
+  [class*="deleteTeamBtn"],
+  [class*="addMemberBtn"],
+  [class*="createFirstBtn"],
+  [class*="resolveTicketBtn"],
+  [class*="addRespBtn"],
+  [class*="approveBtn"]
+),
+html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
+  [class*="btnPrimary"],
+  [class*="btnSave"],
+  [class*="btnComplete"],
+  [class*="btnDelete"],
+  [class*="btnCancelDelivery"],
+  [class*="createBtn"],
+  [class*="addButton"],
+  [class*="editButton"],
+  [class*="filterBtn"],
+  [class*="deleteBtn"],
+  [class*="deleteTeamBtn"],
+  [class*="addMemberBtn"],
+  [class*="createFirstBtn"],
+  [class*="resolveTicketBtn"],
+  [class*="addRespBtn"],
+  [class*="approveBtn"]
+) *,
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
+  [class*="btnPrimary"],
+  [class*="btnSave"],
+  [class*="btnComplete"],
+  [class*="btnDelete"],
+  [class*="btnCancelDelivery"],
+  [class*="createBtn"],
+  [class*="addButton"],
+  [class*="editButton"],
+  [class*="filterBtn"],
+  [class*="deleteBtn"],
+  [class*="deleteTeamBtn"],
+  [class*="addMemberBtn"],
+  [class*="createFirstBtn"],
+  [class*="resolveTicketBtn"],
+  [class*="addRespBtn"],
+  [class*="approveBtn"]
+),
+html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
+  [class*="btnPrimary"],
+  [class*="btnSave"],
+  [class*="btnComplete"],
+  [class*="btnDelete"],
+  [class*="btnCancelDelivery"],
+  [class*="createBtn"],
+  [class*="addButton"],
+  [class*="editButton"],
+  [class*="filterBtn"],
+  [class*="deleteBtn"],
+  [class*="deleteTeamBtn"],
+  [class*="addMemberBtn"],
+  [class*="createFirstBtn"],
+  [class*="resolveTicketBtn"],
+  [class*="addRespBtn"],
+  [class*="approveBtn"]
+) * {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* ============================================================
+   Acessibilidade: Modo de Alto Contraste (Modo Escuro)
+   ============================================================ */
+html[data-theme="dark"].high-contrast,
+html[data-theme="dark"][data-high-contrast="true"],
+html.dark.high-contrast,
+html.dark[data-high-contrast="true"] {
+  --cortex-gray-text: #ffffff !important;
+  --cinzaTexto: #ffffff !important;
+  --text-secondary: #ffffff !important;
+  --border-main: rgba(255, 255, 255, 0.4) !important;
+  --border-input: rgba(255, 255, 255, 0.5) !important;
+}
+
+html[data-theme="dark"].high-contrast [class*="mainContent"],
+html[data-theme="dark"][data-high-contrast="true"] [class*="mainContent"],
+html.dark.high-contrast [class*="mainContent"],
+html.dark[data-high-contrast="true"] [class*="mainContent"] {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"].high-contrast :is(
+  h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"],
+  [class*="td"],
+  [class*="taskTitle"],
+  [class*="emptyTitle"]
+),
+html[data-theme="dark"][data-high-contrast="true"] :is(
+  h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"],
+  [class*="td"],
+  [class*="taskTitle"],
+  [class*="emptyTitle"]
+),
+html.dark.high-contrast :is(
+  h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"],
+  [class*="td"],
+  [class*="taskTitle"],
+  [class*="emptyTitle"]
+),
+html.dark[data-high-contrast="true"] :is(
+  h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"],
+  [class*="td"],
+  [class*="taskTitle"],
+  [class*="emptyTitle"]
+) {
+  color: #ffffff !important;
+  outline: none !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="dark"].high-contrast :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]),
+html[data-theme="dark"][data-high-contrast="true"] :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]),
+html.dark.high-contrast :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]),
+html.dark[data-high-contrast="true"] :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]) {
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"].high-contrast :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]),
+html[data-theme="dark"][data-high-contrast="true"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]),
+html.dark.high-contrast :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]),
+html.dark[data-high-contrast="true"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]) {
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="dark"].high-contrast :is(label, [class*="label"], [class*="toggleTitle"]),
+html[data-theme="dark"][data-high-contrast="true"] :is(label, [class*="label"], [class*="toggleTitle"]),
+html.dark.high-contrast :is(label, [class*="label"], [class*="toggleTitle"]),
+html.dark[data-high-contrast="true"] :is(label, [class*="label"], [class*="toggleTitle"]) {
+  font-weight: 600 !important;
+}
+
+html[data-theme="dark"].high-contrast [class*="tabBtn"],
+html[data-theme="dark"][data-high-contrast="true"] [class*="tabBtn"],
+html.dark.high-contrast [class*="tabBtn"],
+html.dark[data-high-contrast="true"] [class*="tabBtn"] {
   color: #ffffff !important;
   font-weight: 600 !important;
 }
 
-/* Inputs e selects com texto contrastante */
-html.high-contrast :is(input, select, textarea),
-html[data-high-contrast="true"] :is(input, select, textarea) {
-  color: #000000 !important;
+html[data-theme="dark"].high-contrast [class*="tabBtnActive"],
+html[data-theme="dark"][data-high-contrast="true"] [class*="tabBtnActive"],
+html.dark.high-contrast [class*="tabBtnActive"],
+html.dark[data-high-contrast="true"] [class*="tabBtnActive"] {
+  color: #c4b5fd !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #c4b5fd !important;
+}
+
+html[data-theme="dark"].high-contrast :is(input, select, textarea),
+html[data-theme="dark"][data-high-contrast="true"] :is(input, select, textarea),
+html.dark.high-contrast :is(input, select, textarea),
+html.dark[data-high-contrast="true"] :is(input, select, textarea) {
+  color: #ffffff !important;
   font-weight: 500 !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }

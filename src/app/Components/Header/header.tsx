@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
+import { useAccessibility } from '@/contexts/AccessibilityContext';
 import styles from './header.module.css';
 
 export interface HeaderProps {
@@ -11,7 +12,8 @@ export interface HeaderProps {
 }
 
 export default function Header({ titulo, subtitulo = 'Workspace / Cortex', onToggleSidebar }: HeaderProps) {
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const { theme, toggleTheme } = useAccessibility();
+  const isDark = theme === 'dark';
 
   return (
     <header className={styles.header}>
@@ -42,13 +44,13 @@ export default function Header({ titulo, subtitulo = 'Workspace / Cortex', onTog
         <button
           type="button"
           className={styles.iconButton}
-          onClick={() => setIsDarkTheme(!isDarkTheme)}
-          title={isDarkTheme ? 'Tema claro' : 'Tema escuro'}
-          aria-label="Alternar tema"
+          onClick={toggleTheme}
+          title={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
+          aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
         >
           <Image
-            src={isDarkTheme ? '/sun.svg' : '/moon.svg'}
-            alt="Tema"
+            src={isDark ? '/sun.svg' : '/moon.svg'}
+            alt={isDark ? 'Ícone de sol para ativar modo claro' : 'Ícone de lua para ativar modo escuro'}
             width={20}
             height={20}
           />

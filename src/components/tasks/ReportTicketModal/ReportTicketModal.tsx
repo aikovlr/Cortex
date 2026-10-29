@@ -11,6 +11,7 @@ interface ReportTicketModalProps {
   onClose: () => void;
   tarefaId: number;
   tarefaTitulo: string;
+  onSuccess?: () => void;
 }
 
 export const ReportTicketModal: React.FC<ReportTicketModalProps> = ({
@@ -18,6 +19,7 @@ export const ReportTicketModal: React.FC<ReportTicketModalProps> = ({
   onClose,
   tarefaId,
   tarefaTitulo,
+  onSuccess,
 }) => {
   const { showToast } = useToast();
   const [descricao, setDescricao] = useState('');
@@ -35,6 +37,7 @@ export const ReportTicketModal: React.FC<ReportTicketModalProps> = ({
       await ticketService.abrirTicket(tarefaId, descricao.trim());
       showToast('Ticket de reporte registrado e notificado aos superiores!', 'success');
       setDescricao('');
+      onSuccess?.();
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {

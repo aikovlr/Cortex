@@ -22,7 +22,7 @@
 }
 
 .backBtn:hover {
-  color: black;
+  color: var(--text-primary);
 }
 
 .detailsCard {
@@ -77,7 +77,7 @@
 .btnPrimary {
   height: 42px;
   padding: 0 18px;
-  background-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.9);
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
@@ -91,7 +91,7 @@
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background-color: #059669;
+  background-color: rgba(16, 185, 129, 0.5);
   transform: translateY(-1px);
 }
 
@@ -103,8 +103,8 @@
 .btnSecondary {
   height: 42px;
   padding: 0 16px;
-  background-color: rgba(123, 79, 201, 0.15);
-  border: 1px solid rgba(123, 79, 201, 0.3);
+  background-color: rgba(123, 79, 201, 0.9);
+  border: 1px solid rgba(123, 79, 201, 0.5);
   color: var(--cortex-white);
   font-size: 13px;
   font-weight: 600;
@@ -130,9 +130,9 @@
 .btnDanger {
   height: 42px;
   padding: 0 16px;
-  background-color: rgba(214, 49, 49, 0.15);
-  border: 1px solid rgba(214, 49, 49, 0.3);
-  color: #ff8888;
+  background-color: rgba(214, 49, 49, 0.9);
+  border: 1px solid rgba(214, 49, 49, 0.5);
+  color: white;
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
@@ -323,4 +323,196 @@
   text-align: center;
   color: var(--cortex-gray-text);
   font-size: 15px;
+}
+
+/* Abas de Navegação (Minhas Tarefas) */
+.tabsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-main, rgba(255, 255, 255, 0.08));
+  padding-bottom: 4px;
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-gray-text);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.tabBtn:hover {
+  color: var(--text-primary, #ffffff);
+  background: var(--bg-surface-hover, rgba(255, 255, 255, 0.04));
+}
+
+.tabBtnActive {
+  color: var(--cortex-purple);
+  background: rgba(123, 79, 201, 0.12);
+  font-weight: 600;
+}
+
+.tabCount {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cortex-gray-text);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.tabBtnActive .tabCount {
+  background: var(--cortex-purple);
+  color: #ffffff;
+}
+
+.subSectionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cortex-white);
+  margin: 0;
+}
+
+.ticketsList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.itemCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--cortex-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s ease;
+}
+
+.itemCard:hover {
+  border-color: rgba(123, 79, 201, 0.35);
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.authorBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: rgba(123, 79, 201, 0.2);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.authorMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.authorName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cortex-white);
+}
+
+.itemDate {
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+}
+
+.itemDescription {
+  font-size: 14px;
+  color: #d1d5db;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 3px solid var(--cortex-purple);
+}
+
+.ticketDesc {
+  border-left-color: #f59e0b;
+}
+
+.statusTag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.tagAberto {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.tagFechado {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.tagRejeitado {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.ticketFooterNote {
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ticketFooterNoteText {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+}
+
+.ticketsContainersWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.emptyBox {
+  padding: 32px;
+  text-align: center;
+  color: var(--cortex-gray-text);
+  font-size: 14px;
 }

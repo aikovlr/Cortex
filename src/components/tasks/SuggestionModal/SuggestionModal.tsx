@@ -11,6 +11,7 @@ interface SuggestionModalProps {
   onClose: () => void;
   tarefaId: number;
   tarefaTitulo: string;
+  onSuccess?: () => void;
 }
 
 export const SuggestionModal: React.FC<SuggestionModalProps> = ({
@@ -18,6 +19,7 @@ export const SuggestionModal: React.FC<SuggestionModalProps> = ({
   onClose,
   tarefaId,
   tarefaTitulo,
+  onSuccess,
 }) => {
   const { showToast } = useToast();
   const [descricao, setDescricao] = useState('');
@@ -35,6 +37,7 @@ export const SuggestionModal: React.FC<SuggestionModalProps> = ({
       await sugestaoService.submeterSugestao(tarefaId, descricao.trim());
       showToast('Sugestão enviada com sucesso para o criador da tarefa!', 'success');
       setDescricao('');
+      onSuccess?.();
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {

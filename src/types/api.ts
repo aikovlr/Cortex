@@ -75,6 +75,7 @@ export interface ConsultaTarefaDTO {
   status: StatusTarefa;
   prioridade: Prioridade;
   criadorId: number;
+  dataCriacao?: string;
 }
 
 export interface ConsultaResponsavelTarefaDTO {

@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--border-main);
   padding-bottom: 4px;
 }
 
@@ -30,13 +30,13 @@
 }
 
 .tabBtn:hover {
-  color: #12192C;
-  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
 }
 
 .tabBtnActive {
   color: var(--cortex-purple);
-  background: rgba(123, 79, 201, 0.1);
+  background: rgba(123, 79, 201, 0.12);
   font-weight: 600;
 }
 
@@ -47,28 +47,29 @@
 }
 
 .card {
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
   border-radius: 16px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-card);
+  transition: background-color 0.25s, border-color 0.25s;
 }
 
 .cardHeader {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--border-main);
   padding-bottom: 14px;
 }
 
 .cardTitle {
   font-size: 17px;
   font-weight: 600;
-  color: #12192C;
+  color: var(--text-primary);
 }
 
 .cardSubtitle {
@@ -95,8 +96,8 @@
   font-size: 26px;
   font-weight: 700;
   overflow: hidden;
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 2px solid var(--border-main);
+  box-shadow: var(--shadow-input);
 }
 
 .avatarImage {
@@ -112,9 +113,9 @@
 }
 
 .uploadBtn {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  color: #12192C;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-input);
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
   padding: 8px 14px;
@@ -123,17 +124,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  box-shadow: var(--shadow-input);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .uploadBtn:hover {
-  background: #f7f8fc;
-  border-color: rgba(0, 0, 0, 0.2);
+  background: var(--bg-surface-hover);
+  border-color: rgba(123, 79, 201, 0.4);
 }
 
 .removePhotoBtn {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid rgba(214, 49, 49, 0.3);
   color: var(--cortex-red-danger);
   font-size: 13px;
@@ -144,12 +145,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-input);
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .removePhotoBtn:hover:not(:disabled) {
-  background: #fdf2f2;
+  background: rgba(214, 49, 49, 0.1);
   border-color: var(--cortex-red-danger);
   color: var(--cortex-red-danger-hover);
 }
@@ -174,21 +175,21 @@
 .label {
   font-size: 13px;
   font-weight: 600;
-  color: #12192C;
+  color: var(--text-primary);
 }
 
 .input {
   width: 100%;
   height: 44px;
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   padding: 0 14px;
-  color: #12192C;
+  color: var(--text-primary);
   font-size: 14px;
   outline: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-input);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s, color 0.25s;
 }
 
 .input:focus {
@@ -197,7 +198,7 @@
 }
 
 .input:disabled {
-  background-color: #f8fafc;
+  background-color: var(--bg-input-disabled);
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -216,21 +217,21 @@
 }
 
 .verified {
-  background: rgba(19, 64, 17, 0.1);
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: rgba(19, 64, 17, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .unverified {
-  background: rgba(214, 49, 49, 0.08);
-  color: #721C24;
-  border: 1px solid #f5c6cb;
+  background: rgba(214, 49, 49, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* Área de perigo */
 .dangerCard {
-  border-color: rgba(214, 49, 49, 0.25);
-  background: rgba(214, 49, 49, 0.02);
+  border-color: rgba(214, 49, 49, 0.3);
+  background: rgba(214, 49, 49, 0.04);
 }
 
 .dangerTitle {
@@ -260,7 +261,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--border-main);
 }
 
 .toggleRow:last-child {
@@ -276,7 +277,7 @@
 .toggleTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #12192C;
+  color: var(--text-primary);
 }
 
 .toggleDesc {
@@ -304,8 +305,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #cbd5e1;
-  border: 1px solid #cbd5e1;
+  background-color: #64748b;
+  border: 1px solid #64748b;
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -340,16 +341,16 @@ input:checked + .slider:before {
 }
 
 .fontSizeOption {
-  background-color: #ffffff;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  background-color: var(--bg-surface);
+  border: 1.5px solid var(--border-main);
   border-radius: 12px;
   padding: 16px;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
-  color: #12192C;
+  color: var(--text-primary);
   font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-input);
 }
 
 .fontSizeOption:hover {
@@ -358,7 +359,7 @@ input:checked + .slider:before {
 
 .fontSizeOptionActive {
   border-color: var(--cortex-purple);
-  background-color: rgba(123, 79, 201, 0.08);
+  background-color: rgba(123, 79, 201, 0.12);
   color: var(--cortex-purple);
   font-weight: 700;
 }
