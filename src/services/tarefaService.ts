@@ -92,6 +92,34 @@ export const tarefaService = {
   },
 
   /**
+   * Cancela a conclusão de uma tarefa (reverte para Pendente ou Atrasada)
+   */
+  async cancelarConclusaoTarefa(id: number): Promise<DetalhesTarefaDTO> {
+    return apiFetch<DetalhesTarefaDTO>(`/api/tarefa/${id}/cancelar-conclusao`, {
+      method: 'PATCH',
+    });
+  },
+
+  /**
+   * Adiciona anexos a uma tarefa existente (/api/tarefas/{id}/anexos)
+   */
+  async adicionarAnexos(tarefaId: number, formData: FormData) {
+    return apiFetch(`/api/tarefas/${tarefaId}/anexos`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  /**
+   * Remove um anexo da tarefa (/api/anexos/{id})
+   */
+  async removerAnexo(anexoId: number): Promise<void> {
+    return apiFetch<void>(`/api/anexos/${anexoId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
    * Atribui um responsável individual a uma tarefa
    */
   async atribuirResponsavel(tarefaId: number, usuarioId: number): Promise<ConsultaResponsavelTarefaDTO> {

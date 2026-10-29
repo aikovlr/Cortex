@@ -100,13 +100,9 @@ export default function Sidebar() {
             onError={() => setImgError(true)}
           />
         ) : (
-          <Image
-            src="/perfil.png"
-            alt="Perfil"
-            width={36}
-            height={36}
-            className={styles.avatar}
-          />
+          <div className={styles.avatarFallback} aria-label={usuario?.nome || 'Usuário'}>
+            {usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'U'}
+          </div>
         )}
 
 

@@ -67,34 +67,6 @@ export default function MetasPage() {
     };
   }, [showToast]);
 
-  // Alterna o status concluída da meta
-  const handleToggleConcluida = async (meta: ConsultaMetaDTO) => {
-    const novoStatus = !meta.concluida;
-
-    // Atualização otimista
-    setMetas((prev) =>
-      prev.map((m) => (m.id === meta.id ? { ...m, concluida: novoStatus } : m))
-    );
-
-    try {
-      await metaService.alternarConclusao(meta.id, novoStatus);
-      showToast(
-        novoStatus ? 'Meta marcada como concluída!' : 'Meta reaberta!',
-        'success'
-      );
-    } catch (err: unknown) {
-      // Reverte em caso de erro
-      setMetas((prev) =>
-        prev.map((m) => (m.id === meta.id ? { ...m, concluida: meta.concluida } : m))
-      );
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao atualizar status da meta.', 'error');
-      }
-    }
-  };
-
   // Exclusão de meta
   const handleDeleteMeta = async (id: number) => {
     if (!confirm('Deseja realmente excluir esta meta?')) return;
@@ -133,17 +105,74 @@ export default function MetasPage() {
     return tarefas.length > 0 && tarefas.every((t) => t.status === 'Concluida');
   }, [getTarefasDaMeta]);
 
-  // Filtragem por busca
+  // Determina o status da meta: Concluida, Atrasada ou Pendente
+  const getMetaStatus = useCallback(
+    (meta: ConsultaMetaDTO): 'Atrasada' | 'Pendente' | 'Concluida' => {
+      if (isMetaConcluida(meta)) {
+        return 'Concluida';
+      }
+
+      const agora = new Date();
+
+      if (meta.dataFechamento) {
+        const dataMeta = new Date(meta.dataFechamento);
+        if (meta.dataFechamento.includes('T00:00:00') || !meta.dataFechamento.includes('T')) {
+          const datePart = meta.dataFechamento.split('T')[0];
+          const [year, month, day] = datePart.split('-').map(Number);
+          if (year && month && day) {
+            const fim = new Date(year, month - 1, day, 23, 59, 59, 999);
+            if (fim < agora) return 'Atrasada';
+          } else if (dataMeta < agora) {
+            return 'Atrasada';
+          }
+        } else if (dataMeta < agora) {
+          return 'Atrasada';
+        }
+      }
+
+      const tarefas = getTarefasDaMeta(meta);
+      const temTarefaAtrasada = tarefas.some(
+        (t) =>
+          t.status === 'Atrasada' ||
+          (t.status !== 'Concluida' && t.dataVencimento && new Date(t.dataVencimento) < agora)
+      );
+
+      if (temTarefaAtrasada) {
+        return 'Atrasada';
+      }
+
+      return 'Pendente';
+    },
+    [getTarefasDaMeta, isMetaConcluida]
+  );
+
+  // Filtragem por busca e ordenação por status (Atrasada > Pendente > Concluida)
   const metasFiltradas = useMemo(() => {
-    if (!searchTerm.trim()) return metas;
-    const termo = searchTerm.toLowerCase();
-    return metas.filter((m) => {
-      const matchNome = m.nome.toLowerCase().includes(termo);
-      const tarefas = getTarefasDaMeta(m);
-      const matchTarefa = tarefas.some((t) => t.titulo.toLowerCase().includes(termo));
-      return matchNome || matchTarefa;
+    let filtradas = metas;
+    if (searchTerm.trim()) {
+      const termo = searchTerm.toLowerCase();
+      filtradas = metas.filter((m) => {
+        const matchNome = m.nome.toLowerCase().includes(termo);
+        const tarefas = getTarefasDaMeta(m);
+        const matchTarefa = tarefas.some((t) => t.titulo.toLowerCase().includes(termo));
+        return matchNome || matchTarefa;
+      });
+    }
+
+    const PRIORIDADE_STATUS: Record<string, number> = {
+      Atrasada: 1,
+      Pendente: 2,
+      Concluida: 3,
+    };
+
+    return [...filtradas].sort((a, b) => {
+      const statusA = getMetaStatus(a);
+      const statusB = getMetaStatus(b);
+      const pesoDiff = (PRIORIDADE_STATUS[statusA] ?? 99) - (PRIORIDADE_STATUS[statusB] ?? 99);
+      if (pesoDiff !== 0) return pesoDiff;
+      return a.id - b.id;
     });
-  }, [metas, searchTerm, getTarefasDaMeta]);
+  }, [metas, searchTerm, getTarefasDaMeta, getMetaStatus]);
 
   // Métricas gerais de gamificação
   const totalMetas = metas.length;
@@ -258,29 +287,19 @@ export default function MetasPage() {
             {metasFiltradas.map((meta) => {
               const tarefas = getTarefasDaMeta(meta);
               const progresso = getProgressoMeta(meta);
-              const concluida = isMetaConcluida(meta);
+              const status = getMetaStatus(meta);
+              const concluida = status === 'Concluida';
 
               return (
                 <div key={meta.id} className={styles.taskGroupCard}>
                   <div className={styles.groupHeader}>
                     <div className={styles.groupTitleWrapper}>
-                      <input
-                        type="checkbox"
-                        checked={concluida}
-                        onChange={() => handleToggleConcluida(meta)}
-                        className={styles.checkbox}
-                        title={
-                          concluida
-                            ? 'Clique para marcar como pendente'
-                            : 'Clique para concluir meta'
-                        }
-                      />
                       <span className={`${styles.taskName} ${concluida ? styles.goalNameCompleted : ''}`}>
                         {meta.nome}
                       </span>
                       <Badge
                         type="status"
-                        value={concluida ? 'Concluida' : 'Pendente'}
+                        value={status}
                       />
                       {meta.dataFechamento && (
                         <span className={styles.dateLimit} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

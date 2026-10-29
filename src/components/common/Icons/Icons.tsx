@@ -462,3 +462,22 @@ export function MaximizeIcon({ size = 18, color = 'currentColor', strokeWidth = 
   );
 }
 
+export function ChevronDownIcon({ size = 18, color = 'currentColor', strokeWidth = 2, ...props }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+

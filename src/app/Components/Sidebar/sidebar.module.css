@@ -8,7 +8,7 @@
   left: 0;
   min-height: 100vh;
   width: 260px;
-  border-radius: 0 20px 20px 0;
+  border-radius: 20px;
   color: var(--cortex-white);
   z-index: 100;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
@@ -86,6 +86,7 @@
   gap: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
 }
 
 .avatar {
@@ -95,6 +96,22 @@
   object-fit: cover;
   border: 2px solid var(--cortex-purple);
   flex-shrink: 0;
+}
+
+.avatarFallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  text-transform: uppercase;
 }
 
 .userInfo {

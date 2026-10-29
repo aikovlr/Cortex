@@ -99,3 +99,162 @@ select {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(123, 79, 201, 0.7);
 }
+
+/* ============================================================
+   Acessibilidade: Escala Real de Tamanho de Fonte (Sem Zoom)
+   ============================================================ */
+html[data-font-size="small"] {
+  font-size: 14px;
+}
+
+html[data-font-size="medium"] {
+  font-size: 16px;
+}
+
+html[data-font-size="large"] {
+  font-size: 18px;
+}
+
+html[data-font-size="small"] body {
+  font-size: 14px;
+}
+
+html[data-font-size="large"] body {
+  font-size: 18px;
+}
+
+/* Títulos principais e cabeçalhos */
+html[data-font-size="small"] :is(h1, [class*="pageTitle"]) {
+  font-size: 18px !important;
+}
+html[data-font-size="large"] :is(h1, [class*="pageTitle"]) {
+  font-size: 26px !important;
+}
+
+/* Títulos de cartões e seções */
+html[data-font-size="small"] :is(h2, [class*="cardTitle"]) {
+  font-size: 14px !important;
+}
+html[data-font-size="large"] :is(h2, [class*="cardTitle"]) {
+  font-size: 20px !important;
+}
+
+/* Subtítulos, descrições e breadcrumbs */
+html[data-font-size="small"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) {
+  font-size: 11.5px !important;
+}
+html[data-font-size="large"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) {
+  font-size: 15px !important;
+}
+
+/* Labels e títulos de campos */
+html[data-font-size="small"] :is(label, [class*="label"], [class*="toggleTitle"]) {
+  font-size: 12px !important;
+}
+html[data-font-size="large"] :is(label, [class*="label"], [class*="toggleTitle"]) {
+  font-size: 15px !important;
+}
+
+/* Botões, abas, inputs e selects */
+html[data-font-size="small"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) {
+  font-size: 12px !important;
+}
+html[data-font-size="large"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) {
+  font-size: 15.5px !important;
+}
+
+/* Parágrafos gerais e textos corridos */
+html[data-font-size="small"] p {
+  font-size: 12.5px;
+}
+html[data-font-size="large"] p {
+  font-size: 16px;
+}
+
+/* ============================================================
+   Acessibilidade: Modo de Alto Contraste (Focado no Texto)
+   Apenas ajusta o contraste, cor e peso da tipografia,
+   sem adicionar bordas ou contornos aos blocos de texto.
+   ============================================================ */
+html.high-contrast,
+html[data-high-contrast="true"] {
+  --cortex-gray-text: #000000 !important;
+  --cinzaTexto: #000000 !important;
+}
+
+/* Textos no conteúdo principal (área clara do dashboard) */
+html.high-contrast [class*="mainContent"],
+html[data-high-contrast="true"] [class*="mainContent"] {
+  color: #000000 !important;
+}
+
+/* Títulos, subtítulos, descrições, labels e textos gerais em preto puro e nítido */
+html.high-contrast :is(
+  h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"]
+),
+html[data-high-contrast="true"] :is(
+  h1, h2, h3, h4, p, span:not([class*="badge"]), label, a,
+  [class*="pageTitle"],
+  [class*="cardTitle"],
+  [class*="cardSubtitle"],
+  [class*="toggleTitle"],
+  [class*="toggleDesc"],
+  [class*="breadcrumb"],
+  [class*="label"]
+) {
+  color: #000000 !important;
+  outline: none !important;
+  text-shadow: none !important;
+}
+
+/* Reforço de peso para maior legibilidade */
+html.high-contrast :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]),
+html[data-high-contrast="true"] :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]) {
+  font-weight: 700 !important;
+}
+
+html.high-contrast :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]),
+html[data-high-contrast="true"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]) {
+  font-weight: 500 !important;
+  opacity: 0.95 !important;
+}
+
+html.high-contrast :is(label, [class*="label"], [class*="toggleTitle"]),
+html[data-high-contrast="true"] :is(label, [class*="label"], [class*="toggleTitle"]) {
+  font-weight: 600 !important;
+}
+
+/* Abas de navegação em alto contraste */
+html.high-contrast [class*="tabBtn"],
+html[data-high-contrast="true"] [class*="tabBtn"] {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+html.high-contrast [class*="tabBtnActive"],
+html[data-high-contrast="true"] [class*="tabBtnActive"] {
+  color: #581c87 !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #581c87 !important;
+}
+
+/* Área escura da Sidebar: texto em branco de alto contraste */
+html.high-contrast [class*="sidebar"] :is(span, p, a),
+html[data-high-contrast="true"] [class*="sidebar"] :is(span, p, a) {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* Inputs e selects com texto contrastante */
+html.high-contrast :is(input, select, textarea),
+html[data-high-contrast="true"] :is(input, select, textarea) {
+  color: #000000 !important;
+  font-weight: 500 !important;
+}

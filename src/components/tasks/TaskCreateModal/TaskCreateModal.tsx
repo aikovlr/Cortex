@@ -19,6 +19,32 @@ interface TaskCreateModalProps {
   onSuccess: () => void;
 }
 
+const getNowLocalDateTime = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const isPastDateTime = (dateTimeStr: string) => {
+  if (!dateTimeStr) return false;
+  const selectedDate = new Date(dateTimeStr);
+  const now = new Date();
+  const currentMinute = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+    0,
+    0
+  );
+  return selectedDate < currentMinute;
+};
+
 export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   isOpen,
   onClose,
@@ -29,6 +55,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [dataVencimento, setDataVencimento] = useState('');
+  const [dataErro, setDataErro] = useState('');
   const [pontuacao, setPontuacao] = useState<number | ''>('');
   const [prioridade, setPrioridade] = useState<Prioridade>('Media');
   const [tipoAtribuicao, setTipoAtribuicao] = useState<'individual' | 'equipe'>('individual');
@@ -58,10 +85,27 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
     setAnexos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleDataVencimentoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDataVencimento(value);
+
+    if (value && isPastDateTime(value)) {
+      setDataErro('A data de entrega não pode ser anterior à data e hora atual.');
+    } else {
+      setDataErro('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!titulo || !dataVencimento) {
       showToast('Preencha os campos obrigatórios (*)', 'error');
+      return;
+    }
+
+    if (isPastDateTime(dataVencimento)) {
+      setDataErro('A data de entrega não pode ser anterior à data e hora atual.');
+      showToast('A data de entrega não pode ser anterior à data e hora atual.', 'error');
       return;
     }
 
@@ -97,6 +141,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       setTitulo('');
       setDescricao('');
       setDataVencimento('');
+      setDataErro('');
       setPontuacao('');
       setPrioridade('Media');
       setAnexos([]);
@@ -113,14 +158,19 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
     }
   };
 
+  const handleModalClose = () => {
+    setDataErro('');
+    onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleModalClose}
       title="Criar nova tarefa"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={submitting}>
+          <Button variant="secondary" onClick={handleModalClose} disabled={submitting}>
             Cancelar
           </Button>
           <Button variant="primary" onClick={handleSubmit} loading={submitting}>
@@ -153,8 +203,10 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
             label="Data de entrega *"
             type="datetime-local"
             required
+            min={getNowLocalDateTime()}
             value={dataVencimento}
-            onChange={(e) => setDataVencimento(e.target.value)}
+            error={dataErro}
+            onChange={handleDataVencimentoChange}
           />
 
           <Input

@@ -8,7 +8,7 @@ import { SearchBar } from '@/components/common/SearchBar/SearchBar';
 import { EmptyState } from '@/components/common/EmptyState/EmptyState';
 import { PlusIcon, ClipboardIcon, SpinnerIcon } from '@/components/common/Icons/Icons';
 import { TaskCreateModal } from '@/components/tasks/TaskCreateModal/TaskCreateModal';
-import { ConsultaTarefaDTO, StatusTarefa, Prioridade } from '@/types/api';
+import { ConsultaTarefaDTO, Prioridade } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './page.module.css';

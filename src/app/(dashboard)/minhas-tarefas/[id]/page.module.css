@@ -22,7 +22,7 @@
 }
 
 .backBtn:hover {
-  color: var(--cortex-white);
+  color: black;
 }
 
 .detailsCard {
@@ -116,8 +116,15 @@
   transition: background-color 0.2s ease;
 }
 
-.btnSecondary:hover {
+.btnSecondary:hover:not(:disabled) {
   background-color: rgba(123, 79, 201, 0.25);
+}
+
+.btnSecondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--cortex-gray-text);
 }
 
 .btnDanger {
@@ -136,9 +143,87 @@
   transition: background-color 0.2s ease;
 }
 
-.btnDanger:hover {
+.btnDanger:hover:not(:disabled) {
   background-color: rgba(214, 49, 49, 0.25);
   color: #ffffff;
+}
+
+.btnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--cortex-gray-text);
+}
+
+.btnCancelDelivery {
+  height: 42px;
+  padding: 0 18px;
+  background-color: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btnCancelDelivery:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.25);
+  color: #ffffff;
+  border-color: #ef4444;
+  transform: translateY(-1px);
+}
+
+.btnCancelDelivery:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.responseCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 16px;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.responseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 16px;
+}
+
+.responseTitleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.responseTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cortex-white);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.responseSubtitle {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
 }
 
 .metaGrid {

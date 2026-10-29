@@ -87,6 +87,7 @@ export interface ConsultaResponsavelTarefaDTO {
 export interface ConsultaRespostaTarefaDTO {
   id: number;
   dataResposta: string;
+  nota?: number | null;
   usuarioId: number;
   tarefaId: number;
   usuario?: ConsultaUsuarioDTO | null;

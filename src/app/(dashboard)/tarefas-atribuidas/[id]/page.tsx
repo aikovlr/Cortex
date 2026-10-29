@@ -11,6 +11,7 @@ import {
   ConsultaEquipeDTO,
   ConsultaSugestaoDTO,
   ConsultaTicketReporteDTO,
+  ConsultaRespostaTarefaDTO,
   Prioridade,
 } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
@@ -18,6 +19,8 @@ import { usuarioService } from '@/services/usuarioService';
 import { equipeService } from '@/services/equipeService';
 import { sugestaoService } from '@/services/sugestaoService';
 import { ticketService } from '@/services/ticketService';
+import { respostaService } from '@/services/respostaService';
+import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
 import { useToast } from '@/contexts/ToastContext';
 import {
   PaperclipIcon,
@@ -25,7 +28,8 @@ import {
   UserIcon,
   TrashIcon,
   CheckIcon,
-  XIcon,
+  SpinnerIcon,
+  ChevronDownIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './page.module.css';
 
@@ -38,10 +42,11 @@ export default function TarefaAtribuidaDetalhesPage() {
   const tarefaId = idParam ? Number(idParam) : null;
 
   const [tarefa, setTarefa] = useState<DetalhesTarefaDTO | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !tarefaId || isNaN(tarefaId) ? false : true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [removendoAnexoId, setRemovendoAnexoId] = useState<number | null>(null);
 
   // Campos alteráveis
   const [titulo, setTitulo] = useState('');
@@ -60,7 +65,11 @@ export default function TarefaAtribuidaDetalhesPage() {
   const [removendoRespId, setRemovendoRespId] = useState<number | null>(null);
 
   // Abas de Navegação (Estilo Relatórios)
-  const [activeTab, setActiveTab] = useState<'detalhes' | 'sugestoes' | 'tickets'>('detalhes');
+  const [activeTab, setActiveTab] = useState<'detalhes' | 'respostas' | 'sugestoes' | 'tickets'>('detalhes');
+  const [respostas, setRespostas] = useState<ConsultaRespostaTarefaDTO[]>([]);
+  const [respostasAbertas, setRespostasAbertas] = useState<Record<number, boolean>>({});
+  const [notasRespostas, setNotasRespostas] = useState<Record<number, number | ''>>({});
+  const [salvandoNotaId, setSalvandoNotaId] = useState<number | null>(null);
   const [sugestoes, setSugestoes] = useState<ConsultaSugestaoDTO[]>([]);
   const [tickets, setTickets] = useState<ConsultaTicketReporteDTO[]>([]);
   const [processandoSugestaoId, setProcessandoSugestaoId] = useState<number | null>(null);
@@ -84,6 +93,9 @@ export default function TarefaAtribuidaDetalhesPage() {
       }
       setPrioridade(dados.prioridade);
       setPontuacao(dados.pontuacao !== null && dados.pontuacao !== undefined ? dados.pontuacao : '');
+      if (dados.respostas) {
+        setRespostas(dados.respostas);
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -92,6 +104,17 @@ export default function TarefaAtribuidaDetalhesPage() {
       }
     }
   }, [tarefaId, showToast]);
+
+  // Carrega lista de respostas
+  const carregarRespostas = useCallback(async () => {
+    if (!tarefaId) return;
+    try {
+      const lista = await respostaService.listarPorTarefa(tarefaId);
+      setRespostas(lista || []);
+    } catch {
+      setRespostas([]);
+    }
+  }, [tarefaId]);
 
   // Carrega lista de sugestões
   const carregarSugestoes = useCallback(async () => {
@@ -115,34 +138,94 @@ export default function TarefaAtribuidaDetalhesPage() {
     }
   }, [tarefaId]);
 
+  // Controle de colapso das respostas
+  const toggleResposta = (id: number) => {
+    setRespostasAbertas((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // Alteração de nota de uma resposta
+  const handleNotaChange = (respostaId: number, valor: string) => {
+    setNotasRespostas((prev) => ({
+      ...prev,
+      [respostaId]: valor === '' ? '' : Number(valor),
+    }));
+  };
+
+  // Atribui nota para a resposta do colaborador
+  const handleSalvarNotaResposta = async (e: React.FormEvent, respostaId: number) => {
+    e.preventDefault();
+    const valorDigitado = notasRespostas[respostaId];
+    const respostaAtual = respostas.find((r) => r.id === respostaId);
+    const notaFinal = valorDigitado !== undefined && valorDigitado !== ''
+      ? Number(valorDigitado)
+      : (respostaAtual?.nota ?? '');
+
+    if (notaFinal === '') {
+      showToast('Por favor, informe uma nota para a resposta.', 'error');
+      return;
+    }
+
+    const maxPontuacao = tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? tarefa.pontuacao : 100;
+    if (notaFinal < 0 || (tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined && notaFinal > tarefa.pontuacao)) {
+      showToast(`A nota deve estar entre 0 e ${maxPontuacao} pontos.`, 'error');
+      return;
+    }
+
+    try {
+      setSalvandoNotaId(respostaId);
+      const respAtualizada = await respostaService.atribuirNota(respostaId, Number(notaFinal));
+      setRespostas((prev) =>
+        prev.map((r) => (r.id === respostaId ? { ...r, nota: respAtualizada.nota } : r))
+      );
+      showToast(`Nota ${notaFinal} atribuída com sucesso!`, 'success');
+      await carregarTarefa();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao atribuir nota à resposta.', 'error');
+      }
+    } finally {
+      setSalvandoNotaId(null);
+    }
+  };
+
   // Inicialização
   useEffect(() => {
     let isMounted = true;
 
     if (!tarefaId || isNaN(tarefaId)) {
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    Promise.all([
-      carregarTarefa(),
-      carregarSugestoes(),
-      carregarTickets(),
-      usuarioService.listarUsuarios().then((u) => {
-        if (isMounted) setTodosUsuarios(u || []);
-      }).catch(() => {}),
-      equipeService.listarMinhasEquipes().then((eq) => {
-        if (isMounted) setMinhasEquipes(eq || []);
-      }).catch(() => {}),
-    ]).finally(() => {
-      if (isMounted) setLoading(false);
-    });
+    async function carregarTudo() {
+      try {
+        await Promise.all([
+          carregarTarefa(),
+          carregarRespostas(),
+          carregarSugestoes(),
+          carregarTickets(),
+          usuarioService.listarUsuarios().then((u) => {
+            if (isMounted) setTodosUsuarios(u || []);
+          }).catch(() => {}),
+          equipeService.listarMinhasEquipes().then((eq) => {
+            if (isMounted) setMinhasEquipes(eq || []);
+          }).catch(() => {}),
+        ]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    carregarTudo();
 
     return () => {
       isMounted = false;
     };
-  }, [tarefaId, carregarTarefa, carregarSugestoes, carregarTickets]);
+  }, [tarefaId, carregarTarefa, carregarRespostas, carregarSugestoes, carregarTickets]);
 
   // Salvar alterações da tarefa
   const handleSalvarTarefa = async (e: React.FormEvent) => {
@@ -226,6 +309,27 @@ export default function TarefaAtribuidaDetalhesPage() {
       }
     } finally {
       setDeleting(false);
+    }
+  };
+
+  // Remover anexo da tarefa
+  const handleRemoverAnexo = async (anexoId: number) => {
+    const confirmacao = window.confirm('Deseja realmente remover este arquivo da tarefa?');
+    if (!confirmacao) return;
+
+    try {
+      setRemovendoAnexoId(anexoId);
+      await tarefaService.removerAnexo(anexoId);
+      showToast('Anexo removido com sucesso!', 'success');
+      await carregarTarefa();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao remover anexo.', 'error');
+      }
+    } finally {
+      setRemovendoAnexoId(null);
     }
   };
 
@@ -348,11 +452,6 @@ export default function TarefaAtribuidaDetalhesPage() {
     });
   };
 
-  const isVencida = () => {
-    if (!tarefa?.dataVencimento) return false;
-    return new Date(tarefa.dataVencimento) < new Date() && tarefa.status !== 'Concluida';
-  };
-
   // Usuários disponíveis para adicionar como responsáveis
   const idsResponsaveisAtuais = new Set(tarefa?.responsaveis?.map((r) => r.usuarioId) || []);
   const usuariosDisponiveis = todosUsuarios.filter((u) => !idsResponsaveisAtuais.has(u.id));
@@ -393,6 +492,16 @@ export default function TarefaAtribuidaDetalhesPage() {
 
               <button
                 type="button"
+                onClick={() => setActiveTab('respostas')}
+                className={`${styles.tabBtn} ${activeTab === 'respostas' ? styles.tabBtnActive : ''}`}
+              >
+                <CheckIcon size={16} />
+                Respostas da Tarefa
+                <span className={styles.tabCount}>{respostas.length}</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setActiveTab('sugestoes')}
                 className={`${styles.tabBtn} ${activeTab === 'sugestoes' ? styles.tabBtnActive : ''}`}
               >
@@ -421,14 +530,10 @@ export default function TarefaAtribuidaDetalhesPage() {
                     <div className={styles.titleArea}>
                       <h1 className={styles.taskTitle}>{tarefa.titulo}</h1>
                   <div className={styles.badgesRow}>
-                    <Badge
-                      type="status"
-                      value={isVencida() ? 'Atrasada' : tarefa.status}
-                    />
                     <Badge type="prioridade" value={tarefa.prioridade} />
                     {tarefa.pontuacao !== null && tarefa.pontuacao !== undefined && (
                       <span className={styles.ptsBadge}>
-                        ⭐ {tarefa.pontuacao} pts
+                        {tarefa.pontuacao} pts
                       </span>
                     )}
                     <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
@@ -545,16 +650,32 @@ export default function TarefaAtribuidaDetalhesPage() {
                   {tarefa.anexos && tarefa.anexos.length > 0 && (
                     <div className={styles.anexosList}>
                       {tarefa.anexos.map((anexo) => (
-                        <a
-                          key={anexo.id}
-                          href={anexo.urlCaminho}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.anexoCard}
-                        >
-                          <PaperclipIcon size={16} color="var(--cortex-purple)" />
-                          <span>{anexo.nomeOriginal}</span>
-                        </a>
+                        <div key={anexo.id} className={styles.anexoItemWrapper}>
+                          <a
+                            href={anexo.urlCaminho}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.anexoCard}
+                            title={`Abrir ${anexo.nomeOriginal}`}
+                          >
+                            <PaperclipIcon size={15} color="var(--cortex-purple)" />
+                            <span className={styles.anexoNome}>{anexo.nomeOriginal}</span>
+                          </a>
+                          <button
+                            type="button"
+                            className={styles.removeAnexoBtn}
+                            onClick={() => handleRemoverAnexo(anexo.id)}
+                            disabled={removendoAnexoId === anexo.id}
+                            title={`Remover anexo ${anexo.nomeOriginal}`}
+                            aria-label={`Remover anexo ${anexo.nomeOriginal}`}
+                          >
+                            {removendoAnexoId === anexo.id ? (
+                              <SpinnerIcon size={14} color="var(--cortex-gray-text)" />
+                            ) : (
+                              <TrashIcon size={14} />
+                            )}
+                          </button>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -722,8 +843,143 @@ export default function TarefaAtribuidaDetalhesPage() {
           </>
         )}
 
+            {/* ABA 2: RESPOSTAS DA TAREFA */}
+            {activeTab === 'respostas' && (
+              <div className={styles.detailsCard}>
+                <div className={styles.sectionHeader}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                    <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
+                      Respostas da Tarefa ({respostas.length})
+                    </h2>
+                    {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined && (
+                      <span className={styles.gradeBadge}>
+                        Pontuação Máxima da Tarefa: <strong>{tarefa.pontuacao} pts</strong>
+                      </span>
+                    )}
+                  </div>
+                  <p className={styles.sectionSubtitle}>
+                    Visualize os arquivos e entregas enviadas pelos colaboradores responsáveis e atribua a nota correspondente (entre 0 e {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? `${tarefa.pontuacao} pts` : 'pontuação máxima'}).
+                  </p>
+                </div>
 
-            {/* ABA 2: SUGESTÕES DE ALTERAÇÃO */}
+                {respostas.length === 0 ? (
+                  <div className={styles.emptyBox}>
+                    Nenhuma resposta ou entrega de arquivo foi enviada para esta tarefa até o momento.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {respostas.map((resp) => {
+                      const autorNome = resp.usuario?.nome || 'Responsável';
+                      const autorFoto = resp.usuario?.fotoPerfil?.urlCaminho;
+                      const isAberta = !!respostasAbertas[resp.id];
+                      const maxNota = tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? tarefa.pontuacao : 100;
+                      const notaAtual = notasRespostas[resp.id] !== undefined ? notasRespostas[resp.id] : (resp.nota ?? '');
+                      const jaAvaliada = resp.nota !== null && resp.nota !== undefined;
+
+                      return (
+                        <div key={resp.id} className={styles.collapsibleCard}>
+                          {/* Cabeçalho colapsável: mostra o nome do responsável e a data da resposta */}
+                          <button
+                            type="button"
+                            className={styles.collapsibleHeader}
+                            onClick={() => toggleResposta(resp.id)}
+                            aria-expanded={isAberta}
+                          >
+                            <div className={styles.collapsibleAuthorInfo}>
+                              {autorFoto ? (
+                                <Image
+                                  src={autorFoto}
+                                  alt={autorNome}
+                                  width={34}
+                                  height={34}
+                                  className={styles.avatar}
+                                  unoptimized
+                                />
+                              ) : (
+                                <div className={styles.avatar} style={{ width: '34px', height: '34px', fontSize: '13px' }}>
+                                  {autorNome.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <span className={styles.authorName}>{autorNome}</span>
+                              <span className={styles.itemDate}>• {formatarData(resp.dataResposta)}</span>
+                            </div>
+
+                            <div className={styles.collapsibleMeta}>
+                              {jaAvaliada ? (
+                                <span className={`${styles.gradeBadge} ${styles.gradeBadgeGraded}`}>
+                                  Nota: {resp.nota} / {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? `${tarefa.pontuacao} pts` : `${maxNota} pts`}
+                                </span>
+                              ) : (
+                                <span className={styles.gradeBadge}>
+                                  Aguardando nota
+                                </span>
+                              )}
+                              <span className={`${styles.chevronIcon} ${isAberta ? styles.chevronOpen : ''}`}>
+                                <ChevronDownIcon size={18} />
+                              </span>
+                            </div>
+                          </button>
+
+                          {/* Conteúdo expandido: mostra o anexo e a opção de atribuir nota */}
+                          {isAberta && (
+                            <div className={styles.collapsibleBody}>
+                              {/* Seção de Anexos da resposta */}
+                              <div className={styles.collapsibleSection}>
+                                <h4 className={styles.collapsibleSectionTitle}>
+                                  Arquivos Anexados ({resp.anexos?.length || 0}):
+                                </h4>
+                                {resp.anexos && resp.anexos.length > 0 ? (
+                                  <AttachmentGallery anexos={resp.anexos} />
+                                ) : (
+                                  <div className={styles.emptyAttachments}>
+                                    Nenhum arquivo anexado nesta resposta.
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Opção de Atribuição de Nota para esta resposta */}
+                              <div className={styles.gradeContainer}>
+                                <div className={styles.gradeContainerHeader}>
+                                  <span className={styles.gradeContainerTitle}>
+                                    Atribuir Nota para a resposta de {autorNome}
+                                  </span>
+                                  <span className={styles.gradeHint}>
+                                    {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined
+                                      ? `Nota permitida: 0 a ${tarefa.pontuacao} pontos (com base na pontuação da tarefa)`
+                                      : 'Defina a pontuação correspondente da entrega'}
+                                  </span>
+                                </div>
+
+                                <form onSubmit={(e) => handleSalvarNotaResposta(e, resp.id)} className={styles.gradeFormRow}>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max={tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? tarefa.pontuacao : undefined}
+                                    placeholder={tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? `0 - ${tarefa.pontuacao}` : 'Nota'}
+                                    value={notaAtual}
+                                    onChange={(e) => handleNotaChange(resp.id, e.target.value)}
+                                    className={styles.gradeInput}
+                                  />
+                                  <button
+                                    type="submit"
+                                    disabled={salvandoNotaId === resp.id}
+                                    className={styles.gradeSubmitBtn}
+                                  >
+                                    {salvandoNotaId === resp.id ? 'Salvando...' : jaAvaliada ? 'Atualizar Nota' : 'Atribuir Nota'}
+                                  </button>
+                                </form>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ABA 3: SUGESTÕES DE ALTERAÇÃO */}
             {activeTab === 'sugestoes' && (
               <div className={styles.detailsCard}>
                 <div className={styles.sectionHeader}>

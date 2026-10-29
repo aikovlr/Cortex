@@ -157,11 +157,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
               <div className={styles.metaRow}>
                 <div className={styles.badges}>
-                  <Badge type="status" value={tarefa.status} />
                   <Badge type="prioridade" value={tarefa.prioridade} />
                   {tarefa.pontuacao !== null && tarefa.pontuacao !== undefined && (
                     <span style={{ fontSize: '12px', color: 'var(--cortex-purple)', fontWeight: 600 }}>
-                      ⭐ {tarefa.pontuacao} pts
+                      {tarefa.pontuacao} pts
                     </span>
                   )}
                 </div>

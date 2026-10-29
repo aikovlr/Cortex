@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Header from '@/app/Components/Header/header';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAccessibility, FontSize } from '@/contexts/AccessibilityContext';
 import { usuarioService } from '@/services/usuarioService';
 import { authService } from '@/services/authService';
 import { notificacaoService } from '@/services/notificacaoService';
@@ -13,20 +14,9 @@ import styles from './page.module.css';
 
 type ConfigTab = 'account' | 'accessibility' | 'notifications';
 
-function aplicarTamanhoFonte(size: 'small' | 'medium' | 'large') {
-  if (typeof document === 'undefined') return;
-  const root = document.documentElement;
-  if (size === 'small') {
-    root.style.fontSize = '14px';
-  } else if (size === 'large') {
-    root.style.fontSize = '18px';
-  } else {
-    root.style.fontSize = '16px';
-  }
-}
-
 export default function ConfiguracoesPage() {
   const { usuario, recarregarPerfil, logout } = useAuth();
+  const { fontSize, setFontSize, highContrast, setHighContrast } = useAccessibility();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<ConfigTab>('account');
@@ -38,6 +28,7 @@ export default function ConfiguracoesPage() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(usuario?.fotoPerfil?.urlCaminho || null);
   const [fotoError, setFotoError] = useState(false);
   const [savingPerfil, setSavingPerfil] = useState(false);
+  const [removingFoto, setRemovingFoto] = useState(false);
 
   // Sincroniza dados quando o usuário autenticado carrega ou é atualizado
   useEffect(() => {
@@ -47,6 +38,8 @@ export default function ConfiguracoesPage() {
       if (usuario.fotoPerfil?.urlCaminho) {
         setFotoPreview(usuario.fotoPerfil.urlCaminho);
         setFotoError(false);
+      } else {
+        setFotoPreview(null);
       }
     }
   }, [usuario]);
@@ -58,9 +51,6 @@ export default function ConfiguracoesPage() {
   const [confirmarNovaSenha, setConfirmarNovaSenha] = useState('');
   const [savingSenha, setSavingSenha] = useState(false);
 
-  // Estados de Acessibilidade
-  const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
-
   // Estados de Notificações
   const [canalSelecionado, setCanalSelecionado] = useState<CanalNotificacao>(CanalNotificacao.Email);
   const [antecedenciaHoras, setAntecedenciaHoras] = useState(24);
@@ -71,17 +61,6 @@ export default function ConfiguracoesPage() {
   const [savingNotificacoes, setSavingNotificacoes] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Carrega tamanho de fonte salvo no navegador
-  useEffect(() => {
-    const savedSize = localStorage.getItem('cortex_font_size') as 'small' | 'medium' | 'large' | null;
-    if (savedSize) {
-      aplicarTamanhoFonte(savedSize);
-      queueMicrotask(() => {
-        setFontSize(savedSize);
-      });
-    }
-  }, []);
 
   // Carrega preferências de notificações do usuário
   useEffect(() => {
@@ -106,11 +85,17 @@ export default function ConfiguracoesPage() {
     };
   }, [canalSelecionado]);
 
-  const handleSelectFontSize = (size: 'small' | 'medium' | 'large') => {
+  const handleSelectFontSize = (size: FontSize) => {
     setFontSize(size);
-    localStorage.setItem('cortex_font_size', size);
-    aplicarTamanhoFonte(size);
     showToast('Tamanho de fonte atualizado com sucesso!', 'success');
+  };
+
+  const handleToggleHighContrast = (checked: boolean) => {
+    setHighContrast(checked);
+    showToast(
+      checked ? 'Texto em alto contraste ativado!' : 'Texto em alto contraste desativado!',
+      'info'
+    );
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,6 +104,45 @@ export default function ConfiguracoesPage() {
       setFotoFile(file);
       setFotoPreview(URL.createObjectURL(file));
       setFotoError(false);
+    }
+  };
+
+  // Remover foto de perfil
+  const handleRemoverFoto = async () => {
+    if (fotoFile) {
+      setFotoFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setFotoPreview(usuario?.fotoPerfil?.urlCaminho || null);
+      showToast('Seleção de foto cancelada.', 'info');
+      return;
+    }
+
+    if (!usuario?.fotoPerfil) {
+      setFotoPreview(null);
+      return;
+    }
+
+    if (!confirm('Deseja realmente remover sua foto de perfil?')) {
+      return;
+    }
+
+    try {
+      setRemovingFoto(true);
+      const fotoId = usuario.fotoPerfil.id;
+      await usuarioService.removerFotoPerfil(fotoId);
+      await recarregarPerfil();
+      setFotoPreview(null);
+      setFotoError(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      showToast('Foto de perfil removida com sucesso!', 'success');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao remover foto de perfil.', 'error');
+      }
+    } finally {
+      setRemovingFoto(false);
     }
   };
 
@@ -317,18 +341,34 @@ export default function ConfiguracoesPage() {
                     accept="image/*"
                     onChange={handleFileChange}
                   />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className={styles.uploadBtn}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    Alterar foto
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className={styles.uploadBtn}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      {fotoPreview ? 'Alterar foto' : 'Adicionar foto'}
+                    </button>
+                    {(fotoPreview || usuario?.fotoPerfil) && (
+                      <button
+                        type="button"
+                        onClick={handleRemoverFoto}
+                        className={styles.removePhotoBtn}
+                        disabled={removingFoto || savingPerfil}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        {removingFoto ? 'Removendo...' : 'Remover foto'}
+                      </button>
+                    )}
+                  </div>
                   <span style={{ fontSize: '11px', color: 'var(--cortex-gray-text)' }}>
                     JPG, PNG ou GIF. Tamanho máximo recomendado: 5MB.
                   </span>
@@ -484,16 +524,49 @@ export default function ConfiguracoesPage() {
       {/* CONTEÚDO DA ABA 2: ACESSIBILIDADE */}
       {activeTab === 'accessibility' && (
         <div className={styles.tabContent}>
+          {/* Opção de Alto Contraste */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>Contraste de Cores</h2>
+              <p className={styles.cardSubtitle}>
+                Ajuste os parâmetros visuais para garantir maior nitidez e conforto na leitura dos conteúdos
+              </p>
+            </div>
+
+            <div className={styles.toggleRow} style={{ borderBottom: 'none', padding: '6px 0' }}>
+              <div className={styles.toggleLabel}>
+                <span className={styles.toggleTitle}>Texto em alto contraste</span>
+                <span className={styles.toggleDesc}>
+                  Aumenta o contraste entre o texto, bordas e fundos, otimizando a visualização e legibilidade em todo o sistema
+                </span>
+              </div>
+              <label className={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={highContrast}
+                  onChange={(e) => handleToggleHighContrast(e.target.checked)}
+                />
+                <span className={styles.slider}></span>
+              </label>
+            </div>
+          </div>
+
+          {/* Opção de Tamanho da Fonte */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <h2 className={styles.cardTitle}>Tamanho da Fonte</h2>
-              <p className={styles.cardSubtitle}>Ajuste a escala tipográfica de acordo com sua preferência visual</p>
+              <p className={styles.cardSubtitle}>
+                Ajuste a escala tipográfica aplicada globalmente em todas as páginas do sistema
+              </p>
             </div>
 
             <div className={styles.fontSizeGrid}>
               <div
                 onClick={() => handleSelectFontSize('small')}
                 className={`${styles.fontSizeOption} ${fontSize === 'small' ? styles.fontSizeOptionActive : ''}`}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSelectFontSize('small')}
               >
                 <span style={{ fontSize: '13px', display: 'block', marginBottom: '6px' }}>Aa</span>
                 Pequena (14px)
@@ -502,6 +575,9 @@ export default function ConfiguracoesPage() {
               <div
                 onClick={() => handleSelectFontSize('medium')}
                 className={`${styles.fontSizeOption} ${fontSize === 'medium' ? styles.fontSizeOptionActive : ''}`}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSelectFontSize('medium')}
               >
                 <span style={{ fontSize: '16px', display: 'block', marginBottom: '6px' }}>Aa</span>
                 Média (Padrão 16px)
@@ -510,6 +586,9 @@ export default function ConfiguracoesPage() {
               <div
                 onClick={() => handleSelectFontSize('large')}
                 className={`${styles.fontSizeOption} ${fontSize === 'large' ? styles.fontSizeOptionActive : ''}`}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSelectFontSize('large')}
               >
                 <span style={{ fontSize: '20px', display: 'block', marginBottom: '6px' }}>Aa</span>
                 Grande (18px)

@@ -15,20 +15,22 @@
 }
 
 .backBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--cortex-gray-text);
+  align-self: flex-start;
   background: none;
   border: none;
+  color: var(--cortex-gray-text);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 0;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .backBtn:hover {
-  color: var(--cortex-purple);
+  color: black;
 }
 
 .teamHeading {
