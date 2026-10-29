@@ -11,7 +11,13 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { usuario, logout } = useAuth();
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  const fotoUrl = usuario?.fotoPerfil?.urlCaminho;
+  const getAvatarUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
+    return url.startsWith('/') ? url : `/${url}`;
+  };
+
+  const fotoUrl = getAvatarUrl(usuario?.fotoPerfil?.urlCaminho);
 
   const menuItems = [
     {
@@ -93,7 +99,7 @@ export default function Sidebar() {
           <img
             key={fotoUrl}
             src={fotoUrl}
-            alt={usuario.nome}
+            alt={usuario?.nome || 'Usuário'}
             className={styles.avatar}
             onError={() => setFailedUrl(fotoUrl)}
           />

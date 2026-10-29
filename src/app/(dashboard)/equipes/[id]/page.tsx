@@ -74,7 +74,10 @@ export default function EquipeDetalhesPage({
 
   useEffect(() => {
     let isMounted = true;
-    if (!equipeId) return;
+    if (!equipeId || isNaN(equipeId)) {
+      setLoading(false);
+      return;
+    }
 
     Promise.all([
       equipeService.obterPorId(equipeId),
@@ -155,6 +158,12 @@ export default function EquipeDetalhesPage({
     }
   };
 
+  const getAvatarUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return url.startsWith('/') ? url : `/${url}`;
+  };
+
   const formatarData = (isoDate: string) => {
     const data = new Date(isoDate);
     return data.toLocaleDateString('pt-BR', {
@@ -182,7 +191,7 @@ export default function EquipeDetalhesPage({
               ← Voltar para todas as equipes
             </button>
             <h2 className={styles.teamName}>{equipe?.nome || 'Detalhes da Equipe'}</h2>
-            <span className={styles.teamSubtitle}>
+            <span className={styles.teamSubtitle} suppressHydrationWarning>
               {membros.length} integrante(s) • Criada em{' '}
               {equipe ? formatarData(equipe.dataCriacao) : ''}
             </span>
@@ -251,7 +260,7 @@ export default function EquipeDetalhesPage({
                           {membro.usuario?.fotoPerfil?.urlCaminho ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={membro.usuario.fotoPerfil.urlCaminho}
+                              src={getAvatarUrl(membro.usuario.fotoPerfil.urlCaminho)}
                               alt={nome}
                               className={styles.avatar}
                             />
@@ -267,7 +276,7 @@ export default function EquipeDetalhesPage({
                         </div>
                       </td>
 
-                      <td className={styles.td}>
+                      <td className={styles.td} suppressHydrationWarning>
                         {formatarData(membro.dataEntrada)}
                       </td>
 

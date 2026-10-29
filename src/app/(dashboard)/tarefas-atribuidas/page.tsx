@@ -107,7 +107,7 @@ export default function TarefasAtribuidasPage() {
                     </td>
 
                     <td className={styles.td}>
-                      <span className={styles.dueDateCol}>
+                      <span className={styles.dueDateCol} suppressHydrationWarning>
                         {formatarData(tarefa.dataVencimento)}
                       </span>
                     </td>

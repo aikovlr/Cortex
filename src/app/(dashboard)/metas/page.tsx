@@ -302,7 +302,7 @@ export default function MetasPage() {
                         value={status}
                       />
                       {meta.dataFechamento && (
-                        <span className={styles.dateLimit} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span className={styles.dateLimit} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }} suppressHydrationWarning>
                           <CalendarIcon size={13} /> Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}
                         </span>
                       )}
@@ -359,7 +359,7 @@ export default function MetasPage() {
                           <div className={styles.goalRight}>
                             <Badge type="prioridade" value={tarefa.prioridade} />
                             {tarefa.dataVencimento && (
-                              <span className={styles.dateLimit}>
+                              <span className={styles.dateLimit} suppressHydrationWarning>
                                 Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}
                               </span>
                             )}

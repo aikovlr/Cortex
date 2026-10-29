@@ -22,6 +22,7 @@ import { ticketService } from '@/services/ticketService';
 import { respostaService } from '@/services/respostaService';
 import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
 import { useToast } from '@/contexts/ToastContext';
+import { notificarNovoResponsavelTarefa } from '@/contexts/NotificationContext';
 import {
   PaperclipIcon,
   FileTextIcon,
@@ -30,6 +31,7 @@ import {
   CheckIcon,
   SpinnerIcon,
   ChevronDownIcon,
+  LightbulbIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './page.module.css';
 
@@ -38,11 +40,11 @@ export default function TarefaAtribuidaDetalhesPage() {
   const router = useRouter();
   const { showToast } = useToast();
 
-  const idParam = params?.id;
+  const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const tarefaId = idParam ? Number(idParam) : null;
 
   const [tarefa, setTarefa] = useState<DetalhesTarefaDTO | null>(null);
-  const [loading, setLoading] = useState(() => !tarefaId || isNaN(tarefaId) ? false : true);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -74,6 +76,16 @@ export default function TarefaAtribuidaDetalhesPage() {
   const [tickets, setTickets] = useState<ConsultaTicketReporteDTO[]>([]);
   const [processandoSugestaoId, setProcessandoSugestaoId] = useState<number | null>(null);
   const [processandoTicketId, setProcessandoTicketId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['detalhes', 'respostas', 'sugestoes', 'tickets'].includes(tabParam)) {
+        setActiveTab(tabParam as 'detalhes' | 'respostas' | 'sugestoes' | 'tickets');
+      }
+    }
+  }, []);
 
 
   // Carrega os dados da tarefa
@@ -198,6 +210,7 @@ export default function TarefaAtribuidaDetalhesPage() {
     let isMounted = true;
 
     if (!tarefaId || isNaN(tarefaId)) {
+      setLoading(false);
       return;
     }
 
@@ -340,6 +353,12 @@ export default function TarefaAtribuidaDetalhesPage() {
     try {
       setAdicionandoResp(true);
       await tarefaService.atribuirResponsavel(tarefaId, Number(usuarioSelecionadoId));
+      if (tarefa) {
+        notificarNovoResponsavelTarefa(Number(usuarioSelecionadoId), tarefaId, tarefa.titulo, tarefa.prioridade);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cortex_tarefas_alteradas'));
+      }
       setUsuarioSelecionadoId('');
       await carregarTarefa();
       showToast('Responsável adicionado com sucesso!', 'success');
@@ -360,7 +379,17 @@ export default function TarefaAtribuidaDetalhesPage() {
 
     try {
       setAdicionandoResp(true);
-      await tarefaService.atribuirEquipe(tarefaId, Number(equipeSelecionadaId));
+      const membros = await tarefaService.atribuirEquipe(tarefaId, Number(equipeSelecionadaId));
+      if (tarefa && Array.isArray(membros)) {
+        membros.forEach((m) => {
+          if (m.usuarioId) {
+            notificarNovoResponsavelTarefa(m.usuarioId, tarefaId, tarefa.titulo, tarefa.prioridade);
+          }
+        });
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cortex_tarefas_alteradas'));
+      }
       setEquipeSelecionadaId('');
       await carregarTarefa();
       showToast('Membros da equipe atribuídos com sucesso!', 'success');
@@ -440,6 +469,12 @@ export default function TarefaAtribuidaDetalhesPage() {
     }
   };
 
+  const getAvatarUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return url.startsWith('/') ? url : `/${url}`;
+  };
+
   const formatarData = (isoDate?: string | null) => {
     if (!isoDate) return 'Sem data definida';
     const d = new Date(isoDate);
@@ -505,7 +540,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                 onClick={() => setActiveTab('sugestoes')}
                 className={`${styles.tabBtn} ${activeTab === 'sugestoes' ? styles.tabBtnActive : ''}`}
               >
-                <FileTextIcon size={16} />
+                <LightbulbIcon size={16} />
                 Sugestões de Alteração
                 <span className={styles.tabCount}>{sugestoes.length}</span>
               </button>
@@ -737,9 +772,9 @@ export default function TarefaAtribuidaDetalhesPage() {
                     return (
                       <div key={resp.id} className={styles.responsavelCard}>
                         <div className={styles.responsavelInfo}>
-                          {foto ? (
+                          {foto && getAvatarUrl(foto) ? (
                             <Image
-                              src={foto}
+                              src={getAvatarUrl(foto)}
                               alt={nome}
                               width={40}
                               height={40}
@@ -886,9 +921,9 @@ export default function TarefaAtribuidaDetalhesPage() {
                             aria-expanded={isAberta}
                           >
                             <div className={styles.collapsibleAuthorInfo}>
-                              {autorFoto ? (
+                              {autorFoto && getAvatarUrl(autorFoto) ? (
                                 <Image
-                                  src={autorFoto}
+                                  src={getAvatarUrl(autorFoto)}
                                   alt={autorNome}
                                   width={34}
                                   height={34}
@@ -901,7 +936,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                                 </div>
                               )}
                               <span className={styles.authorName}>{autorNome}</span>
-                              <span className={styles.itemDate}>• {formatarData(resp.dataResposta)}</span>
+                              <span className={styles.itemDate} suppressHydrationWarning>• {formatarData(resp.dataResposta)}</span>
                             </div>
 
                             <div className={styles.collapsibleMeta}>
@@ -1005,9 +1040,9 @@ export default function TarefaAtribuidaDetalhesPage() {
                         <div key={sug.id} className={styles.itemCard}>
                           <div className={styles.itemHeader}>
                             <div className={styles.authorBlock}>
-                              {autorFoto ? (
+                              {autorFoto && getAvatarUrl(autorFoto) ? (
                                 <Image
-                                  src={autorFoto}
+                                  src={getAvatarUrl(autorFoto)}
                                   alt={autorNome}
                                   width={32}
                                   height={32}
@@ -1020,7 +1055,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                                 </div>
                               )}
                               <span className={styles.authorName}>{autorNome}</span>
-                              <span className={styles.itemDate}>• {formatarData(sug.dataCriacao)}</span>
+                              <span className={styles.itemDate} suppressHydrationWarning>• {formatarData(sug.dataCriacao)}</span>
                             </div>
 
                             <Badge type="status" value={sug.status} />
@@ -1085,9 +1120,9 @@ export default function TarefaAtribuidaDetalhesPage() {
                         <div key={ticket.id} className={styles.itemCard}>
                           <div className={styles.itemHeader}>
                             <div className={styles.authorBlock}>
-                              {autorFoto ? (
+                              {autorFoto && getAvatarUrl(autorFoto) ? (
                                 <Image
-                                  src={autorFoto}
+                                  src={getAvatarUrl(autorFoto)}
                                   alt={autorNome}
                                   width={32}
                                   height={32}
@@ -1100,7 +1135,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                                 </div>
                               )}
                               <span className={styles.authorName}>{autorNome}</span>
-                              <span className={styles.itemDate}>• {formatarData(ticket.dataCriacao)}</span>
+                              <span className={styles.itemDate} suppressHydrationWarning>• {formatarData(ticket.dataCriacao)}</span>
                             </div>
 
                             <span

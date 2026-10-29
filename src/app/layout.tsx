@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -58,7 +59,9 @@ export default function RootLayout({
       <body>
         <AccessibilityProvider>
           <AuthProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <NotificationProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </NotificationProvider>
           </AuthProvider>
         </AccessibilityProvider>
       </body>

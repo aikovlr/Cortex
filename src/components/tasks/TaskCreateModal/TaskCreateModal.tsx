@@ -10,6 +10,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { usuarioService } from '@/services/usuarioService';
 import { equipeService } from '@/services/equipeService';
 import { useToast } from '@/contexts/ToastContext';
+import { notificarNovoResponsavelTarefa } from '@/contexts/NotificationContext';
 import { PaperclipIcon, XIcon } from '@/components/common/Icons/Icons';
 import styles from './TaskCreateModal.module.css';
 
@@ -129,8 +130,20 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       // Atribuição individual ou de equipe
       if (tipoAtribuicao === 'individual' && responsavelId !== '') {
         await tarefaService.atribuirResponsavel(novaTarefa.id, Number(responsavelId));
+        notificarNovoResponsavelTarefa(Number(responsavelId), novaTarefa.id, titulo, prioridade);
       } else if (tipoAtribuicao === 'equipe' && equipeId !== '') {
-        await tarefaService.atribuirEquipe(novaTarefa.id, Number(equipeId));
+        const membrosAtribuidos = await tarefaService.atribuirEquipe(novaTarefa.id, Number(equipeId));
+        if (Array.isArray(membrosAtribuidos)) {
+          membrosAtribuidos.forEach((m) => {
+            if (m.usuarioId) {
+              notificarNovoResponsavelTarefa(m.usuarioId, novaTarefa.id, titulo, prioridade);
+            }
+          });
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cortex_tarefas_alteradas'));
       }
 
       showToast('Tarefa criada com sucesso!', 'success');

@@ -24,6 +24,7 @@ import {
   FileTextIcon,
   AlertCircleIcon,
   AlertTriangleIcon,
+  LightbulbIcon,
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
@@ -36,17 +37,17 @@ export default function DetalhesTarefaPage() {
   const { showToast } = useToast();
   const { usuario } = useAuth();
 
-  const idParam = params?.id;
+  const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const tarefaId = idParam ? Number(idParam) : null;
 
   const [tarefa, setTarefa] = useState<DetalhesTarefaDTO | null>(null);
-  const [loading, setLoading] = useState(() => !tarefaId || isNaN(tarefaId) ? false : true);
+  const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [canceling, setCanceling] = useState(false);
   const [uploadingResposta, setUploadingResposta] = useState(false);
 
   // Abas de navegação
-  const [activeTab, setActiveTab] = useState<'detalhes' | 'tickets'>('detalhes');
+  const [activeTab, setActiveTab] = useState<'detalhes' | 'sugestoes' | 'tickets'>('detalhes');
   const [tickets, setTickets] = useState<ConsultaTicketReporteDTO[]>([]);
   const [sugestoes, setSugestoes] = useState<ConsultaSugestaoDTO[]>([]);
 
@@ -55,8 +56,19 @@ export default function DetalhesTarefaPage() {
   const [showReport, setShowReport] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const totalTickets = tickets.length + sugestoes.length;
-  const hasTickets = totalTickets > 0;
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'sugestoes') {
+        setActiveTab('sugestoes');
+      } else if (tabParam === 'tickets') {
+        setActiveTab('tickets');
+      } else if (tabParam === 'detalhes') {
+        setActiveTab('detalhes');
+      }
+    }
+  }, []);
 
   const carregarTicketsESugestoes = useCallback(async () => {
     if (!tarefaId || isNaN(tarefaId)) return;
@@ -72,7 +84,12 @@ export default function DetalhesTarefaPage() {
     }
   }, [tarefaId]);
 
-  const handleTicketOuSugestaoCriada = async () => {
+  const handleSugestaoCriada = async () => {
+    await carregarTicketsESugestoes();
+    setActiveTab('sugestoes');
+  };
+
+  const handleTicketCriado = async () => {
     await carregarTicketsESugestoes();
     setActiveTab('tickets');
   };
@@ -123,6 +140,7 @@ export default function DetalhesTarefaPage() {
     let isMounted = true;
 
     if (!tarefaId || isNaN(tarefaId)) {
+      setLoading(false);
       return;
     }
 
@@ -153,12 +171,6 @@ export default function DetalhesTarefaPage() {
       isMounted = false;
     };
   }, [tarefaId, showToast]);
-
-  useEffect(() => {
-    if (!hasTickets && activeTab === 'tickets') {
-      setActiveTab('detalhes');
-    }
-  }, [hasTickets, activeTab]);
 
   const handleConcluir = async () => {
     if (!tarefa) return;
@@ -215,6 +227,12 @@ export default function DetalhesTarefaPage() {
 
   const isConcluida = tarefa?.status === 'Concluida';
 
+  const getAvatarUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return url.startsWith('/') ? url : `/${url}`;
+  };
+
   // Anexos vinculados à resposta do responsável
   const respostasDoResponsavel = tarefa?.respostas?.filter(
     (r) => !usuario?.id || r.usuarioId === usuario.id
@@ -243,8 +261,8 @@ export default function DetalhesTarefaPage() {
           </div>
         ) : (
           <>
-            {/* Abas Superiores (Aba Tickets só visível se houver ticket ou sugestão criada) */}
-            {hasTickets && (
+            {/* Abas Superiores */}
+            {(sugestoes.length > 0 || tickets.length > 0 || activeTab !== 'detalhes') && (
               <div className={styles.tabsHeader}>
                 <button
                   type="button"
@@ -257,18 +275,28 @@ export default function DetalhesTarefaPage() {
 
                 <button
                   type="button"
+                  onClick={() => setActiveTab('sugestoes')}
+                  className={`${styles.tabBtn} ${activeTab === 'sugestoes' ? styles.tabBtnActive : ''}`}
+                >
+                  <LightbulbIcon size={16} />
+                  Sugestões de Alteração
+                  {sugestoes.length > 0 && <span className={styles.tabCount}>{sugestoes.length}</span>}
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setActiveTab('tickets')}
                   className={`${styles.tabBtn} ${activeTab === 'tickets' ? styles.tabBtnActive : ''}`}
                 >
-                  <AlertCircleIcon size={16} />
-                  Tickets
-                  <span className={styles.tabCount}>{totalTickets}</span>
+                  <AlertTriangleIcon size={16} />
+                  Tickets de Reporte
+                  {tickets.length > 0 && <span className={styles.tabCount}>{tickets.length}</span>}
                 </button>
               </div>
             )}
 
             {/* ABA 1: DETALHES DA TAREFA */}
-            {(!hasTickets || activeTab === 'detalhes') && (
+            {activeTab === 'detalhes' && (
               <>
                 {/* Container Principal da Tarefa */}
                 <div className={styles.detailsCard}>
@@ -339,6 +367,7 @@ export default function DetalhesTarefaPage() {
                       <span
                         className={styles.metaValue}
                         style={isVencida() ? { color: '#ef4444', fontWeight: 600 } : undefined}
+                        suppressHydrationWarning
                       >
                         {formatarData(tarefa.dataVencimento)}
                         {isVencida() && ' (Atrasada)'}
@@ -431,91 +460,9 @@ export default function DetalhesTarefaPage() {
               </>
             )}
 
-            {/* ABA 2: TICKETS E SUGESTÕES CRIADAS */}
-            {hasTickets && activeTab === 'tickets' && (
+            {/* ABA 2: SUGESTÕES DE ALTERAÇÃO */}
+            {activeTab === 'sugestoes' && (
               <div className={styles.ticketsContainersWrapper}>
-                {/* CONTAINER 1: TICKETS DE REPORTE */}
-                <div className={styles.detailsCard}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.titleArea}>
-                      <h2 className={styles.sectionTitle} style={{ fontSize: '18px', margin: 0 }}>
-                        Tickets de Reporte ({tickets.length})
-                      </h2>
-                      <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
-                        Problemas e impedimentos reportados aos gestores e administradores da equipe.
-                      </span>
-                    </div>
-                  </div>
-
-                  {tickets.length > 0 ? (
-                    <div className={styles.ticketsList}>
-                      {tickets.map((ticket) => {
-                        const autorNome = ticket.usuario?.nome || usuario?.nome || 'Você';
-                        const autorFoto = ticket.usuario?.fotoPerfil?.urlCaminho || usuario?.fotoPerfil?.urlCaminho;
-                        const isAberto = ticket.ativo;
-
-                        return (
-                          <div key={ticket.id} className={styles.itemCard}>
-                            <div className={styles.itemHeader}>
-                              <div className={styles.authorBlock}>
-                                {autorFoto ? (
-                                  <Image
-                                    src={autorFoto}
-                                    alt={autorNome}
-                                    width={32}
-                                    height={32}
-                                    className={styles.avatar}
-                                    unoptimized
-                                  />
-                                ) : (
-                                  <div className={styles.avatar}>
-                                    {autorNome.charAt(0).toUpperCase()}
-                                  </div>
-                                )}
-                                <div className={styles.authorMeta}>
-                                  <span className={styles.authorName}>{autorNome}</span>
-                                  <span className={styles.itemDate}>• {formatarData(ticket.dataCriacao)}</span>
-                                </div>
-                              </div>
-
-                              <span
-                                className={`${styles.statusTag} ${
-                                  isAberto ? styles.tagAberto : styles.tagFechado
-                                }`}
-                              >
-                                {isAberto ? 'Aberto' : 'Resolvido'}
-                              </span>
-                            </div>
-
-                            <div className={`${styles.itemDescription} ${styles.ticketDesc}`}>
-                              {ticket.descricao}
-                            </div>
-
-                            <div className={styles.ticketFooterNote}>
-                              {isAberto ? (
-                                <span className={styles.ticketFooterNoteText}>
-                                  <AlertTriangleIcon size={14} />
-                                  Chamado em aberto notificado com prioridade para a liderança da equipe.
-                                </span>
-                              ) : (
-                                <span className={styles.ticketFooterNoteText}>
-                                  <CheckCircleIcon size={14} />
-                                  Chamado finalizado e marcado como resolvido pela gestão.
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className={styles.emptyBox}>
-                      Nenhum ticket de reporte registrado para esta tarefa.
-                    </div>
-                  )}
-                </div>
-
-                {/* CONTAINER 2: SUGESTÕES DE ALTERAÇÃO */}
                 <div className={styles.detailsCard}>
                   <div className={styles.cardHeader}>
                     <div className={styles.titleArea}>
@@ -538,9 +485,9 @@ export default function DetalhesTarefaPage() {
                           <div key={sug.id} className={styles.itemCard}>
                             <div className={styles.itemHeader}>
                               <div className={styles.authorBlock}>
-                                {autorFoto ? (
+                                {autorFoto && getAvatarUrl(autorFoto) ? (
                                   <Image
-                                    src={autorFoto}
+                                    src={getAvatarUrl(autorFoto)}
                                     alt={autorNome}
                                     width={32}
                                     height={32}
@@ -554,7 +501,7 @@ export default function DetalhesTarefaPage() {
                                 )}
                                 <div className={styles.authorMeta}>
                                   <span className={styles.authorName}>{autorNome}</span>
-                                  <span className={styles.itemDate}>• {formatarData(sug.dataCriacao)}</span>
+                                  <span className={styles.itemDate} suppressHydrationWarning>• {formatarData(sug.dataCriacao)}</span>
                                 </div>
                               </div>
 
@@ -601,6 +548,91 @@ export default function DetalhesTarefaPage() {
                 </div>
               </div>
             )}
+
+            {/* ABA 3: TICKETS DE REPORTE */}
+            {activeTab === 'tickets' && (
+              <div className={styles.ticketsContainersWrapper}>
+                <div className={styles.detailsCard}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.titleArea}>
+                      <h2 className={styles.sectionTitle} style={{ fontSize: '18px', margin: 0 }}>
+                        Tickets de Reporte ({tickets.length})
+                      </h2>
+                      <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
+                        Problemas e impedimentos reportados aos gestores e administradores da equipe.
+                      </span>
+                    </div>
+                  </div>
+
+                  {tickets.length > 0 ? (
+                    <div className={styles.ticketsList}>
+                      {tickets.map((ticket) => {
+                        const autorNome = ticket.usuario?.nome || usuario?.nome || 'Você';
+                        const autorFoto = ticket.usuario?.fotoPerfil?.urlCaminho || usuario?.fotoPerfil?.urlCaminho;
+                        const isAberto = ticket.ativo;
+
+                        return (
+                          <div key={ticket.id} className={styles.itemCard}>
+                            <div className={styles.itemHeader}>
+                              <div className={styles.authorBlock}>
+                                {autorFoto && getAvatarUrl(autorFoto) ? (
+                                  <Image
+                                    src={getAvatarUrl(autorFoto)}
+                                    alt={autorNome}
+                                    width={32}
+                                    height={32}
+                                    className={styles.avatar}
+                                    unoptimized
+                                  />
+                                ) : (
+                                  <div className={styles.avatar}>
+                                    {autorNome.charAt(0).toUpperCase()}
+                                  </div>
+                                )}
+                                <div className={styles.authorMeta}>
+                                  <span className={styles.authorName}>{autorNome}</span>
+                                  <span className={styles.itemDate} suppressHydrationWarning>• {formatarData(ticket.dataCriacao)}</span>
+                                </div>
+                              </div>
+
+                              <span
+                                className={`${styles.statusTag} ${
+                                  isAberto ? styles.tagAberto : styles.tagFechado
+                                }`}
+                              >
+                                {isAberto ? 'Aberto' : 'Resolvido'}
+                              </span>
+                            </div>
+
+                            <div className={`${styles.itemDescription} ${styles.ticketDesc}`}>
+                              {ticket.descricao}
+                            </div>
+
+                            <div className={styles.ticketFooterNote}>
+                              {isAberto ? (
+                                <span className={styles.ticketFooterNoteText}>
+                                  <AlertTriangleIcon size={14} />
+                                  Chamado em aberto notificado com prioridade para a liderança da equipe.
+                                </span>
+                              ) : (
+                                <span className={styles.ticketFooterNoteText}>
+                                  <CheckCircleIcon size={14} />
+                                  Chamado finalizado e marcado como resolvido pela gestão.
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={styles.emptyBox}>
+                      Nenhum ticket de reporte registrado para esta tarefa.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>
@@ -612,7 +644,8 @@ export default function DetalhesTarefaPage() {
           onClose={() => setShowSuggestion(false)}
           tarefaId={tarefa.id}
           tarefaTitulo={tarefa.titulo}
-          onSuccess={handleTicketOuSugestaoCriada}
+          criadorId={tarefa.criadorId}
+          onSuccess={handleSugestaoCriada}
         />
       )}
 
@@ -623,7 +656,8 @@ export default function DetalhesTarefaPage() {
           onClose={() => setShowReport(false)}
           tarefaId={tarefa.id}
           tarefaTitulo={tarefa.titulo}
-          onSuccess={handleTicketOuSugestaoCriada}
+          criadorId={tarefa.criadorId}
+          onSuccess={handleTicketCriado}
         />
       )}
     </>

@@ -242,6 +242,7 @@ export default function MinhasTarefasPage() {
                           className={`${styles.dueDateCol} ${
                             vencida ? styles.dueDateOverdue : ''
                           }`}
+                          suppressHydrationWarning
                         >
                           {formatarData(tarefa.dataVencimento)}
                           {vencida && ' (Atrasada)'}

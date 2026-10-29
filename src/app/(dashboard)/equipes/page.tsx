@@ -124,7 +124,7 @@ export default function EquipesPage() {
 
                 <div className={styles.cardMeta}>
                   <span>{equipe.membros?.length || 0} membro(s)</span>
-                  <span>
+                  <span suppressHydrationWarning>
                     Criada em {new Date(equipe.dataCriacao).toLocaleDateString('pt-BR')}
                   </span>
                 </div>

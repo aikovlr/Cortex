@@ -191,6 +191,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           onClose={() => setShowSuggestion(false)}
           tarefaId={tarefa.id}
           tarefaTitulo={tarefa.titulo}
+          criadorId={tarefa.criadorId}
+          onSuccess={onTaskUpdated}
         />
       )}
 
@@ -201,6 +203,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           onClose={() => setShowReport(false)}
           tarefaId={tarefa.id}
           tarefaTitulo={tarefa.titulo}
+          criadorId={tarefa.criadorId}
+          onSuccess={onTaskUpdated}
         />
       )}
     </>

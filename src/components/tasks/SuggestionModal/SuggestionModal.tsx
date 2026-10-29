@@ -11,6 +11,7 @@ interface SuggestionModalProps {
   onClose: () => void;
   tarefaId: number;
   tarefaTitulo: string;
+  criadorId?: number;
   onSuccess?: () => void;
 }
 
@@ -19,6 +20,7 @@ export const SuggestionModal: React.FC<SuggestionModalProps> = ({
   onClose,
   tarefaId,
   tarefaTitulo,
+  criadorId,
   onSuccess,
 }) => {
   const { showToast } = useToast();
@@ -35,6 +37,9 @@ export const SuggestionModal: React.FC<SuggestionModalProps> = ({
     try {
       setSubmitting(true);
       await sugestaoService.submeterSugestao(tarefaId, descricao.trim());
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cortex_tarefas_alteradas'));
+      }
       showToast('Sugestão enviada com sucesso para o criador da tarefa!', 'success');
       setDescricao('');
       onSuccess?.();

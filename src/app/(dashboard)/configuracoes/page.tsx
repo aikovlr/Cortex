@@ -30,6 +30,12 @@ export default function ConfiguracoesPage() {
   const [savingPerfil, setSavingPerfil] = useState(false);
   const [removingFoto, setRemovingFoto] = useState(false);
 
+  const getAvatarUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+    return url.startsWith('/') ? url : `/${url}`;
+  };
+
   // Sincroniza dados quando o usuário autenticado carrega ou é atualizado
   useEffect(() => {
     if (usuario) {
@@ -52,7 +58,10 @@ export default function ConfiguracoesPage() {
   const [savingSenha, setSavingSenha] = useState(false);
 
   // Estados de Notificações
-  const [canalSelecionado, setCanalSelecionado] = useState<CanalNotificacao>(CanalNotificacao.Email);
+  const [canaisSelecionados, setCanaisSelecionados] = useState<CanalNotificacao[]>([
+    CanalNotificacao.Email,
+    CanalNotificacao.Push,
+  ]);
   const [antecedenciaHoras, setAntecedenciaHoras] = useState(24);
   const [ativoNovaAtribuicao, setAtivoNovaAtribuicao] = useState(true);
   const [ativoVencimento, setAtivoVencimento] = useState(true);
@@ -69,7 +78,23 @@ export default function ConfiguracoesPage() {
       .obterPreferencias()
       .then((prefs: PreferenciaNotificacaoDTO[]) => {
         if (!isMounted || !prefs || prefs.length === 0) return;
-        const prefAtual = prefs.find((p) => p.canal === canalSelecionado) || prefs[0];
+
+        // Identifica quais canais têm pelo menos uma notificação ativa
+        const canaisAtivos = prefs
+          .filter(
+            (p) =>
+              p.ativoNovaAtribuicao ||
+              p.ativoVencimento ||
+              p.ativoConclusaoMeta ||
+              p.ativoTicket
+          )
+          .map((p) => p.canal);
+
+        setCanaisSelecionados(canaisAtivos);
+
+        // Pega os parâmetros do primeiro canal ativo ou default
+        const prefAtual =
+          prefs.find((p) => canaisAtivos.includes(p.canal)) || prefs[0];
         if (prefAtual) {
           setAntecedenciaHoras(prefAtual.antecedenciaHoras);
           setAtivoNovaAtribuicao(prefAtual.ativoNovaAtribuicao);
@@ -83,7 +108,13 @@ export default function ConfiguracoesPage() {
     return () => {
       isMounted = false;
     };
-  }, [canalSelecionado]);
+  }, []);
+
+  const handleToggleCanal = (canal: CanalNotificacao) => {
+    setCanaisSelecionados((prev) =>
+      prev.includes(canal) ? prev.filter((c) => c !== canal) : [...prev, canal]
+    );
+  };
 
   const handleSelectFontSize = (size: FontSize) => {
     setFontSize(size);
@@ -244,20 +275,49 @@ export default function ConfiguracoesPage() {
     }
   };
 
-  // Salvar Preferências de Notificações
+  // Salvar Preferências de Notificações para todos os métodos selecionados
   const handleSalvarNotificacoes = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setSavingNotificacoes(true);
-      await notificacaoService.configurarPreferencias({
-        canal: canalSelecionado,
-        antecedenciaHoras,
-        ativoNovaAtribuicao,
-        ativoVencimento,
-        ativoConclusaoMeta,
-        ativoTicket,
-      });
-      showToast('Preferências de notificação salvas!', 'success');
+
+      const todosCanais = [
+        CanalNotificacao.Email,
+        CanalNotificacao.Push,
+        CanalNotificacao.Sms,
+      ];
+
+      // Salva preferências para todos os canais: os selecionados ficam ativos com os parâmetros definidos,
+      // e os não selecionados têm suas notificações desativadas
+      await Promise.all(
+        todosCanais.map((canal) => {
+          const isAtivo = canaisSelecionados.includes(canal);
+          return notificacaoService.configurarPreferencias({
+            canal,
+            antecedenciaHoras,
+            ativoNovaAtribuicao: isAtivo ? ativoNovaAtribuicao : false,
+            ativoVencimento: isAtivo ? ativoVencimento : false,
+            ativoConclusaoMeta: isAtivo ? ativoConclusaoMeta : false,
+            ativoTicket: isAtivo ? ativoTicket : false,
+          });
+        })
+      );
+
+      if (canaisSelecionados.length === 0) {
+        showToast('Preferências salvas! Notificações desativadas para todos os canais.', 'info');
+      } else {
+        const nomesCanais = canaisSelecionados
+          .map((c) =>
+            c === CanalNotificacao.Email
+              ? 'E-mail'
+              : c === CanalNotificacao.Push
+              ? 'Push Notification'
+              : 'SMS'
+          )
+          .join(', ');
+
+        showToast(`Preferências salvas com sucesso para: ${nomesCanais}!`, 'success');
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -328,7 +388,7 @@ export default function ConfiguracoesPage() {
                 <div className={styles.avatarWrapper}>
                   {fotoPreview && !fotoError ? (
                     <Image
-                      src={fotoPreview}
+                      src={getAvatarUrl(fotoPreview)}
                       alt="Foto de Perfil"
                       width={76}
                       height={76}
@@ -664,32 +724,67 @@ export default function ConfiguracoesPage() {
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <h2 className={styles.cardTitle}>Canais de Notificação</h2>
-              <p className={styles.cardSubtitle}>Escolha o canal e configure suas preferências</p>
+              <p className={styles.cardSubtitle}>
+                Escolha os canais e configure suas preferências (você pode selecionar múltiplos canais simultaneamente)
+              </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                onClick={() => setCanalSelecionado(CanalNotificacao.Email)}
-                className={`${styles.uploadBtn} ${canalSelecionado === CanalNotificacao.Email ? styles.fontSizeOptionActive : ''}`}
+                onClick={() => handleToggleCanal(CanalNotificacao.Email)}
+                className={`${styles.uploadBtn} ${
+                  canaisSelecionados.includes(CanalNotificacao.Email)
+                    ? styles.fontSizeOptionActive
+                    : ''
+                }`}
               >
-                E-mail
+                E-mail {canaisSelecionados.includes(CanalNotificacao.Email) ? '✓' : ''}
               </button>
               <button
                 type="button"
-                onClick={() => setCanalSelecionado(CanalNotificacao.Sms)}
-                className={`${styles.uploadBtn} ${canalSelecionado === CanalNotificacao.Sms ? styles.fontSizeOptionActive : ''}`}
+                onClick={() => handleToggleCanal(CanalNotificacao.Sms)}
+                className={`${styles.uploadBtn} ${
+                  canaisSelecionados.includes(CanalNotificacao.Sms)
+                    ? styles.fontSizeOptionActive
+                    : ''
+                }`}
               >
-                SMS
+                SMS {canaisSelecionados.includes(CanalNotificacao.Sms) ? '✓' : ''}
               </button>
               <button
                 type="button"
-                onClick={() => setCanalSelecionado(CanalNotificacao.Push)}
-                className={`${styles.uploadBtn} ${canalSelecionado === CanalNotificacao.Push ? styles.fontSizeOptionActive : ''}`}
+                onClick={() => handleToggleCanal(CanalNotificacao.Push)}
+                className={`${styles.uploadBtn} ${
+                  canaisSelecionados.includes(CanalNotificacao.Push)
+                    ? styles.fontSizeOptionActive
+                    : ''
+                }`}
               >
-                Push Notification
+                Push Notification {canaisSelecionados.includes(CanalNotificacao.Push) ? '✓' : ''}
               </button>
             </div>
+
+            {canaisSelecionados.includes(CanalNotificacao.Email) && !usuario?.emailVerificado && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(234, 179, 8, 0.12)',
+                  border: '1px solid rgba(234, 179, 8, 0.3)',
+                  color: '#b45309',
+                  fontSize: '13px',
+                }}
+              >
+                <span>⚠️</span>
+                <span>
+                  <strong>Atenção:</strong> Seu e-mail ainda não está verificado. Segundo a regra do sistema (RN13), confirme seu e-mail para receber notificações por esse método.
+                </span>
+              </div>
+            )}
 
             <form onSubmit={handleSalvarNotificacoes} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div className={styles.field} style={{ maxWidth: '320px' }}>
