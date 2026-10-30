@@ -84,6 +84,13 @@ export default function MinhasTarefasPage() {
     });
   };
 
+  // Remove menções textuais de sugestão aprovada/aceita da listagem (o push já notifica o responsável)
+  const obterDescricaoLimpa = (descricao?: string | null) => {
+    if (!descricao) return '';
+    return descricao
+      .replace(/(?:^|\r?\n)*\[Sugest[aã]o\s*#?\d*\s*(?:Aprovada|Aceita)[^\]]*\]:?[\s\S]*/gi, '')
+      .trim();
+  };
   const isVencida = (isoDate: string, status: string) => {
     if (status === 'Concluida') return false;
     return new Date(isoDate) < new Date();
@@ -231,21 +238,19 @@ export default function MinhasTarefasPage() {
                       <td className={styles.td}>
                         <div className={styles.taskTitleCol}>
                           <span className={styles.taskTitle}>{tarefa.titulo}</span>
-                          {tarefa.descricao && (
-                            <span className={styles.taskDesc}>{tarefa.descricao}</span>
+                          {obterDescricaoLimpa(tarefa.descricao) && (
+                            <span className={styles.taskDesc}>{obterDescricaoLimpa(tarefa.descricao)}</span>
                           )}
                         </div>
                       </td>
 
                       <td className={styles.td}>
                         <span
-                          className={`${styles.dueDateCol} ${
-                            vencida ? styles.dueDateOverdue : ''
-                          }`}
+                          className={`${styles.dueDateCol} ${vencida ? styles.dueDateOverdue : ''
+                            }`}
                           suppressHydrationWarning
                         >
                           {formatarData(tarefa.dataVencimento)}
-                          {vencida && ' (Atrasada)'}
                         </span>
                       </td>
 

@@ -77,6 +77,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       const listaDb: NotificacaoBackendDTO[] = await notificationService.listarNotificacoes();
 
+      if (!Array.isArray(listaDb)) {
+        setNotificacoes([]);
+        return;
+      }
+
       const mapeadas: NotificacaoItem[] = listaDb.map((n) => ({
         id: String(n.id),
         tipo: (n.tipo as TipoNotificacao) || 'tarefa',
@@ -114,10 +119,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     window.addEventListener('cortex_tarefas_alteradas', handleAtualizacao);
+    window.addEventListener('focus', handleAtualizacao);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('cortex_tarefas_alteradas', handleAtualizacao);
+      window.removeEventListener('focus', handleAtualizacao);
     };
   }, [buscarNovasNotificacoes]);
 

@@ -10,14 +10,23 @@ import {
   FileTextIcon,
   PaperclipIcon,
   SpinnerIcon,
+  TrashIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './AttachmentGallery.module.css';
 
 interface AttachmentGalleryProps {
   anexos?: ConsultaAnexoDTO[];
+  podeRemover?: boolean;
+  onRemoverAnexo?: (anexoId: number) => void | Promise<void>;
+  removendoId?: number | null;
 }
 
-export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({ anexos }) => {
+export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
+  anexos,
+  podeRemover = false,
+  onRemoverAnexo,
+  removendoId = null,
+}) => {
   const [activeMedia, setActiveMedia] = useState<ConsultaAnexoDTO | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
@@ -183,6 +192,21 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({ anexos }) 
               >
                 <span className={styles.typeBadge}>{ext}</span>
 
+                <button
+                  type="button"
+                  className={styles.cornerDownloadBtn}
+                  disabled={isDownloading}
+                  onClick={(e) => handleDownload(anexo, e)}
+                  title={`Baixar ${anexo.nomeOriginal}`}
+                  aria-label={`Baixar ${anexo.nomeOriginal}`}
+                >
+                  {isDownloading ? (
+                    <SpinnerIcon size={14} color="#ffffff" />
+                  ) : (
+                    <DownloadIcon size={14} color="#ffffff" />
+                  )}
+                </button>
+
                 {image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -292,21 +316,28 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({ anexos }) 
                       </button>
                     )}
 
-                    <button
-                      type="button"
-                      className={styles.downloadBtn}
-                      disabled={isDownloading}
-                      onClick={(e) => handleDownload(anexo, e)}
-                      title={`Baixar ${anexo.nomeOriginal}`}
-                      aria-label={`Baixar ${anexo.nomeOriginal}`}
-                    >
-                      {isDownloading ? (
-                        <SpinnerIcon size={14} color="#d1b8ff" />
-                      ) : (
-                        <DownloadIcon size={14} />
-                      )}
-                      <span>{isDownloading ? 'Baixando...' : 'Baixar'}</span>
-                    </button>
+
+
+                    {podeRemover && onRemoverAnexo && (
+                      <button
+                        type="button"
+                        className={styles.removeBtn}
+                        disabled={removendoId === anexo.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoverAnexo(anexo.id);
+                        }}
+                        title={`Remover ${anexo.nomeOriginal}`}
+                        aria-label={`Remover ${anexo.nomeOriginal}`}
+                      >
+                        {removendoId === anexo.id ? (
+                          <SpinnerIcon size={14} color="#fca5a5" />
+                        ) : (
+                          <TrashIcon size={14} />
+                        )}
+                        <span>{removendoId === anexo.id ? 'Removendo...' : 'Remover'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -363,6 +394,28 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({ anexos }) 
                   )}
                   <span>{downloadingId === activeMedia.id ? 'Baixando...' : 'Baixar'}</span>
                 </button>
+
+                {podeRemover && onRemoverAnexo && (
+                  <button
+                    type="button"
+                    className={styles.lightboxRemoveBtn}
+                    disabled={removendoId === activeMedia.id}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await onRemoverAnexo(activeMedia.id);
+                      handleCloseLightbox();
+                    }}
+                    title="Remover este arquivo"
+                    aria-label="Remover este arquivo"
+                  >
+                    {removendoId === activeMedia.id ? (
+                      <SpinnerIcon size={16} color="#ffffff" />
+                    ) : (
+                      <TrashIcon size={16} />
+                    )}
+                    <span>{removendoId === activeMedia.id ? 'Removendo...' : 'Remover'}</span>
+                  </button>
+                )}
 
                 <button
                   type="button"

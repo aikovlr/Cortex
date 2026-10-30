@@ -329,6 +329,226 @@
   background-color: var(--bg-surface-secondary);
 }
 
+/* Multi-select Customizado para Filtro de Responsáveis */
+.multiSelectWrapper {
+  position: relative;
+  min-width: 220px;
+}
+
+.multiSelectTrigger {
+  height: 38px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  padding: 0 10px 0 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s;
+  width: 100%;
+}
+
+.multiSelectTrigger:focus,
+.multiSelectTriggerActive {
+  border-color: var(--cortex-purple);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow);
+}
+
+.multiSelectTriggerContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.multiSelectPlaceholder {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.multiSelectValueText {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiSelectCountBadge {
+  background-color: var(--cortex-purple);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.multiSelectIcons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.multiSelectClearBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.multiSelectClearBtn:hover {
+  color: var(--cortex-red-danger);
+  background-color: var(--bg-surface-hover);
+}
+
+.multiSelectDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 290px;
+  max-width: 90vw;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  padding: 10px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.multiSelectSearchInput {
+  height: 32px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+  padding: 0 10px;
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+
+.multiSelectSearchInput:focus {
+  border-color: var(--cortex-purple);
+}
+
+.multiSelectActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.multiSelectActionLink {
+  background: none;
+  border: none;
+  color: var(--cortex-purple);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+
+.multiSelectActionLink:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.multiSelectOptionsList {
+  max-height: 210px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.multiSelectOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.12s;
+  user-select: none;
+}
+
+.multiSelectOption:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.multiSelectOptionActive {
+  background-color: rgba(123, 79, 201, 0.08);
+}
+
+.multiSelectCheckbox {
+  accent-color: var(--cortex-purple);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.multiSelectOptionText {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.multiSelectOptionName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiSelectOptionEmail {
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .nonAdminNotice {
   padding: 24px;
   border-radius: 12px;

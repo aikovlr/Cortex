@@ -33,8 +33,14 @@ export default function RootLayout({
                 try {
                   var size = localStorage.getItem('cortex_font_size');
                   if (size) {
-                    document.documentElement.setAttribute('data-font-size', size);
-                    document.documentElement.style.fontSize = size === 'small' ? '14px' : size === 'large' ? '18px' : '16px';
+                    var num = size === 'small' ? 14 : size === 'large' ? 18 : size === 'medium' ? 16 : parseInt(size, 10);
+                    if (!isNaN(num) && num >= 12 && num <= 24 && num % 2 === 0) {
+                      document.documentElement.setAttribute('data-font-size', num + 'px');
+                      document.documentElement.style.fontSize = num + 'px';
+                    } else {
+                      document.documentElement.setAttribute('data-font-size', '16px');
+                      document.documentElement.style.fontSize = '16px';
+                    }
                   }
                   var hc = localStorage.getItem('cortex_high_contrast');
                   if (hc === 'true') {

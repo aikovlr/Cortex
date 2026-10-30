@@ -189,6 +189,9 @@ export interface PreferenciaNotificacaoDTO {
   ativoVencimento: boolean;
   ativoConclusaoMeta: boolean;
   ativoTicket: boolean;
+  tema?: 'light' | 'dark';
+  altoContraste?: boolean;
+  tamanhoFonte?: number;
 }
 
 export interface ConfigurarPreferenciaDTO {
@@ -198,6 +201,21 @@ export interface ConfigurarPreferenciaDTO {
   ativoVencimento: boolean;
   ativoConclusaoMeta: boolean;
   ativoTicket: boolean;
+  tema?: 'light' | 'dark';
+  altoContraste?: boolean;
+  tamanhoFonte?: number;
+}
+
+export interface PreferenciaAcessibilidadeDTO {
+  tema: 'light' | 'dark';
+  altoContraste: boolean;
+  tamanhoFonte: number; // 12 a 24 (números pares)
+}
+
+export interface AtualizarPreferenciaAcessibilidadeDTO {
+  tema?: 'light' | 'dark';
+  altoContraste?: boolean;
+  tamanhoFonte?: number;
 }
 
 export interface RelatorioTarefasDTO {

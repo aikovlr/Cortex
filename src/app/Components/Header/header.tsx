@@ -34,10 +34,12 @@ export default function Header({
     marcarTodasComoLidas,
     limparNotificacoes,
     removerNotificacao,
+    buscarNovasNotificacoes,
   } = useNotifications();
   const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [filtro, setFiltro] = useState<'todas' | 'naoLidas'>('todas');
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const isDark = theme === 'dark';
@@ -205,10 +207,18 @@ export default function Header({
           <button
             type="button"
             className={`${styles.iconButton} ${isOpen ? styles.iconButtonActive : ''}`}
-            title="Notificações"
-            aria-label={`Notificações${naoLidasCount > 0 ? ` (${naoLidasCount} não lidas)` : ''}`}
+            title="Central de Notificações"
+            aria-label={`Central de Notificações${naoLidasCount > 0 ? ` (${naoLidasCount} não lidas)` : ''}`}
             aria-expanded={isOpen}
-            onClick={() => setIsOpen((prev) => !prev)}
+            onClick={() => {
+              setIsOpen((prev) => {
+                const next = !prev;
+                if (next) {
+                  buscarNovasNotificacoes();
+                }
+                return next;
+              });
+            }}
           >
             <Image src="/bell.svg" alt="Notificações" width={20} height={20} />
             {naoLidasCount > 0 && (
@@ -223,14 +233,14 @@ export default function Header({
             <div
               className={styles.notificationsDropdown}
               role="dialog"
-              aria-label="Painel de Notificações"
+              aria-label="Central de Notificações"
             >
               <div className={styles.dropdownHeader}>
                 <div className={styles.dropdownTitleRow}>
                   <h3 className={styles.dropdownTitle}>Notificações</h3>
                   {naoLidasCount > 0 && (
                     <span className={styles.dropdownCountBadge}>
-                      {naoLidasCount} {naoLidasCount === 1 ? 'nova' : 'novas'}
+                      {naoLidasCount} {naoLidasCount === 1 ? 'não lida' : 'não lidas'}
                     </span>
                   )}
                 </div>
@@ -247,17 +257,51 @@ export default function Header({
                 </button>
               </div>
 
+              {/* Abas: Todas (Histórico) vs Não Lidas */}
+              <div className={styles.dropdownTabs}>
+                <button
+                  type="button"
+                  className={`${styles.dropdownTabBtn} ${filtro === 'todas' ? styles.dropdownTabBtnActive : ''}`}
+                  onClick={() => setFiltro('todas')}
+                  title="Ver todo o histórico de notificações"
+                >
+                  Todas (Histórico)
+                  <span className={styles.tabBadge}>{notificacoes.length}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.dropdownTabBtn} ${filtro === 'naoLidas' ? styles.dropdownTabBtnActive : ''}`}
+                  onClick={() => setFiltro('naoLidas')}
+                  title="Ver apenas notificações não lidas"
+                >
+                  Não Lidas
+                  {naoLidasCount > 0 && <span className={styles.tabBadge}>{naoLidasCount}</span>}
+                </button>
+              </div>
+
               {notificacoes.length === 0 ? (
                 <div className={styles.emptyDropdown}>
-                  <span className={styles.emptyDropdownIcon}>🔔</span>
+                  <div className={styles.emptyDropdownIcon}>
+                    <Image src="/bell.svg" alt="" width={32} height={32} />
+                  </div>
                   <p className={styles.emptyDropdownTitle}>Nenhuma notificação por aqui</p>
                   <p className={styles.emptyDropdownSubtitle}>
-                    Você receberá alertas quando tarefas, respostas de tickets ou sugestões forem atualizadas.
+                    Seu histórico está vazio. Você receberá alertas quando tarefas, respostas de tickets ou sugestões forem atualizadas.
+                  </p>
+                </div>
+              ) : filtro === 'naoLidas' && notificacoes.filter((n) => !n.lida).length === 0 ? (
+                <div className={styles.emptyDropdown}>
+                  <div className={styles.emptyDropdownIconCheck}>
+                    <CheckIcon size={28} />
+                  </div>
+                  <p className={styles.emptyDropdownTitle}>Tudo em dia!</p>
+                  <p className={styles.emptyDropdownSubtitle}>
+                    Você não possui notificações não lidas. Acesse a aba <strong>Todas (Histórico)</strong> para consultar notificações anteriores.
                   </p>
                 </div>
               ) : (
                 <div className={styles.notificationsList}>
-                  {notificacoes.map((item) => {
+                  {(filtro === 'naoLidas' ? notificacoes.filter((n) => !n.lida) : notificacoes).map((item) => {
                     const isVencidaOuReporte =
                       item.tipo === 'tarefa_vencida' || item.tipo === 'ticket_criador';
                     const isUrgente = item.tipo === 'tarefa_urgente';
@@ -336,14 +380,17 @@ export default function Header({
 
               {notificacoes.length > 0 && (
                 <div className={styles.dropdownFooter}>
+                  <span className={styles.footerCount}>
+                    {notificacoes.length} {notificacoes.length === 1 ? 'notificação no histórico' : 'notificações no histórico'}
+                  </span>
                   <button
                     type="button"
                     className={styles.clearAllBtn}
                     onClick={limparNotificacoes}
-                    title="Limpar todas as notificações"
+                    title="Limpar histórico de notificações"
                   >
                     <TrashIcon size={14} />
-                    Limpar notificações
+                    Limpar histórico
                   </button>
                 </div>
               )}

@@ -1,35 +1,71 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { preferenciaService } from '@/services/preferenciaService';
 
-export type FontSize = 'small' | 'medium' | 'large';
+export const AVAILABLE_FONT_SIZES = [12, 14, 16, 18, 20, 22, 24] as const;
+export type FontSizeNumber = (typeof AVAILABLE_FONT_SIZES)[number];
+export type FontSize = FontSizeNumber | 'small' | 'medium' | 'large' | string;
 export type Theme = 'light' | 'dark';
 
+export interface FontSizeOptionItem {
+  value: FontSizeNumber;
+  label: string;
+  description: string;
+}
+
+export const FONT_SIZE_OPTIONS: FontSizeOptionItem[] = [
+  { value: 12, label: '12px', description: 'Mínima' },
+  { value: 14, label: '14px', description: 'Pequena' },
+  { value: 16, label: '16px', description: 'Padrão' },
+  { value: 18, label: '18px', description: 'Média-Alta' },
+  { value: 20, label: '20px', description: 'Grande' },
+  { value: 22, label: '22px', description: 'Muito Grande' },
+  { value: 24, label: '24px', description: 'Máxima' },
+];
+
+export function toNumericFontSize(size: FontSize | number | string | null | undefined): FontSizeNumber {
+  if (typeof size === 'number') {
+    if (size % 2 === 0 && size >= 12 && size <= 24) {
+      return size as FontSizeNumber;
+    }
+  }
+  if (size === 'small') return 14;
+  if (size === 'medium') return 16;
+  if (size === 'large') return 18;
+
+  const parsed = parseInt(String(size), 10);
+  if (!isNaN(parsed) && parsed >= 12 && parsed <= 24 && parsed % 2 === 0) {
+    return parsed as FontSizeNumber;
+  }
+  return 16;
+}
+
 interface AccessibilityContextType {
-  fontSize: FontSize;
+  fontSize: FontSizeNumber;
   setFontSize: (size: FontSize) => void;
   highContrast: boolean;
   setHighContrast: (enabled: boolean) => void;
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  sincronizar: () => Promise<void>;
+  isSyncing: boolean;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
 
-function applyAccessibilityToDOM(size: FontSize, contrast: boolean, theme: Theme) {
+function applyAccessibilityToDOM(size: FontSizeNumber, contrast: boolean, theme: Theme) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
 
   // Aplica tamanho de fonte e atributos globais
-  root.setAttribute('data-font-size', size);
-  if (size === 'small') {
-    root.style.fontSize = '14px';
-  } else if (size === 'large') {
-    root.style.fontSize = '18px';
-  } else {
-    root.style.fontSize = '16px';
-  }
+  root.setAttribute('data-font-size', `${size}px`);
+  root.style.fontSize = `${size}px`;
+
+  // Mapeamento de retrocompatibilidade para classes CSS legadas
+  const legacySize = size <= 14 ? 'small' : size >= 18 ? 'large' : 'medium';
+  root.setAttribute('data-font-size-legacy', legacySize);
 
   // Aplica alto contraste
   root.setAttribute('data-high-contrast', String(contrast));
@@ -41,16 +77,69 @@ function applyAccessibilityToDOM(size: FontSize, contrast: boolean, theme: Theme
 }
 
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
-  const [fontSize, setFontSizeState] = useState<FontSize>('medium');
+  const [fontSize, setFontSizeState] = useState<FontSizeNumber>(16);
   const [highContrast, setHighContrastState] = useState<boolean>(false);
   const [theme, setThemeState] = useState<Theme>('light');
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Dispara a sincronização de preferências com o backend no banco de dados
+  const syncWithBackend = useCallback((newTheme: Theme, newContrast: boolean, newSize: FontSizeNumber) => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        setIsSyncing(true);
+        await preferenciaService.atualizarAcessibilidade({
+          tema: newTheme,
+          altoContraste: newContrast,
+          tamanhoFonte: newSize,
+        });
+      } catch {
+        // Se o usuário não estiver autenticado (401) ou offline, o estado local e localStorage permanecem válidos
+      } finally {
+        setIsSyncing(false);
+      }
+    }, 300);
+  }, []);
+
+  // Busca as preferências sincronizadas do banco de dados
+  const sincronizar = useCallback(async () => {
+    try {
+      setIsSyncing(true);
+      const remotas = await preferenciaService.obterAcessibilidade();
+      if (remotas) {
+        const remoteSize = toNumericFontSize(remotas.tamanhoFonte);
+        const remoteContrast = Boolean(remotas.altoContraste);
+        const remoteTheme: Theme = remotas.tema === 'dark' ? 'dark' : 'light';
+
+        setFontSizeState(remoteSize);
+        setHighContrastState(remoteContrast);
+        setThemeState(remoteTheme);
+
+        try {
+          localStorage.setItem('cortex_font_size', String(remoteSize));
+          localStorage.setItem('cortex_high_contrast', String(remoteContrast));
+          localStorage.setItem('cortex_theme', remoteTheme);
+        } catch {}
+
+        applyAccessibilityToDOM(remoteSize, remoteContrast, remoteTheme);
+      }
+    } catch {
+      // Ignora falha de autenticação inicial / modo visitante
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  // Inicialização no cliente: lê localStorage primeiro (sem flash), depois sincroniza com a nuvem/banco
   useEffect(() => {
     try {
-      const savedSize = localStorage.getItem('cortex_font_size') as FontSize | null;
-      const initialSize: FontSize = savedSize && ['small', 'medium', 'large'].includes(savedSize)
-        ? savedSize
-        : 'medium';
+      const savedSize = localStorage.getItem('cortex_font_size');
+      const initialSize = toNumericFontSize(savedSize);
 
       const savedContrast = localStorage.getItem('cortex_high_contrast');
       const initialContrast = savedContrast === 'true';
@@ -65,69 +154,84 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       setHighContrastState(initialContrast);
       setThemeState(initialTheme);
       applyAccessibilityToDOM(initialSize, initialContrast, initialTheme);
-    } catch {
-      // Ignora erro de acesso a localStorage caso esteja desabilitado
-    }
-  }, []);
-
-  const setFontSize = useCallback((newSize: FontSize) => {
-    setFontSizeState(newSize);
-    try {
-      localStorage.setItem('cortex_font_size', newSize);
     } catch {}
+
+    // Sincroniza com as preferências do banco de dados
+    sincronizar();
+  }, [sincronizar]);
+
+  const setFontSize = useCallback((newSizeInput: FontSize) => {
+    const newSize = toNumericFontSize(newSizeInput);
+    setFontSizeState(newSize);
+
+    try {
+      localStorage.setItem('cortex_font_size', String(newSize));
+    } catch {}
+
     setHighContrastState((currContrast) => {
       setThemeState((currTheme) => {
         applyAccessibilityToDOM(newSize, currContrast, currTheme);
+        syncWithBackend(currTheme, currContrast, newSize);
         return currTheme;
       });
       return currContrast;
     });
-  }, []);
+  }, [syncWithBackend]);
 
   const setHighContrast = useCallback((enabled: boolean) => {
     setHighContrastState(enabled);
+
     try {
       localStorage.setItem('cortex_high_contrast', String(enabled));
     } catch {}
+
     setFontSizeState((currSize) => {
       setThemeState((currTheme) => {
         applyAccessibilityToDOM(currSize, enabled, currTheme);
+        syncWithBackend(currTheme, enabled, currSize);
         return currTheme;
       });
       return currSize;
     });
-  }, []);
+  }, [syncWithBackend]);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
+
     try {
       localStorage.setItem('cortex_theme', newTheme);
     } catch {}
+
     setFontSizeState((currSize) => {
       setHighContrastState((currContrast) => {
         applyAccessibilityToDOM(currSize, currContrast, newTheme);
+        syncWithBackend(newTheme, currContrast, currSize);
         return currContrast;
       });
       return currSize;
     });
-  }, []);
+  }, [syncWithBackend]);
 
   const toggleTheme = useCallback(() => {
     setThemeState((currTheme) => {
       const nextTheme: Theme = currTheme === 'dark' ? 'light' : 'dark';
+
       try {
         localStorage.setItem('cortex_theme', nextTheme);
       } catch {}
+
       setFontSizeState((currSize) => {
         setHighContrastState((currContrast) => {
           applyAccessibilityToDOM(currSize, currContrast, nextTheme);
+          syncWithBackend(nextTheme, currContrast, currSize);
           return currContrast;
         });
         return currSize;
       });
+
       return nextTheme;
     });
-  }, []);
+  }, [syncWithBackend]);
 
   return (
     <AccessibilityContext.Provider
@@ -139,6 +243,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         theme,
         setTheme,
         toggleTheme,
+        sincronizar,
+        isSyncing,
       }}
     >
       {children}
@@ -153,4 +259,3 @@ export function useAccessibility() {
   }
   return context;
 }
-

@@ -32,7 +32,38 @@ export default function RelatoriosPage() {
   const [dataFim, setDataFim] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('');
   const [filtroPrioridade, setFiltroPrioridade] = useState('');
-  const [filtroResponsavelId, setFiltroResponsavelId] = useState<number | ''>('');
+  const [filtroResponsaveisIds, setFiltroResponsaveisIds] = useState<number[]>([]);
+  const [isResponsavelDropdownOpen, setIsResponsavelDropdownOpen] = useState(false);
+  const [buscaResponsavel, setBuscaResponsavel] = useState('');
+  const responsavelDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Fecha o dropdown de responsáveis ao clicar fora ou pressionar ESC
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        responsavelDropdownRef.current &&
+        !responsavelDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsResponsavelDropdownOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsResponsavelDropdownOpen(false);
+      }
+    }
+
+    if (isResponsavelDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isResponsavelDropdownOpen]);
 
   // Usuários para o filtro de responsável
   const [todosUsuarios, setTodosUsuarios] = useState<ConsultaUsuarioDTO[]>([]);
@@ -65,8 +96,106 @@ export default function RelatoriosPage() {
     );
   }, [equipes, usuario]);
 
-  // Carrega lista de equipes e lista geral de usuários
+  // Filtros aplicados no relatório ativo (atualizados somente via 'Aplicar Filtros' ou 'Limpar')
+  const [filtrosAplicados, setFiltrosAplicados] = useState<{
+    dataInicio: string;
+    dataFim: string;
+    status: string;
+    prioridade: string;
+    responsaveisIds: number[];
+  }>({
+    dataInicio: '',
+    dataFim: '',
+    status: '',
+    prioridade: '',
+    responsaveisIds: [],
+  });
+
+  // Busca dados de relatório de acordo com a visualização ativa e os filtros informados
+  const carregarRelatorio = useCallback(
+    async (
+      filtrosParaUsar: {
+        dataInicio: string;
+        dataFim: string;
+        status: string;
+        prioridade: string;
+        responsaveisIds: number[];
+      },
+      viewAlvo = view,
+      equipeIdAlvo = equipeSelecionadaId
+    ) => {
+      const filtro: FiltroRelatorioQuery = {};
+      if (filtrosParaUsar.dataInicio) filtro.dataInicio = new Date(filtrosParaUsar.dataInicio).toISOString();
+      if (filtrosParaUsar.dataFim) filtro.dataFim = new Date(filtrosParaUsar.dataFim).toISOString();
+      if (filtrosParaUsar.status) filtro.status = filtrosParaUsar.status;
+      if (filtrosParaUsar.prioridade) filtro.prioridade = filtrosParaUsar.prioridade;
+      if (filtrosParaUsar.responsaveisIds.length > 0) {
+        filtro.responsaveisIds = filtrosParaUsar.responsaveisIds;
+        if (filtrosParaUsar.responsaveisIds.length === 1) {
+          filtro.responsavelId = filtrosParaUsar.responsaveisIds[0];
+        }
+      }
+
+      try {
+        setLoading(true);
+
+        if (viewAlvo === 'personal') {
+          const dados = await relatorioService.obterRelatorioTarefas({
+            ...filtro,
+            responsavelId: usuario?.id,
+            responsaveisIds: usuario?.id ? [usuario.id] : undefined,
+          });
+          setRelatorioTarefas(dados);
+        } else if (viewAlvo === 'created') {
+          const dados = await relatorioService.obterRelatorioTarefas({
+            ...filtro,
+            criadorId: usuario?.id,
+          });
+          setRelatorioTarefas(dados);
+        } else if (viewAlvo === 'team') {
+          if (!equipeIdAlvo) {
+            setRelatorioEquipe(null);
+            return;
+          }
+
+          // Verifica se é admin/dono desta equipe
+          const ehPermitido = equipesOndeEhAdminOuDono.some(
+            (eq) => eq.id === Number(equipeIdAlvo)
+          );
+
+          if (!ehPermitido) {
+            setRelatorioEquipe(null);
+            return;
+          }
+
+          const dados = await relatorioService.obterRelatorioEquipe(
+            Number(equipeIdAlvo),
+            filtro
+          );
+          setRelatorioEquipe(dados);
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          showToast(err.message, 'error');
+        } else {
+          showToast('Falha ao gerar relatório analítico.', 'error');
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [view, equipeSelecionadaId, usuario, equipesOndeEhAdminOuDono, showToast]
+  );
+
+  // Referência estável para carregarRelatorio para que os efeitos não entrem em loop
+  const carregarRelatorioRef = React.useRef(carregarRelatorio);
   useEffect(() => {
+    carregarRelatorioRef.current = carregarRelatorio;
+  }, [carregarRelatorio]);
+
+  // Carrega lista de equipes, lista geral de usuários e executa a carga inicial do relatório (apenas 1 vez quando o usuário logar)
+  useEffect(() => {
+    if (!usuario?.id) return;
     let isMounted = true;
 
     Promise.all([
@@ -80,170 +209,102 @@ export default function RelatoriosPage() {
       // Define equipe padrão para relatórios de equipe (apenas equipes onde é Dono/Admin)
       const adminEquipes = minhasEquipes.filter((eq) =>
         eq.membros?.some(
-          (m) => m.usuarioId === usuario?.id && (m.cargo === 'Dono' || m.cargo === 'Admin')
+          (m) => m.usuarioId === usuario.id && (m.cargo === 'Dono' || m.cargo === 'Admin')
         )
       );
 
+      let equipePadraoId: number | '' = '';
       if (adminEquipes.length > 0) {
-        setEquipeSelecionadaId(adminEquipes[0].id);
+        equipePadraoId = adminEquipes[0].id;
+        setEquipeSelecionadaId(equipePadraoId);
       } else if (minhasEquipes.length > 0) {
-        setEquipeSelecionadaId(minhasEquipes[0].id);
+        equipePadraoId = minhasEquipes[0].id;
+        setEquipeSelecionadaId(equipePadraoId);
       }
+
+      // Executa a busca inicial sem filtros apenas uma vez na montagem
+      carregarRelatorioRef.current(
+        { dataInicio: '', dataFim: '', status: '', prioridade: '', responsaveisIds: [] },
+        'personal',
+        equipePadraoId
+      );
     });
 
     return () => {
       isMounted = false;
     };
-  }, [usuario]);
+  }, [usuario?.id]);
 
-  // Busca dados de relatório de acordo com a visualização ativa e filtros
-  const carregarRelatorio = useCallback(async () => {
-    const filtro: FiltroRelatorioQuery = {};
-    if (dataInicio) filtro.dataInicio = new Date(dataInicio).toISOString();
-    if (dataFim) filtro.dataFim = new Date(dataFim).toISOString();
-    if (filtroStatus) filtro.status = filtroStatus;
-    if (filtroPrioridade) filtro.prioridade = filtroPrioridade;
-    if (filtroResponsavelId) filtro.responsavelId = Number(filtroResponsavelId);
-
-    try {
-      setLoading(true);
-
-      if (view === 'personal') {
-        const dados = await relatorioService.obterRelatorioTarefas({
-          ...filtro,
-          responsavelId: usuario?.id,
-        });
-        setRelatorioTarefas(dados);
-      } else if (view === 'created') {
-        const dados = await relatorioService.obterRelatorioTarefas({
-          ...filtro,
-          criadorId: usuario?.id,
-        });
-        setRelatorioTarefas(dados);
-      } else if (view === 'team') {
-        if (!equipeSelecionadaId) {
-          setRelatorioEquipe(null);
-          return;
-        }
-
-        // Verifica se é admin/dono desta equipe
-        const ehPermitido = equipesOndeEhAdminOuDono.some(
-          (eq) => eq.id === Number(equipeSelecionadaId)
-        );
-
-        if (!ehPermitido) {
-          setRelatorioEquipe(null);
-          return;
-        }
-
-        const dados = await relatorioService.obterRelatorioEquipe(
-          Number(equipeSelecionadaId),
-          filtro
-        );
-        setRelatorioEquipe(dados);
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao gerar relatório analítico.', 'error');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    view,
-    equipeSelecionadaId,
-    dataInicio,
-    dataFim,
-    filtroStatus,
-    filtroPrioridade,
-    filtroResponsavelId,
-    usuario,
-    equipesOndeEhAdminOuDono,
-    showToast,
-  ]);
-
-  // Carrega ao mudar a view ou equipe selecionada
-  useEffect(() => {
-    let isMounted = true;
-    const filtro: FiltroRelatorioQuery = {};
-    if (dataInicio) filtro.dataInicio = new Date(dataInicio).toISOString();
-    if (dataFim) filtro.dataFim = new Date(dataFim).toISOString();
-    if (filtroStatus) filtro.status = filtroStatus;
-    if (filtroPrioridade) filtro.prioridade = filtroPrioridade;
-    if (filtroResponsavelId) filtro.responsavelId = Number(filtroResponsavelId);
-
-    async function buscar() {
-      try {
-        setLoading(true);
-        if (view === 'personal') {
-          const dados = await relatorioService.obterRelatorioTarefas({
-            ...filtro,
-            responsavelId: usuario?.id,
-          });
-          if (isMounted) setRelatorioTarefas(dados);
-        } else if (view === 'created') {
-          const dados = await relatorioService.obterRelatorioTarefas({
-            ...filtro,
-            criadorId: usuario?.id,
-          });
-          if (isMounted) setRelatorioTarefas(dados);
-        } else if (view === 'team') {
-          if (!equipeSelecionadaId) {
-            if (isMounted) setRelatorioEquipe(null);
-            return;
-          }
-          const ehPermitido = equipesOndeEhAdminOuDono.some(
-            (eq) => eq.id === Number(equipeSelecionadaId)
-          );
-          if (!ehPermitido) {
-            if (isMounted) setRelatorioEquipe(null);
-            return;
-          }
-          const dados = await relatorioService.obterRelatorioEquipe(
-            Number(equipeSelecionadaId),
-            filtro
-          );
-          if (isMounted) setRelatorioEquipe(dados);
-        }
-      } catch (err: unknown) {
-        if (isMounted) {
-          if (err instanceof Error) {
-            showToast(err.message, 'error');
-          } else {
-            showToast('Falha ao carregar relatório.', 'error');
-          }
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-
-    buscar();
-
-    return () => {
-      isMounted = false;
+  // Aplica os filtros apenas quando o usuário clicar explicitamente em "Aplicar Filtros"
+  const handleAplicarFiltros = () => {
+    const novosFiltros = {
+      dataInicio,
+      dataFim,
+      status: filtroStatus,
+      prioridade: filtroPrioridade,
+      responsaveisIds: filtroResponsaveisIds,
     };
-  }, [
-    view,
-    equipeSelecionadaId,
-    dataInicio,
-    dataFim,
-    filtroStatus,
-    filtroPrioridade,
-    filtroResponsavelId,
-    usuario,
-    equipesOndeEhAdminOuDono,
-    showToast,
-  ]);
+    setFiltrosAplicados(novosFiltros);
+    carregarRelatorio(novosFiltros, view, equipeSelecionadaId);
+  };
 
+  // Limpa todos os filtros (rascunho e aplicados) e recarrega o relatório
   const handleLimparFiltros = () => {
     setDataInicio('');
     setDataFim('');
     setFiltroStatus('');
     setFiltroPrioridade('');
-    setFiltroResponsavelId('');
+    setFiltroResponsaveisIds([]);
+    setBuscaResponsavel('');
+    const filtrosVazios = {
+      dataInicio: '',
+      dataFim: '',
+      status: '',
+      prioridade: '',
+      responsaveisIds: [],
+    };
+    setFiltrosAplicados(filtrosVazios);
+    carregarRelatorio(filtrosVazios, view, equipeSelecionadaId);
+  };
+
+  // Ao alternar entre as abas (Responsável, Criador, Equipe), reinicia filtros
+  const handleTrocarView = (novaView: ReportView) => {
+    setView(novaView);
+    setDataInicio('');
+    setDataFim('');
+    setFiltroStatus('');
+    setFiltroPrioridade('');
+    setFiltroResponsaveisIds([]);
+    setBuscaResponsavel('');
+    const filtrosVazios = {
+      dataInicio: '',
+      dataFim: '',
+      status: '',
+      prioridade: '',
+      responsaveisIds: [],
+    };
+    setFiltrosAplicados(filtrosVazios);
+    carregarRelatorio(filtrosVazios, novaView, equipeSelecionadaId);
+  };
+
+  // Ao alternar a equipe selecionada no modo equipe, reinicia filtros
+  const handleTrocarEquipe = (novaEquipeId: number) => {
+    setEquipeSelecionadaId(novaEquipeId);
+    setDataInicio('');
+    setDataFim('');
+    setFiltroStatus('');
+    setFiltroPrioridade('');
+    setFiltroResponsaveisIds([]);
+    setBuscaResponsavel('');
+    const filtrosVazios = {
+      dataInicio: '',
+      dataFim: '',
+      status: '',
+      prioridade: '',
+      responsaveisIds: [],
+    };
+    setFiltrosAplicados(filtrosVazios);
+    carregarRelatorio(filtrosVazios, view, novaEquipeId);
   };
 
   // Determina as opções de responsáveis disponíveis para o filtro
@@ -258,6 +319,51 @@ export default function RelatoriosPage() {
     }
     return todosUsuarios;
   }, [view, equipeSelecionadaId, equipes, todosUsuarios]);
+
+  // Filtra as opções de responsáveis pelo texto de busca no dropdown
+  const responsaveisFiltradosParaSelecao = useMemo(() => {
+    if (!buscaResponsavel.trim()) return responsaveisOpcoes;
+    const buscaLower = buscaResponsavel.toLowerCase();
+    return responsaveisOpcoes.filter(
+      (u) =>
+        u.nome?.toLowerCase().includes(buscaLower) ||
+        u.email?.toLowerCase().includes(buscaLower)
+    );
+  }, [responsaveisOpcoes, buscaResponsavel]);
+
+  const toggleResponsavel = (id: number) => {
+    setFiltroResponsaveisIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const selecionarTodosResponsaveis = () => {
+    setFiltroResponsaveisIds(responsaveisOpcoes.map((u) => u.id));
+  };
+
+  const limparSelecaoResponsaveis = () => {
+    setFiltroResponsaveisIds([]);
+  };
+
+  const responsavelTriggerLabel = useMemo(() => {
+    if (filtroResponsaveisIds.length === 0) {
+      return 'Todos os responsáveis';
+    }
+    if (filtroResponsaveisIds.length === 1) {
+      const resp = responsaveisOpcoes.find((u) => u.id === filtroResponsaveisIds[0]);
+      return resp ? resp.nome : '1 selecionado';
+    }
+    return `${filtroResponsaveisIds.length} responsáveis selecionados`;
+  }, [filtroResponsaveisIds, responsaveisOpcoes]);
+
+  // Membros exibidos na tabela de desempenho individual (tela) - baseia-se nos filtros aplicados
+  const membrosExibidos = useMemo(() => {
+    if (!relatorioEquipe?.desempenhoMembros) return [];
+    if (filtrosAplicados.responsaveisIds.length === 0) return relatorioEquipe.desempenhoMembros;
+    return relatorioEquipe.desempenhoMembros.filter((m) =>
+      filtrosAplicados.responsaveisIds.includes(m.usuarioId)
+    );
+  }, [relatorioEquipe, filtrosAplicados.responsaveisIds]);
 
   // Métricas ativas
   const metricas = view === 'team' ? relatorioEquipe?.metricasGerais : relatorioTarefas;
@@ -277,8 +383,22 @@ export default function RelatoriosPage() {
     const equipeNome = relatorioEquipe.equipeNome;
     const geradoEmFormatado = new Date().toLocaleString('pt-BR');
     const solicitanteNome = usuario?.nome || 'Administrador';
-    const membros = relatorioEquipe.desempenhoMembros || [];
+
+    // Se o usuário escolher filtrar por responsável, o PDF deve constar somente os membros filtrados aplicados
+    const membros = (relatorioEquipe.desempenhoMembros || []).filter(
+      (m) =>
+        filtrosAplicados.responsaveisIds.length === 0 ||
+        filtrosAplicados.responsaveisIds.includes(m.usuarioId)
+    );
     const tarefas = metricas.tarefas || [];
+
+    const nomesResponsaveis =
+      filtrosAplicados.responsaveisIds.length > 0
+        ? responsaveisOpcoes
+            .filter((u) => filtrosAplicados.responsaveisIds.includes(u.id))
+            .map((u) => u.nome)
+            .join(', ') || 'Filtrados'
+        : 'Todos';
 
     // Cálculo das escalas máximas para os gráficos de colunas
     const maxConcluidas = Math.max(...membros.map((m) => m.concluidas), 1);
@@ -590,9 +710,10 @@ export default function RelatoriosPage() {
         </div>
 
         <div class="filters-summary">
-          <div><strong>Período:</strong> ${dataInicio ? new Date(dataInicio).toLocaleDateString('pt-BR') : 'Início'} até ${dataFim ? new Date(dataFim).toLocaleDateString('pt-BR') : 'Hoje'}</div>
-          <div><strong>Status:</strong> ${filtroStatus || 'Todos'}</div>
-          <div><strong>Prioridade:</strong> ${filtroPrioridade || 'Todas'}</div>
+          <div><strong>Período:</strong> ${filtrosAplicados.dataInicio ? new Date(filtrosAplicados.dataInicio).toLocaleDateString('pt-BR') : 'Início'} até ${filtrosAplicados.dataFim ? new Date(filtrosAplicados.dataFim).toLocaleDateString('pt-BR') : 'Hoje'}</div>
+          <div><strong>Status:</strong> ${filtrosAplicados.status || 'Todos'}</div>
+          <div><strong>Prioridade:</strong> ${filtrosAplicados.prioridade || 'Todas'}</div>
+          <div><strong>Responsáveis:</strong> ${nomesResponsaveis}</div>
           <div><strong>Integrantes Analisados:</strong> ${membros.length}</div>
         </div>
 
@@ -800,7 +921,7 @@ export default function RelatoriosPage() {
         ${
           pdfOptTabelaMembros
             ? `
-          <h2 class="section-title">Desempenho Individual por Integrante (RN10)</h2>
+          <h2 class="section-title">Desempenho Individual por Integrante</h2>
           <table>
             <thead>
               <tr>
@@ -931,30 +1052,21 @@ export default function RelatoriosPage() {
           <div className={styles.tabsHeader}>
             <button
               type="button"
-              onClick={() => {
-                setView('personal');
-                setFiltroResponsavelId('');
-              }}
+              onClick={() => handleTrocarView('personal')}
               className={`${styles.tabBtn} ${view === 'personal' ? styles.tabBtnActive : ''}`}
             >
               Tarefas Onde Sou Responsável
             </button>
             <button
               type="button"
-              onClick={() => {
-                setView('created');
-                setFiltroResponsavelId('');
-              }}
+              onClick={() => handleTrocarView('created')}
               className={`${styles.tabBtn} ${view === 'created' ? styles.tabBtnActive : ''}`}
             >
               Tarefas Criadas por Mim
             </button>
             <button
               type="button"
-              onClick={() => {
-                setView('team');
-                setFiltroResponsavelId('');
-              }}
+              onClick={() => handleTrocarView('team')}
               className={`${styles.tabBtn} ${view === 'team' ? styles.tabBtnActive : ''}`}
             >
               Desempenho por Equipe
@@ -971,7 +1083,7 @@ export default function RelatoriosPage() {
                   </span>
                   <select
                     value={equipeSelecionadaId}
-                    onChange={(e) => setEquipeSelecionadaId(Number(e.target.value))}
+                    onChange={(e) => handleTrocarEquipe(Number(e.target.value))}
                     className={styles.filterInput}
                     style={{ minWidth: '180px' }}
                   >
@@ -1036,9 +1148,11 @@ export default function RelatoriosPage() {
             </select>
           </div>
 
-          {/* Filtro de Responsável */}
+          {/* Filtro de Responsável (Suporta seleção de múltiplos responsáveis) */}
           <div className={styles.filterField}>
-            <label className={styles.filterLabel}>Responsável</label>
+            <label className={styles.filterLabel}>
+              Responsável {filtroResponsaveisIds.length > 0 && `(${filtroResponsaveisIds.length})`}
+            </label>
             {view === 'personal' ? (
               <input
                 type="text"
@@ -1048,20 +1162,147 @@ export default function RelatoriosPage() {
                 title="Na aba de tarefas onde você é responsável, o filtro é fixo em você."
               />
             ) : (
-              <select
-                value={filtroResponsavelId}
-                onChange={(e) =>
-                  setFiltroResponsavelId(e.target.value ? Number(e.target.value) : '')
-                }
-                className={styles.filterInput}
-              >
-                <option value="">Todos os responsáveis</option>
-                {responsaveisOpcoes.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.nome} ({u.email})
-                  </option>
-                ))}
-              </select>
+              <div className={styles.multiSelectWrapper} ref={responsavelDropdownRef}>
+                <div
+                  className={`${styles.multiSelectTrigger} ${
+                    isResponsavelDropdownOpen ? styles.multiSelectTriggerActive : ''
+                  }`}
+                  onClick={() => setIsResponsavelDropdownOpen((prev) => !prev)}
+                  tabIndex={0}
+                  role="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isResponsavelDropdownOpen}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setIsResponsavelDropdownOpen((prev) => !prev);
+                    }
+                  }}
+                >
+                  <div className={styles.multiSelectTriggerContent}>
+                    <span
+                      className={
+                        filtroResponsaveisIds.length === 0
+                          ? styles.multiSelectPlaceholder
+                          : styles.multiSelectValueText
+                      }
+                      title={responsavelTriggerLabel}
+                    >
+                      {responsavelTriggerLabel}
+                    </span>
+                    {filtroResponsaveisIds.length > 1 && (
+                      <span className={styles.multiSelectCountBadge}>
+                        {filtroResponsaveisIds.length}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className={styles.multiSelectIcons}>
+                    {filtroResponsaveisIds.length > 0 && (
+                      <button
+                        type="button"
+                        className={styles.multiSelectClearBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          limparSelecaoResponsaveis();
+                        }}
+                        title="Limpar seleção de responsáveis"
+                        aria-label="Limpar responsáveis selecionados"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    )}
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      style={{
+                        transform: isResponsavelDropdownOpen ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s ease',
+                      }}
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                </div>
+
+                {isResponsavelDropdownOpen && (
+                  <div className={styles.multiSelectDropdown} role="listbox">
+                    {responsaveisOpcoes.length > 4 && (
+                      <input
+                        type="text"
+                        placeholder="Buscar responsável..."
+                        value={buscaResponsavel}
+                        onChange={(e) => setBuscaResponsavel(e.target.value)}
+                        className={styles.multiSelectSearchInput}
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    )}
+
+                    <div className={styles.multiSelectActions}>
+                      <button
+                        type="button"
+                        className={styles.multiSelectActionLink}
+                        onClick={selecionarTodosResponsaveis}
+                      >
+                        Selecionar todos
+                      </button>
+                      {filtroResponsaveisIds.length > 0 && (
+                        <button
+                          type="button"
+                          className={styles.multiSelectActionLink}
+                          onClick={limparSelecaoResponsaveis}
+                        >
+                          Limpar seleção
+                        </button>
+                      )}
+                    </div>
+
+                    <div className={styles.multiSelectOptionsList}>
+                      {responsaveisFiltradosParaSelecao.length === 0 ? (
+                        <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                          Nenhum responsável encontrado.
+                        </div>
+                      ) : (
+                        responsaveisFiltradosParaSelecao.map((u) => {
+                          const isSelected = filtroResponsaveisIds.includes(u.id);
+                          return (
+                            <label
+                              key={u.id}
+                              className={`${styles.multiSelectOption} ${
+                                isSelected ? styles.multiSelectOptionActive : ''
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleResponsavel(u.id)}
+                                className={styles.multiSelectCheckbox}
+                              />
+                              <div className={styles.multiSelectOptionText}>
+                                <span className={styles.multiSelectOptionName}>{u.nome}</span>
+                                {u.email && (
+                                  <span className={styles.multiSelectOptionEmail}>{u.email}</span>
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -1090,12 +1331,21 @@ export default function RelatoriosPage() {
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
               type="button"
-              onClick={carregarRelatorio}
+              onClick={handleAplicarFiltros}
               className={styles.filterBtn}
             >
               Aplicar Filtros
             </button>
-            {(dataInicio || dataFim || filtroStatus || filtroPrioridade || filtroResponsavelId) && (
+            {(dataInicio ||
+              dataFim ||
+              filtroStatus ||
+              filtroPrioridade ||
+              filtroResponsaveisIds.length > 0 ||
+              filtrosAplicados.dataInicio ||
+              filtrosAplicados.dataFim ||
+              filtrosAplicados.status ||
+              filtrosAplicados.prioridade ||
+              filtrosAplicados.responsaveisIds.length > 0) && (
               <button
                 type="button"
                 onClick={handleLimparFiltros}
@@ -1123,7 +1373,7 @@ export default function RelatoriosPage() {
                 ? `Você participa da equipe "${equipeSelecionada.nome}" como Membro.`
                 : 'Você não possui permissão de Dono ou Administrador nesta equipe.'}
               <br />
-              Conforme a regra de negócio (RN10), relatórios analíticos de equipe são exclusivos para Donos e Administradores.
+              Relatórios analíticos de equipe são exclusivos para Donos e Administradores.
             </span>
           </div>
         ) : loading ? (
@@ -1267,10 +1517,10 @@ export default function RelatoriosPage() {
               <div className={styles.tableContainer}>
                 <div className={styles.tableHeaderSection}>
                   <h3 className={styles.tableTitle}>
-                    Desempenho Individual por Membro — {relatorioEquipe.equipeNome} (RN10)
+                    Desempenho Individual por Membro — {relatorioEquipe.equipeNome}
                   </h3>
                   <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
-                    Total de Integrantes: {relatorioEquipe.totalMembros}
+                    Total de Integrantes: {membrosExibidos.length}
                   </span>
                 </div>
 
@@ -1288,14 +1538,14 @@ export default function RelatoriosPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {relatorioEquipe.desempenhoMembros.length === 0 ? (
+                      {membrosExibidos.length === 0 ? (
                         <tr>
                           <td colSpan={7} className={styles.td} style={{ textAlign: 'center' }}>
                             Nenhum membro com tarefas atribuídas nesta equipe para os filtros selecionados.
                           </td>
                         </tr>
                       ) : (
-                        relatorioEquipe.desempenhoMembros.map((m) => (
+                        membrosExibidos.map((m) => (
                           <tr key={m.usuarioId} className={styles.tr}>
                             <td className={styles.td}>
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -1527,7 +1777,7 @@ export default function RelatoriosPage() {
                 className={styles.checkboxInput}
               />
               <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Tabela Individual por Integrante (RN10)</span>
+                <span className={styles.checkboxTitle}>Tabela Individual por Integrante</span>
                 <span className={styles.checkboxDesc}>Membros com seus respectivos cargos, quantidades de tarefas e taxa percentual.</span>
               </div>
             </label>

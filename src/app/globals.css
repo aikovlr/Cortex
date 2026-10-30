@@ -214,74 +214,71 @@ select {
 
 /* ============================================================
    Acessibilidade: Escala Real de Tamanho de Fonte (Sem Zoom)
+   Range: 12px até 24px (Apenas números pares)
    ============================================================ */
-html[data-font-size="small"] {
-  font-size: 14px;
-}
+html[data-font-size="12px"] { font-size: 12px; }
+html[data-font-size="14px"], html[data-font-size="small"] { font-size: 14px; }
+html[data-font-size="16px"], html[data-font-size="medium"] { font-size: 16px; }
+html[data-font-size="18px"], html[data-font-size="large"] { font-size: 18px; }
+html[data-font-size="20px"] { font-size: 20px; }
+html[data-font-size="22px"] { font-size: 22px; }
+html[data-font-size="24px"] { font-size: 24px; }
 
-html[data-font-size="medium"] {
-  font-size: 16px;
-}
-
-html[data-font-size="large"] {
-  font-size: 18px;
-}
-
-html[data-font-size="small"] body {
-  font-size: 14px;
-}
-
-html[data-font-size="large"] body {
-  font-size: 18px;
-}
+html[data-font-size="12px"] body { font-size: 12px; }
+html[data-font-size="14px"] body, html[data-font-size="small"] body { font-size: 14px; }
+html[data-font-size="16px"] body, html[data-font-size="medium"] body { font-size: 16px; }
+html[data-font-size="18px"] body, html[data-font-size="large"] body { font-size: 18px; }
+html[data-font-size="20px"] body { font-size: 20px; }
+html[data-font-size="22px"] body { font-size: 22px; }
+html[data-font-size="24px"] body { font-size: 24px; }
 
 /* Títulos principais e cabeçalhos */
-html[data-font-size="small"] :is(h1, [class*="pageTitle"]) {
-  font-size: 18px !important;
-}
-html[data-font-size="large"] :is(h1, [class*="pageTitle"]) {
-  font-size: 26px !important;
-}
+html[data-font-size="12px"] :is(h1, [class*="pageTitle"]) { font-size: 16px !important; }
+html[data-font-size="14px"] :is(h1, [class*="pageTitle"]), html[data-font-size="small"] :is(h1, [class*="pageTitle"]) { font-size: 18px !important; }
+html[data-font-size="18px"] :is(h1, [class*="pageTitle"]), html[data-font-size="large"] :is(h1, [class*="pageTitle"]) { font-size: 26px !important; }
+html[data-font-size="20px"] :is(h1, [class*="pageTitle"]) { font-size: 28px !important; }
+html[data-font-size="22px"] :is(h1, [class*="pageTitle"]) { font-size: 30px !important; }
+html[data-font-size="24px"] :is(h1, [class*="pageTitle"]) { font-size: 32px !important; }
 
 /* Títulos de cartões e seções */
-html[data-font-size="small"] :is(h2, [class*="cardTitle"]) {
-  font-size: 14px !important;
-}
-html[data-font-size="large"] :is(h2, [class*="cardTitle"]) {
-  font-size: 20px !important;
-}
+html[data-font-size="12px"] :is(h2, [class*="cardTitle"]) { font-size: 13px !important; }
+html[data-font-size="14px"] :is(h2, [class*="cardTitle"]), html[data-font-size="small"] :is(h2, [class*="cardTitle"]) { font-size: 14px !important; }
+html[data-font-size="18px"] :is(h2, [class*="cardTitle"]), html[data-font-size="large"] :is(h2, [class*="cardTitle"]) { font-size: 20px !important; }
+html[data-font-size="20px"] :is(h2, [class*="cardTitle"]) { font-size: 22px !important; }
+html[data-font-size="22px"] :is(h2, [class*="cardTitle"]) { font-size: 24px !important; }
+html[data-font-size="24px"] :is(h2, [class*="cardTitle"]) { font-size: 26px !important; }
 
 /* Subtítulos, descrições e breadcrumbs */
-html[data-font-size="small"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) {
-  font-size: 11.5px !important;
-}
-html[data-font-size="large"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) {
-  font-size: 15px !important;
-}
+html[data-font-size="12px"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) { font-size: 10.5px !important; }
+html[data-font-size="14px"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]), html[data-font-size="small"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) { font-size: 11.5px !important; }
+html[data-font-size="18px"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]), html[data-font-size="large"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) { font-size: 15px !important; }
+html[data-font-size="20px"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) { font-size: 16.5px !important; }
+html[data-font-size="22px"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) { font-size: 18px !important; }
+html[data-font-size="24px"] :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"], [class*="desc"]) { font-size: 19.5px !important; }
 
 /* Labels e títulos de campos */
-html[data-font-size="small"] :is(label, [class*="label"], [class*="toggleTitle"]) {
-  font-size: 12px !important;
-}
-html[data-font-size="large"] :is(label, [class*="label"], [class*="toggleTitle"]) {
-  font-size: 15px !important;
-}
+html[data-font-size="12px"] :is(label, [class*="label"], [class*="toggleTitle"]) { font-size: 11px !important; }
+html[data-font-size="14px"] :is(label, [class*="label"], [class*="toggleTitle"]), html[data-font-size="small"] :is(label, [class*="label"], [class*="toggleTitle"]) { font-size: 12px !important; }
+html[data-font-size="18px"] :is(label, [class*="label"], [class*="toggleTitle"]), html[data-font-size="large"] :is(label, [class*="label"], [class*="toggleTitle"]) { font-size: 15px !important; }
+html[data-font-size="20px"] :is(label, [class*="label"], [class*="toggleTitle"]) { font-size: 16.5px !important; }
+html[data-font-size="22px"] :is(label, [class*="label"], [class*="toggleTitle"]) { font-size: 18px !important; }
+html[data-font-size="24px"] :is(label, [class*="label"], [class*="toggleTitle"]) { font-size: 19.5px !important; }
 
 /* Botões, abas, inputs e selects */
-html[data-font-size="small"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) {
-  font-size: 12px !important;
-}
-html[data-font-size="large"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) {
-  font-size: 15.5px !important;
-}
+html[data-font-size="12px"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) { font-size: 11px !important; }
+html[data-font-size="14px"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]), html[data-font-size="small"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) { font-size: 12px !important; }
+html[data-font-size="18px"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]), html[data-font-size="large"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) { font-size: 15.5px !important; }
+html[data-font-size="20px"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) { font-size: 17px !important; }
+html[data-font-size="22px"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) { font-size: 18.5px !important; }
+html[data-font-size="24px"] :is(input, select, textarea, button, [class*="tabBtn"], [class*="uploadBtn"], [class*="removePhotoBtn"], [class*="fontSizeOption"]) { font-size: 20px !important; }
 
 /* Parágrafos gerais e textos corridos */
-html[data-font-size="small"] p {
-  font-size: 12.5px;
-}
-html[data-font-size="large"] p {
-  font-size: 16px;
-}
+html[data-font-size="12px"] p { font-size: 11.5px; }
+html[data-font-size="14px"] p, html[data-font-size="small"] p { font-size: 12.5px; }
+html[data-font-size="18px"] p, html[data-font-size="large"] p { font-size: 16px; }
+html[data-font-size="20px"] p { font-size: 17.5px; }
+html[data-font-size="22px"] p { font-size: 19px; }
+html[data-font-size="24px"] p { font-size: 20.5px; }
 
 /* ============================================================
    Acessibilidade: Modo de Alto Contraste (Modo Claro)

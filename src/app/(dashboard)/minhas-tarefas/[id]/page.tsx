@@ -14,6 +14,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { respostaService } from '@/services/respostaService';
 import { ticketService } from '@/services/ticketService';
 import { sugestaoService } from '@/services/sugestaoService';
+import { anexoService } from '@/services/anexoService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { SuggestionModal } from '@/components/tasks/SuggestionModal/SuggestionModal';
@@ -45,6 +46,7 @@ export default function DetalhesTarefaPage() {
   const [completing, setCompleting] = useState(false);
   const [canceling, setCanceling] = useState(false);
   const [uploadingResposta, setUploadingResposta] = useState(false);
+  const [removendoAnexoId, setRemovendoAnexoId] = useState<number | null>(null);
 
   // Abas de navegação
   const [activeTab, setActiveTab] = useState<'detalhes' | 'sugestoes' | 'tickets'>('detalhes');
@@ -136,6 +138,28 @@ export default function DetalhesTarefaPage() {
     }
   };
 
+  const handleRemoverAnexo = async (anexoId: number) => {
+    if (isConcluida) {
+      showToast('Não é possível remover arquivos de uma tarefa finalizada.', 'error');
+      return;
+    }
+
+    try {
+      setRemovendoAnexoId(anexoId);
+      await anexoService.excluirAnexo(anexoId);
+      showToast('Arquivo anexado removido com sucesso!', 'success');
+      await recarregarTarefa();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao remover arquivo anexado.', 'error');
+      }
+    } finally {
+      setRemovendoAnexoId(null);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -220,6 +244,13 @@ export default function DetalhesTarefaPage() {
     });
   };
 
+  // Remove menções textuais de sugestão aprovada/aceita (o push já notifica o responsável)
+  const obterDescricaoLimpa = (descricao?: string | null) => {
+    if (!descricao) return '';
+    return descricao
+      .replace(/(?:^|\r?\n)*\[Sugest[aã]o\s*#?\d*\s*(?:Aprovada|Aceita)[^\]]*\]:?[\s\S]*/gi, '')
+      .trim();
+  };
   const isVencida = () => {
     if (!tarefa?.dataVencimento) return false;
     return new Date(tarefa.dataVencimento) < new Date() && tarefa.status !== 'Concluida';
@@ -370,7 +401,6 @@ export default function DetalhesTarefaPage() {
                         suppressHydrationWarning
                       >
                         {formatarData(tarefa.dataVencimento)}
-                        {isVencida() && ' (Atrasada)'}
                       </span>
                     </div>
 
@@ -392,7 +422,7 @@ export default function DetalhesTarefaPage() {
                   <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>Instruções & Descrição</h2>
                     <div className={styles.descriptionBox}>
-                      {tarefa.descricao || 'Nenhuma instrução adicional informada para esta tarefa.'}
+                      {obterDescricaoLimpa(tarefa.descricao) || 'Nenhuma instrução adicional informada para esta tarefa.'}
                     </div>
                   </div>
 
@@ -450,7 +480,12 @@ export default function DetalhesTarefaPage() {
                   </div>
 
                   {anexosResposta.length > 0 ? (
-                    <AttachmentGallery anexos={anexosResposta} />
+                    <AttachmentGallery
+                      anexos={anexosResposta}
+                      podeRemover={!isConcluida}
+                      onRemoverAnexo={handleRemoverAnexo}
+                      removendoId={removendoAnexoId}
+                    />
                   ) : (
                     <div className={styles.emptyAttachments}>
                       Nenhum arquivo anexado à sua resposta ainda. Use o botão &ldquo;Anexar arquivo&rdquo; acima para enviar sua entrega.
@@ -518,24 +553,7 @@ export default function DetalhesTarefaPage() {
                               {sug.descricao}
                             </div>
 
-                            <div className={styles.ticketFooterNote}>
-                              {sug.status === 'Pendente' ? (
-                                <span className={styles.ticketFooterNoteText}>
-                                  <ClockIcon size={14} />
-                                  Sugestão pendente de análise e aprovação pelo criador da tarefa.
-                                </span>
-                              ) : sug.status === 'Aprovada' ? (
-                                <span className={styles.ticketFooterNoteText}>
-                                  <CheckCircleIcon size={14} />
-                                  Esta sugestão de alteração foi aprovada pelo criador da tarefa.
-                                </span>
-                              ) : (
-                                <span className={styles.ticketFooterNoteText}>
-                                  <XCircleIcon size={14} />
-                                  Esta sugestão de alteração foi recusada pelo criador da tarefa.
-                                </span>
-                              )}
-                            </div>
+                            
                           </div>
                         );
                       })}
@@ -608,19 +626,7 @@ export default function DetalhesTarefaPage() {
                               {ticket.descricao}
                             </div>
 
-                            <div className={styles.ticketFooterNote}>
-                              {isAberto ? (
-                                <span className={styles.ticketFooterNoteText}>
-                                  <AlertTriangleIcon size={14} />
-                                  Chamado em aberto notificado com prioridade para a liderança da equipe.
-                                </span>
-                              ) : (
-                                <span className={styles.ticketFooterNoteText}>
-                                  <CheckCircleIcon size={14} />
-                                  Chamado finalizado e marcado como resolvido pela gestão.
-                                </span>
-                              )}
-                            </div>
+                            
                           </div>
                         );
                       })}

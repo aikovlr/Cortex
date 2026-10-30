@@ -208,6 +208,62 @@
   cursor: not-allowed;
 }
 
+.dropdownTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border-main);
+  background-color: var(--bg-surface);
+}
+
+.dropdownTabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-main);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdownTabBtn:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.dropdownTabBtnActive {
+  background-color: var(--cortex-purple);
+  border-color: var(--cortex-purple);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.dropdownTabBtnActive:hover {
+  background-color: var(--cortex-purple-hover, #6b3fb8);
+  color: #ffffff;
+}
+
+.tabBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background-color: var(--bg-icon-btn-hover);
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.dropdownTabBtnActive .tabBadge {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
 .notificationsList {
   display: flex;
   flex-direction: column;
@@ -410,8 +466,24 @@
 }
 
 .emptyDropdownIcon {
-  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 4px;
+}
+
+.emptyDropdownIcon img {
+  filter: var(--icon-filter);
+  opacity: 0.5;
+  transition: filter 0.2s ease;
+}
+
+.emptyDropdownIconCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  color: #10b981;
 }
 
 .emptyDropdownTitle {
@@ -430,10 +502,16 @@
 .dropdownFooter {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 10px 16px;
   background-color: var(--bg-surface-elevated, var(--bg-surface));
   border-top: 1px solid var(--border-main);
+}
+
+.footerCount {
+  font-size: 11px;
+  color: var(--cortex-gray-text);
+  font-weight: 500;
 }
 
 .clearAllBtn {

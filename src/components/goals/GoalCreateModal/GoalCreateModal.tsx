@@ -114,7 +114,7 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
 
     // RN07: Seleção de Tarefa vinculada obrigatória (uma ou mais)
     if (selectedTaskIds.length === 0) {
-      showToast('A meta deve estar vinculada a pelo menos uma tarefa válida (RN07).', 'error');
+      showToast('A meta deve estar vinculada a pelo menos uma tarefa válida.', 'error');
       return;
     }
 
@@ -125,7 +125,7 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
       limit.setFullYear(limit.getFullYear() + 1);
 
       if (selected > limit) {
-        showToast('A data limite da meta não pode exceder 12 meses (RN15).', 'error');
+        showToast('A data limite da meta não pode exceder 12 meses.', 'error');
         return;
       }
     }
@@ -236,7 +236,7 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
             )}
           </div>
           <span className={styles.helpText}>
-            Regra RN07: Toda meta deve obrigatoriamente estar associada a pelo menos uma tarefa existente. Você pode selecionar múltiplas tarefas.
+            Toda meta deve obrigatoriamente estar associada a pelo menos uma tarefa existente. Você pode selecionar múltiplas tarefas.
           </span>
         </div>
 
@@ -252,7 +252,7 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
             disabled={submitting}
           />
           <span className={styles.helpText}>
-            Regra RN15: A data limite de conclusão não pode exceder 12 meses a partir de hoje.
+            A data limite de conclusão não pode exceder 12 meses a partir de hoje.
           </span>
         </div>
       </form>

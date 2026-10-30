@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Header from '@/app/Components/Header/header';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAccessibility, FontSize, Theme } from '@/contexts/AccessibilityContext';
+import { useAccessibility, FontSize, Theme, FONT_SIZE_OPTIONS, toNumericFontSize } from '@/contexts/AccessibilityContext';
 import { usuarioService } from '@/services/usuarioService';
 import { authService } from '@/services/authService';
 import { notificacaoService } from '@/services/notificacaoService';
@@ -118,7 +118,8 @@ export default function ConfiguracoesPage() {
 
   const handleSelectFontSize = (size: FontSize) => {
     setFontSize(size);
-    showToast('Tamanho de fonte atualizado com sucesso!', 'success');
+    const num = toNumericFontSize(size);
+    showToast(`Tamanho de fonte atualizado para ${num}px!`, 'success');
   };
 
   const handleSelectTheme = (selectedTheme: Theme) => {
@@ -270,7 +271,7 @@ export default function ConfiguracoesPage() {
       if (err instanceof Error) {
         showToast(err.message, 'error');
       } else {
-        showToast('Não foi possível excluir a conta. Verifique se possui tarefas pendentes (RN05).', 'error');
+        showToast('Não foi possível excluir a conta. Verifique se possui tarefas pendentes.', 'error');
       }
     }
   };
@@ -574,7 +575,7 @@ export default function ConfiguracoesPage() {
             <div className={styles.cardHeader}>
               <h2 className={`${styles.cardTitle} ${styles.dangerTitle}`}>Zona de Perigo</h2>
               <p className={styles.cardSubtitle}>
-                A exclusão da conta é permanente e só é permitida caso você não possua tarefas pendentes ou em andamento (Regra RN05).
+                A exclusão da conta é permanente e só é permitida caso você não possua tarefas pendentes ou em andamento.
               </p>
             </div>
 
@@ -676,43 +677,91 @@ export default function ConfiguracoesPage() {
             <div className={styles.cardHeader}>
               <h2 className={styles.cardTitle}>Tamanho da Fonte</h2>
               <p className={styles.cardSubtitle}>
-                Ajuste a escala tipográfica aplicada globalmente em todas as páginas do sistema
+                Ajuste a escala tipográfica aplicada globalmente em todas as páginas do sistema (12px a 24px, somente números pares)
               </p>
             </div>
 
+            {/* Slider de ajuste fino com step 2 (somente números pares entre 12px e 24px) */}
+            <div style={{ marginBottom: '20px', padding: '0 4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)', fontWeight: 500 }}>
+                  Ajuste contínuo (Pares: 12px a 24px)
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cortex-purple)' }}>
+                  {toNumericFontSize(fontSize)}px
+                </span>
+              </div>
+              <input
+                type="range"
+                min={12}
+                max={24}
+                step={2}
+                value={toNumericFontSize(fontSize)}
+                onChange={(e) => handleSelectFontSize(Number(e.target.value) as FontSize)}
+                style={{
+                  width: '100%',
+                  accentColor: 'var(--cortex-purple)',
+                  cursor: 'pointer',
+                }}
+                aria-label="Escala de tamanho da fonte (12px a 24px, somente números pares)"
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '11px', color: 'var(--cortex-gray-text)' }}>
+                {FONT_SIZE_OPTIONS.map((opt) => (
+                  <span
+                    key={opt.value}
+                    style={{
+                      cursor: 'pointer',
+                      fontWeight: toNumericFontSize(fontSize) === opt.value ? 700 : 400,
+                      color: toNumericFontSize(fontSize) === opt.value ? 'var(--cortex-purple)' : 'inherit',
+                    }}
+                    onClick={() => handleSelectFontSize(opt.value)}
+                  >
+                    {opt.value}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Grid de opções de tamanho com preview Aa e descrições */}
             <div className={styles.fontSizeGrid}>
-              <div
-                onClick={() => handleSelectFontSize('small')}
-                className={`${styles.fontSizeOption} ${fontSize === 'small' ? styles.fontSizeOptionActive : ''}`}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleSelectFontSize('small')}
-              >
-                <span style={{ fontSize: '13px', display: 'block', marginBottom: '6px' }}>Aa</span>
-                Pequena (14px)
-              </div>
-
-              <div
-                onClick={() => handleSelectFontSize('medium')}
-                className={`${styles.fontSizeOption} ${fontSize === 'medium' ? styles.fontSizeOptionActive : ''}`}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleSelectFontSize('medium')}
-              >
-                <span style={{ fontSize: '16px', display: 'block', marginBottom: '6px' }}>Aa</span>
-                Média (Padrão 16px)
-              </div>
-
-              <div
-                onClick={() => handleSelectFontSize('large')}
-                className={`${styles.fontSizeOption} ${fontSize === 'large' ? styles.fontSizeOptionActive : ''}`}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleSelectFontSize('large')}
-              >
-                <span style={{ fontSize: '20px', display: 'block', marginBottom: '6px' }}>Aa</span>
-                Grande (18px)
-              </div>
+              {FONT_SIZE_OPTIONS.map((opt) => {
+                const isActive = toNumericFontSize(fontSize) === opt.value;
+                return (
+                  <div
+                    key={opt.value}
+                    onClick={() => handleSelectFontSize(opt.value)}
+                    className={`${styles.fontSizeOption} ${isActive ? styles.fontSizeOptionActive : ''}`}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isActive}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSelectFontSize(opt.value)}
+                  >
+                    <span
+                      style={{
+                        fontSize: `${opt.value}px`,
+                        display: 'block',
+                        marginBottom: '6px',
+                        lineHeight: 1.2,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Aa
+                    </span>
+                    <div style={{ fontSize: '13px', fontWeight: isActive ? 700 : 500 }}>
+                      {opt.label}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: isActive ? 'var(--cortex-purple)' : 'var(--cortex-gray-text)',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {opt.description}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -781,7 +830,7 @@ export default function ConfiguracoesPage() {
               >
                 <span>⚠️</span>
                 <span>
-                  <strong>Atenção:</strong> Seu e-mail ainda não está verificado. Segundo a regra do sistema (RN13), confirme seu e-mail para receber notificações por esse método.
+                  <strong>Atenção:</strong> Seu e-mail ainda não está verificado. Confirme seu e-mail para receber notificações por esse método.
                 </span>
               </div>
             )}
@@ -800,10 +849,10 @@ export default function ConfiguracoesPage() {
                   <option value={24}>24 horas antes (1 dia)</option>
                   <option value={48}>48 horas antes (2 dias)</option>
                   <option value={72}>72 horas antes (3 dias)</option>
-                  <option value={168}>168 horas antes (7 dias - Máximo RN11)</option>
+                  <option value={168}>168 horas antes (7 dias - Máximo)</option>
                 </select>
                 <span style={{ fontSize: '11px', color: 'var(--cortex-gray-text)' }}>
-                  Regra RN11: Antecedência mínima de 1 hora e máxima de 7 dias (168h).
+                  Antecedência mínima de 1 hora e máxima de 7 dias (168h).
                 </span>
               </div>
 
