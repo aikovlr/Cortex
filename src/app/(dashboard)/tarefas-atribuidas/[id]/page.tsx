@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/app/Components/Header/header';
@@ -21,6 +21,7 @@ import { sugestaoService } from '@/services/sugestaoService';
 import { ticketService } from '@/services/ticketService';
 import { respostaService } from '@/services/respostaService';
 import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { notificarNovoResponsavelTarefa } from '@/contexts/NotificationContext';
 import {
@@ -39,6 +40,7 @@ export default function TarefaAtribuidaDetalhesPage() {
   const params = useParams();
   const router = useRouter();
   const { showToast } = useToast();
+  const { usuario } = useAuth();
 
   const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const tarefaId = idParam ? Number(idParam) : null;
@@ -65,6 +67,15 @@ export default function TarefaAtribuidaDetalhesPage() {
   const [equipeSelecionadaId, setEquipeSelecionadaId] = useState<number | ''>('');
   const [adicionandoResp, setAdicionandoResp] = useState(false);
   const [removendoRespId, setRemovendoRespId] = useState<number | null>(null);
+
+  const equipesGerenciaveis = useMemo(() => {
+    if (!usuario) return [];
+    return minhasEquipes.filter((eq) =>
+      eq.membros?.some(
+        (m) => m.usuarioId === usuario.id && (m.cargo === 'Dono' || m.cargo === 'Admin')
+      )
+    );
+  }, [minhasEquipes, usuario]);
 
   // Abas de Navegação (Estilo Relatórios)
   const [activeTab, setActiveTab] = useState<'detalhes' | 'respostas' | 'sugestoes' | 'tickets'>('detalhes');
@@ -847,7 +858,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                   </button>
 
                   {/* Atribuição por Equipe */}
-                  {minhasEquipes.length > 0 && (
+                  {equipesGerenciaveis.length > 0 && (
                     <>
                       <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--cortex-border)', margin: '0 8px' }} />
 
@@ -858,7 +869,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                         style={{ minWidth: '200px' }}
                       >
                         <option value="">Selecione uma equipe...</option>
-                        {minhasEquipes.map((eq) => (
+                        {equipesGerenciaveis.map((eq) => (
                           <option key={eq.id} value={eq.id}>
                             {eq.nome}
                           </option>

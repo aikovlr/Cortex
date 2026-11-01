@@ -130,6 +130,50 @@
   background-color: var(--bg-surface-secondary);
 }
 
+.thSortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.thSortable:hover {
+  color: var(--cortex-purple);
+  background-color: var(--bg-surface-hover);
+}
+
+.thSortable:focus-visible {
+  outline: 2px solid var(--cortex-purple);
+  outline-offset: -2px;
+}
+
+.thContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortIconContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.sortIconActive {
+  color: var(--cortex-purple);
+}
+
+.sortIconInactive {
+  opacity: 0.35;
+  color: var(--text-secondary);
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.thSortable:hover .sortIconInactive {
+  opacity: 0.85;
+  color: var(--cortex-purple);
+}
+
 .tr {
   border-bottom: 1px solid var(--border-light);
   transition: background-color 0.15s ease;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, use } from 'react';
+import React, { useState, useEffect, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/app/Components/Header/header';
 import { Badge } from '@/components/common/Badge/Badge';
@@ -11,6 +11,9 @@ import {
   AlertTriangleIcon,
   CheckIcon,
   PlusIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ArrowUpDownIcon,
 } from '@/components/common/Icons/Icons';
 import {
   ConsultaEquipeDTO,
@@ -23,6 +26,15 @@ import { ticketService } from '@/services/ticketService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
+
+type CampoOrdenacaoMembro = 'integrante' | 'desde' | 'cargo';
+type DirecaoOrdenacao = 'asc' | 'desc';
+
+const PESO_CARGO: Record<CargoEquipe, number> = {
+  Dono: 3,
+  Admin: 2,
+  Membro: 1,
+};
 
 export default function EquipeDetalhesPage({
   params,
@@ -49,6 +61,57 @@ export default function EquipeDetalhesPage({
   const meuMembro = membros.find((m) => m.usuarioId === usuario?.id);
   const isOwner = meuMembro?.cargo === 'Dono';
   const isAdminOrOwner = isOwner || meuMembro?.cargo === 'Admin';
+
+  // Ordenação de Membros (Dono > Admin > Membro)
+  const [campoOrdenacao, setCampoOrdenacao] = useState<CampoOrdenacaoMembro | null>('cargo');
+  const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<DirecaoOrdenacao>('asc');
+
+  const alternarOrdenacao = (campo: CampoOrdenacaoMembro) => {
+    if (campoOrdenacao === campo) {
+      setDirecaoOrdenacao((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setCampoOrdenacao(campo);
+      setDirecaoOrdenacao('asc');
+    }
+  };
+
+  const renderIconeOrdenacao = (campo: CampoOrdenacaoMembro) => {
+    if (campoOrdenacao !== campo) {
+      return <ArrowUpDownIcon size={14} className={styles.sortIconInactive} aria-hidden="true" />;
+    }
+    return direcaoOrdenacao === 'asc' ? (
+      <ChevronUpIcon size={14} className={styles.sortIconActive} aria-hidden="true" />
+    ) : (
+      <ChevronDownIcon size={14} className={styles.sortIconActive} aria-hidden="true" />
+    );
+  };
+
+  const membrosOrdenados = useMemo(() => {
+    if (!campoOrdenacao) return membros;
+
+    return [...membros].sort((a, b) => {
+      let diff = 0;
+      if (campoOrdenacao === 'cargo') {
+        const pesoA = PESO_CARGO[a.cargo] ?? 0;
+        const pesoB = PESO_CARGO[b.cargo] ?? 0;
+        // Na hierarquia Dono > Admin > Membro, asc lista os cargos mais altos primeiro
+        diff = direcaoOrdenacao === 'asc' ? pesoB - pesoA : pesoA - pesoB;
+      } else if (campoOrdenacao === 'integrante') {
+        const nomeA = a.usuario?.nome || '';
+        const nomeB = b.usuario?.nome || '';
+        diff = direcaoOrdenacao === 'asc'
+          ? nomeA.localeCompare(nomeB, 'pt-BR')
+          : nomeB.localeCompare(nomeA, 'pt-BR');
+      } else if (campoOrdenacao === 'desde') {
+        const timeA = new Date(a.dataEntrada).getTime() || 0;
+        const timeB = new Date(b.dataEntrada).getTime() || 0;
+        diff = direcaoOrdenacao === 'asc' ? timeA - timeB : timeB - timeA;
+      }
+
+      if (diff !== 0) return diff;
+      return a.id - b.id;
+    });
+  }, [membros, campoOrdenacao, direcaoOrdenacao]);
 
   const recarregar = useCallback(() => {
     if (!equipeId) return;
@@ -238,9 +301,87 @@ export default function EquipeDetalhesPage({
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th className={styles.th}>Integrante</th>
-                  <th className={styles.th}>Desde</th>
-                  <th className={styles.th}>Cargo</th>
+                  <th
+                    className={`${styles.th} ${styles.thSortable}`}
+                    onClick={() => alternarOrdenacao('integrante')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        alternarOrdenacao('integrante');
+                      }
+                    }}
+                    tabIndex={0}
+                    role="columnheader"
+                    aria-sort={
+                      campoOrdenacao === 'integrante'
+                        ? direcaoOrdenacao === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className={styles.thContent}>
+                      <span>Integrante</span>
+                      <span className={styles.sortIconContainer}>
+                        {renderIconeOrdenacao('integrante')}
+                      </span>
+                    </div>
+                  </th>
+
+                  <th
+                    className={`${styles.th} ${styles.thSortable}`}
+                    onClick={() => alternarOrdenacao('desde')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        alternarOrdenacao('desde');
+                      }
+                    }}
+                    tabIndex={0}
+                    role="columnheader"
+                    aria-sort={
+                      campoOrdenacao === 'desde'
+                        ? direcaoOrdenacao === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className={styles.thContent}>
+                      <span>Desde</span>
+                      <span className={styles.sortIconContainer}>
+                        {renderIconeOrdenacao('desde')}
+                      </span>
+                    </div>
+                  </th>
+
+                  <th
+                    className={`${styles.th} ${styles.thSortable}`}
+                    onClick={() => alternarOrdenacao('cargo')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        alternarOrdenacao('cargo');
+                      }
+                    }}
+                    tabIndex={0}
+                    role="columnheader"
+                    aria-sort={
+                      campoOrdenacao === 'cargo'
+                        ? direcaoOrdenacao === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className={styles.thContent}>
+                      <span>Cargo</span>
+                      <span className={styles.sortIconContainer}>
+                        {renderIconeOrdenacao('cargo')}
+                      </span>
+                    </div>
+                  </th>
+
                   {isAdminOrOwner && (
                     <th className={styles.th} style={{ textAlign: 'right' }}>
                       Ações
@@ -249,7 +390,7 @@ export default function EquipeDetalhesPage({
                 </tr>
               </thead>
               <tbody>
-                {membros.map((membro) => {
+                {membrosOrdenados.map((membro) => {
                   const nome = membro.usuario?.nome || 'Colaborador';
                   const email = membro.usuario?.email || '';
 
@@ -299,7 +440,7 @@ export default function EquipeDetalhesPage({
 
                       {isAdminOrOwner && (
                         <td className={styles.td} style={{ textAlign: 'right' }}>
-                          {membro.cargo !== 'Dono' && (
+                          {(isOwner ? membro.cargo !== 'Dono' : membro.cargo === 'Membro') && (
                             <button
                               type="button"
                               className={`${styles.actionBtn} ${styles.removeBtn}`}

@@ -10,7 +10,9 @@ export type TipoNotificacao =
   | 'tarefa_urgente'
   | 'resposta_ticket'
   | 'ticket_criador'
-  | 'sugestao';
+  | 'sugestao'
+  | 'equipe'
+  | 'meta';
 
 export interface NotificacaoItem {
   id: string;

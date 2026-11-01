@@ -354,6 +354,16 @@
   color: #ca8a04;
 }
 
+.iconEquipe {
+  background-color: rgba(99, 102, 241, 0.14);
+  color: #4f46e5;
+}
+
+.iconMeta {
+  background-color: rgba(16, 185, 129, 0.14);
+  color: #059669;
+}
+
 .notificationBody {
   display: flex;
   flex-direction: column;
@@ -399,10 +409,40 @@
   color: #a16207;
 }
 
+.tagEquipe {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #4f46e5;
+}
+
+.tagMeta {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
 .notificationTime {
   font-size: 11px;
   color: var(--cortex-gray-text);
   white-space: nowrap;
+}
+
+.notificationTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stackCountBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background-color: rgba(16, 185, 129, 0.16);
+  color: #059669;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 .notificationTitle {
@@ -502,7 +542,7 @@
 .dropdownFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 10px 16px;
   background-color: var(--bg-surface-elevated, var(--bg-surface));
   border-top: 1px solid var(--border-main);

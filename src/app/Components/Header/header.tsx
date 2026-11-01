@@ -10,8 +10,10 @@ import {
   AlertTriangleIcon,
   AlertCircleIcon,
   CheckIcon,
+  CheckCircleIcon,
   LightbulbIcon,
   TrashIcon,
+  UsersIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './header.module.css';
 
@@ -132,6 +134,18 @@ export default function Header({
             <LightbulbIcon size={18} />
           </div>
         );
+      case 'equipe':
+        return (
+          <div className={`${styles.notificationIcon} ${styles.iconEquipe}`} title="Equipe">
+            <UsersIcon size={18} />
+          </div>
+        );
+      case 'meta':
+        return (
+          <div className={`${styles.notificationIcon} ${styles.iconMeta}`} title="Meta">
+            <CheckCircleIcon size={18} />
+          </div>
+        );
       default:
         return (
           <div className={`${styles.notificationIcon} ${styles.iconTarefa}`}>
@@ -155,6 +169,10 @@ export default function Header({
         return <span className={`${styles.notificationTag} ${styles.tagTicket}`}>Ticket</span>;
       case 'sugestao':
         return <span className={`${styles.notificationTag} ${styles.tagSugestao}`}>Sugestão</span>;
+      case 'equipe':
+        return <span className={`${styles.notificationTag} ${styles.tagEquipe}`}>Equipe</span>;
+      case 'meta':
+        return <span className={`${styles.notificationTag} ${styles.tagMeta}`}>Meta</span>;
       default:
         return null;
     }
@@ -305,6 +323,9 @@ export default function Header({
                     const isVencidaOuReporte =
                       item.tipo === 'tarefa_vencida' || item.tipo === 'ticket_criador';
                     const isUrgente = item.tipo === 'tarefa_urgente';
+                    const stackMatch = item.titulo.match(/\((\d+)\)$/);
+                    const stackCount = stackMatch ? stackMatch[1] : null;
+                    const tituloFormatado = stackMatch ? item.titulo.replace(/\s*\(\d+\)$/, '') : item.titulo;
 
                     return (
                       <div
@@ -333,17 +354,27 @@ export default function Header({
                               {formatRelativeTime(item.dataCriacao)}
                             </span>
                           </div>
-                          <h4
-                            className={`${styles.notificationTitle} ${
-                              isVencidaOuReporte
-                                ? styles.titleDestaque
-                                : isUrgente
-                                ? styles.titleUrgente
-                                : ''
-                            }`}
-                          >
-                            {item.titulo}
-                          </h4>
+                          <div className={styles.notificationTitleRow}>
+                            <h4
+                              className={`${styles.notificationTitle} ${
+                                isVencidaOuReporte
+                                  ? styles.titleDestaque
+                                  : isUrgente
+                                  ? styles.titleUrgente
+                                  : ''
+                              }`}
+                            >
+                              {tituloFormatado}
+                            </h4>
+                            {stackCount && (
+                              <span
+                                className={styles.stackCountBadge}
+                                title={`${stackCount} conclusões registradas`}
+                              >
+                                {stackCount}x
+                              </span>
+                            )}
+                          </div>
                           <p className={styles.notificationMessage}>{item.mensagem}</p>
                         </div>
 
@@ -380,9 +411,6 @@ export default function Header({
 
               {notificacoes.length > 0 && (
                 <div className={styles.dropdownFooter}>
-                  <span className={styles.footerCount}>
-                    {notificacoes.length} {notificacoes.length === 1 ? 'notificação no histórico' : 'notificações no histórico'}
-                  </span>
                   <button
                     type="button"
                     className={styles.clearAllBtn}

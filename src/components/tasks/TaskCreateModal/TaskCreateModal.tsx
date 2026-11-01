@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '@/components/common/Modal/Modal';
 import { Input } from '@/components/common/Input/Input';
 import { Select } from '@/components/common/Select/Select';
@@ -9,6 +9,7 @@ import { Prioridade, ConsultaUsuarioDTO, ConsultaEquipeDTO } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
 import { usuarioService } from '@/services/usuarioService';
 import { equipeService } from '@/services/equipeService';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { notificarNovoResponsavelTarefa } from '@/contexts/NotificationContext';
 import { PaperclipIcon, XIcon } from '@/components/common/Icons/Icons';
@@ -52,6 +53,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   onSuccess,
 }) => {
   const { showToast } = useToast();
+  const { usuario } = useAuth();
 
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -67,6 +69,15 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   const [usuarios, setUsuarios] = useState<ConsultaUsuarioDTO[]>([]);
   const [equipes, setEquipes] = useState<ConsultaEquipeDTO[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  const equipesGerenciaveis = useMemo(() => {
+    if (!usuario) return [];
+    return equipes.filter((eq) =>
+      eq.membros?.some(
+        (m) => m.usuarioId === usuario.id && (m.cargo === 'Dono' || m.cargo === 'Admin')
+      )
+    );
+  }, [equipes, usuario]);
 
   useEffect(() => {
     if (isOpen) {
@@ -289,7 +300,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
             onChange={(e) => setEquipeId(e.target.value ? Number(e.target.value) : '')}
             options={[
               { value: '', label: 'Selecione uma equipe...' },
-              ...equipes.map((eq) => ({ value: eq.id, label: eq.nome })),
+              ...equipesGerenciaveis.map((eq) => ({ value: eq.id, label: eq.nome })),
             ]}
           />
         )}
