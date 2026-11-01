@@ -291,7 +291,7 @@ export default function TarefaAtribuidaDetalhesPage() {
       setCompleting(true);
       await tarefaService.concluirTarefa(tarefaId);
       showToast('Tarefa marcada como concluída!', 'success');
-      await carregarTarefa();
+      await Promise.all([carregarTarefa(), carregarRespostas()]);
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -527,7 +527,10 @@ export default function TarefaAtribuidaDetalhesPage() {
 
               <button
                 type="button"
-                onClick={() => setActiveTab('respostas')}
+                onClick={() => {
+                  setActiveTab('respostas');
+                  carregarRespostas();
+                }}
                 className={`${styles.tabBtn} ${activeTab === 'respostas' ? styles.tabBtnActive : ''}`}
               >
                 <CheckIcon size={16} />
@@ -940,6 +943,11 @@ export default function TarefaAtribuidaDetalhesPage() {
                             </div>
 
                             <div className={styles.collapsibleMeta}>
+                              {(!resp.anexos || resp.anexos.length === 0) && (
+                                <span className={styles.gradeBadge} style={{ background: 'var(--cortex-gray-100, #F3F4F6)', color: 'var(--cortex-gray-700, #4B5563)' }}>
+                                  Finalizada sem anexo
+                                </span>
+                              )}
                               {jaAvaliada ? (
                                 <span className={`${styles.gradeBadge} ${styles.gradeBadgeGraded}`}>
                                   Nota: {resp.nota} / {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? `${tarefa.pontuacao} pts` : `${maxNota} pts`}

@@ -270,6 +270,9 @@ export default function DetalhesTarefaPage() {
   ) || [];
   const anexosResposta = (respostasDoResponsavel.length > 0 ? respostasDoResponsavel : (tarefa?.respostas || []))
     .flatMap((r) => r.anexos || []);
+  const respostaAvaliada = respostasDoResponsavel.find(
+    (r) => r.nota !== null && r.nota !== undefined
+  );
 
   return (
     <>
@@ -451,6 +454,21 @@ export default function DetalhesTarefaPage() {
                       <span className={styles.responseSubtitle}>
                         Anexe aqui os arquivos de resposta para entregar a tarefa.
                       </span>
+                      {respostaAvaliada && (
+                        <div style={{ marginTop: '8px' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            backgroundColor: 'var(--cortex-green-badge-bg, #D4EDDA)',
+                            color: 'var(--cortex-green-badge-text, #155724)',
+                            fontWeight: 600,
+                            fontSize: '13px'
+                          }}>
+                            Avaliação da entrega: {respostaAvaliada.nota} / {tarefa.pontuacao !== null && tarefa.pontuacao !== undefined ? `${tarefa.pontuacao} pts` : '100 pts'}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -488,7 +506,9 @@ export default function DetalhesTarefaPage() {
                     />
                   ) : (
                     <div className={styles.emptyAttachments}>
-                      Nenhum arquivo anexado à sua resposta ainda. Use o botão &ldquo;Anexar arquivo&rdquo; acima para enviar sua entrega.
+                      {isConcluida
+                        ? 'Você finalizou esta tarefa sem anexar arquivos.'
+                        : 'Nenhum arquivo anexado à sua resposta ainda. Use o botão \u201cAnexar arquivo\u201d acima para enviar sua entrega.'}
                     </div>
                   )}
                 </div>

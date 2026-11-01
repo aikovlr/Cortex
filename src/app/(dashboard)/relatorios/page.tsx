@@ -406,6 +406,15 @@ export default function RelatoriosPage() {
   // Métricas ativas
   const metricas = view === 'team' ? relatorioEquipe?.metricasGerais : relatorioTarefas;
 
+  // Responsáveis exibidos na tabela de desempenho das tarefas criadas por mim
+  const responsaveisCriadosExibidos = useMemo(() => {
+    if (view !== 'created' || !metricas?.desempenhoResponsaveis) return [];
+    if (filtrosAplicados.responsaveisIds.length === 0) return metricas.desempenhoResponsaveis;
+    return metricas.desempenhoResponsaveis.filter((r) =>
+      filtrosAplicados.responsaveisIds.includes(r.usuarioId)
+    );
+  }, [view, metricas?.desempenhoResponsaveis, filtrosAplicados.responsaveisIds]);
+
   const equipeSelecionada = equipes.find((eq) => eq.id === Number(equipeSelecionadaId));
   const usuarioEhAdminOuDonoDaEquipeSelecionada = equipesOndeEhAdminOuDono.some(
     (eq) => eq.id === Number(equipeSelecionadaId)
@@ -414,7 +423,13 @@ export default function RelatoriosPage() {
   // Membros para o gráfico de torres de desempenho (lado a lado na tela)
   const membrosGraficoTorres = useMemo(() => {
     if (view === 'team') {
-      return membrosExibidos;
+      return membrosExibidos.map((m) => ({ ...m, cargo: m.cargo || '' }));
+    }
+    if (view === 'created' && responsaveisCriadosExibidos.length > 0) {
+      return responsaveisCriadosExibidos.map((r) => ({
+        ...r,
+        cargo: 'Responsável',
+      }));
     }
     if (usuario && metricas) {
       return [
@@ -432,7 +447,7 @@ export default function RelatoriosPage() {
       ];
     }
     return [];
-  }, [view, membrosExibidos, usuario, metricas]);
+  }, [view, membrosExibidos, responsaveisCriadosExibidos, usuario, metricas]);
 
   // Escala máxima para as torres de desempenho
   const maxTorresGeral = useMemo(() => {
@@ -670,6 +685,19 @@ export default function RelatoriosPage() {
               filtrosAplicados.responsaveisIds.length === 0 ||
               filtrosAplicados.responsaveisIds.includes(m.usuarioId)
           )
+        : view === 'created' && responsaveisCriadosExibidos.length > 0
+        ? responsaveisCriadosExibidos.map((r) => ({
+            usuarioId: r.usuarioId,
+            nome: r.nome,
+            email: r.email,
+            cargo: 'Responsável',
+            totalAtribuidas: r.totalAtribuidas,
+            concluidas: r.concluidas,
+            pendentes: r.pendentes,
+            atrasadas: r.atrasadas,
+            taxaConclusaoPercentual: r.taxaConclusaoPercentual,
+            mediaNotas: r.mediaNotas,
+          }))
         : usuario && metricas
         ? [
             {
@@ -682,6 +710,7 @@ export default function RelatoriosPage() {
               pendentes: metricas.pendentes,
               atrasadas: metricas.atrasadas,
               taxaConclusaoPercentual: metricas.taxaConclusaoPercentual,
+              mediaNotas: metricas.mediaNotas,
             },
           ]
         : [];
@@ -1029,7 +1058,11 @@ export default function RelatoriosPage() {
               </svg>
             </div>
             <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #f3f4f6; font-size: 11px; color: #6b7280;">
-              * Taxa de Conclusão: <strong style="color: #111827;">${metricas.taxaConclusaoPercentual}%</strong> (${metricas.concluidas} de ${metricas.totalTarefas} tarefas concluídas)
+              * Taxa de Conclusão: <strong style="color: #111827;">${metricas.taxaConclusaoPercentual}%</strong> (${metricas.concluidas} de ${metricas.totalTarefas} tarefas concluídas)${
+                view === 'personal'
+                  ? ` • Média de Notas: <strong style="color: #6b46c1;">${metricas.mediaNotas !== null && metricas.mediaNotas !== undefined ? `${metricas.mediaNotas} pts` : 'Sem avaliações'}</strong>`
+                  : ''
+              }
             </div>
           </div>
         `
@@ -1123,26 +1156,27 @@ export default function RelatoriosPage() {
         `
             : ''}
 
-        ${/* 3. Tabela de Desempenho Individual por Responsável (presente no modo equipe) */
-          view === 'team' && pdfOptTabelaMembros
+        ${/* 3. Tabela de Desempenho por Responsável (presente no modo equipe e modo tarefas criadas) */
+          (view === 'team' || view === 'created') && pdfOptTabelaMembros
             ? `
-          <h2 class="section-title">Desempenho Individual por Responsável</h2>
+          <h2 class="section-title">${view === 'team' ? 'Desempenho Individual por Responsável' : 'Desempenho por Responsável — Tarefas Criadas'}</h2>
           <table>
             <thead>
               <tr>
                 <th>Responsável</th>
-                <th>Cargo</th>
-                <th style="text-align: center;">Atribuídas</th>
+                ${view === 'team' ? '<th>Cargo</th>' : ''}
+                ${view === 'team' ? '<th style="text-align: center;">Atribuídas</th>' : ''}
                 <th style="text-align: center;">Concluídas</th>
-                <th style="text-align: center;">Pendentes</th>
                 <th style="text-align: center;">Atrasadas</th>
-                <th style="text-align: right;">Taxa Conclusão</th>
+                <th style="text-align: center;">${view === 'created' ? 'Presentes (Pendentes)' : 'Pendentes'}</th>
+                <th style="text-align: right;">${view === 'created' ? '% Conclusão' : 'Taxa Conclusão'}</th>
+                <th style="text-align: center;">Média de Nota</th>
               </tr>
             </thead>
             <tbody>
               ${
                 membrosPdf.length === 0
-                  ? '<tr><td colspan="7" style="text-align: center;">Nenhum responsável registrado.</td></tr>'
+                  ? `<tr><td colspan="${view === 'team' ? 8 : 6}" style="text-align: center;">Nenhum responsável registrado.</td></tr>`
                   : membrosPdf
                       .map((m) => {
                         const badgeCls =
@@ -1151,15 +1185,17 @@ export default function RelatoriosPage() {
                             : m.cargo === 'Admin'
                             ? 'badge-admin'
                             : 'badge-membro';
+                        const mediaFormatada = m.mediaNotas !== null && m.mediaNotas !== undefined ? `<strong>${m.mediaNotas} pts</strong>` : '<span style="color: #9ca3af;">-</span>';
                         return `
                     <tr>
                       <td><strong>${m.nome}</strong><br/><span style="color: #6b7280; font-size: 10px;">${m.email}</span></td>
-                      <td><span class="badge ${badgeCls}">${m.cargo}</span></td>
-                      <td style="text-align: center;">${m.totalAtribuidas}</td>
+                      ${view === 'team' ? `<td><span class="badge ${badgeCls}">${m.cargo}</span></td>` : ''}
+                      ${view === 'team' ? `<td style="text-align: center;">${m.totalAtribuidas}</td>` : ''}
                       <td style="text-align: center; color: #10b981; font-weight: 600;">${m.concluidas}</td>
-                      <td style="text-align: center; color: #f59e0b;">${m.pendentes}</td>
                       <td style="text-align: center; color: #ef4444; font-weight: 600;">${m.atrasadas}</td>
+                      <td style="text-align: center; color: #f59e0b; font-weight: 600;">${m.pendentes}</td>
                       <td style="text-align: right; font-weight: 700;">${m.taxaConclusaoPercentual}%</td>
+                      <td style="text-align: center; color: #6b46c1;">${mediaFormatada}</td>
                     </tr>
                   `;
                       })
@@ -1661,10 +1697,21 @@ export default function RelatoriosPage() {
                   </div>
                 </div>
 
-                {/* Nota de rodapé: Taxa de Conclusão */}
+                {/* Nota de rodapé: Taxa de Conclusão e Média de Notas */}
                 <div className={styles.chartFooter}>
                   <span className={styles.footerNoteText}>
                     * Taxa de Conclusão: <strong>{metricas.taxaConclusaoPercentual}%</strong> ({metricas.concluidas} de {metricas.totalTarefas} tarefas concluídas)
+                    {view === 'personal' && (
+                      <>
+                        {' • '}
+                        Média de Notas:{' '}
+                        <strong>
+                          {metricas.mediaNotas !== null && metricas.mediaNotas !== undefined
+                            ? `${metricas.mediaNotas} pts`
+                            : 'Sem avaliações'}
+                        </strong>
+                      </>
+                    )}
                   </span>
                 </div>
               </div>
@@ -1858,12 +1905,13 @@ export default function RelatoriosPage() {
                         <th className={styles.th}>Pendentes</th>
                         <th className={styles.th}>Atrasadas</th>
                         <th className={styles.th}>Taxa de Conclusão</th>
+                        <th className={styles.th}>Média de Nota</th>
                       </tr>
                     </thead>
                     <tbody>
                       {membrosExibidos.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className={styles.td} style={{ textAlign: 'center' }}>
+                          <td colSpan={8} className={styles.td} style={{ textAlign: 'center' }}>
                             Nenhum membro com tarefas atribuídas nesta equipe para os filtros selecionados.
                           </td>
                         </tr>
@@ -1903,6 +1951,101 @@ export default function RelatoriosPage() {
                                   {m.taxaConclusaoPercentual}%
                                 </span>
                               </div>
+                            </td>
+                            <td className={styles.td}>
+                              {m.mediaNotas !== null && m.mediaNotas !== undefined ? (
+                                <span style={{ fontWeight: 600, color: 'var(--cortex-purple, #6B46C1)' }}>
+                                  {m.mediaNotas} pts
+                                </span>
+                              ) : (
+                                <span style={{ color: 'var(--cortex-gray-text, #9CA3AF)', fontSize: '12px' }}>
+                                  Sem avaliações
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TABELA DE RESPONSÁVEIS (Modo Tarefas Criadas por Mim) */}
+            {view === 'created' && (
+              <div className={styles.tableContainer}>
+                <div className={styles.tableHeaderSection}>
+                  <h3 className={styles.tableTitle}>
+                    Desempenho por Responsável — Tarefas Criadas
+                  </h3>
+                  <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
+                    Total de Responsáveis: {responsaveisCriadosExibidos.length}
+                  </span>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th className={styles.th}>Responsável</th>
+                        <th className={styles.th}>Concluídas</th>
+                        <th className={styles.th}>Atrasadas</th>
+                        <th className={styles.th}>Presentes (Pendentes)</th>
+                        <th className={styles.th}>% de Conclusão</th>
+                        <th className={styles.th}>Média de Nota</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {responsaveisCriadosExibidos.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className={styles.td} style={{ textAlign: 'center' }}>
+                            Nenhum responsável com tarefas atribuídas para os filtros selecionados.
+                          </td>
+                        </tr>
+                      ) : (
+                        responsaveisCriadosExibidos.map((r) => (
+                          <tr key={r.usuarioId} className={styles.tr}>
+                            <td className={styles.td}>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontWeight: 600 }}>{r.nome}</span>
+                                <span style={{ fontSize: '11px', color: 'var(--cortex-gray-text)' }}>
+                                  {r.email}
+                                </span>
+                              </div>
+                            </td>
+                            <td className={styles.td} style={{ color: '#10b981', fontWeight: 600 }}>
+                              {r.concluidas}
+                            </td>
+                            <td className={styles.td} style={{ color: 'var(--cortex-red-danger)' }}>
+                              {r.atrasadas}
+                            </td>
+                            <td className={styles.td} style={{ color: '#f59e0b', fontWeight: 600 }}>
+                              {r.pendentes}
+                            </td>
+                            <td className={styles.td}>
+                              <div className={styles.progressSmall}>
+                                <div className={styles.progressSmallTrack}>
+                                  <div
+                                    className={styles.progressSmallFill}
+                                    style={{ width: `${r.taxaConclusaoPercentual}%` }}
+                                  />
+                                </div>
+                                <span style={{ fontWeight: 600, fontSize: '12px' }}>
+                                  {r.taxaConclusaoPercentual}%
+                                </span>
+                              </div>
+                            </td>
+                            <td className={styles.td}>
+                              {r.mediaNotas !== null && r.mediaNotas !== undefined ? (
+                                <span style={{ fontWeight: 600, color: 'var(--cortex-purple, #6B46C1)' }}>
+                                  {r.mediaNotas} pts
+                                </span>
+                              ) : (
+                                <span style={{ color: 'var(--cortex-gray-text, #9CA3AF)', fontSize: '12px' }}>
+                                  Sem avaliações
+                                </span>
+                              )}
                             </td>
                           </tr>
                         ))

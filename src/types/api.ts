@@ -226,12 +226,26 @@ export interface RelatorioTarefasDTO {
   pendentes: number;
   atrasadas: number;
   taxaConclusaoPercentual: number;
+  mediaNotas?: number | null;
   porPrioridade: Record<string, number>;
   porStatus: Record<string, number>;
   periodoInicio?: string;
   periodoFim?: string;
   geradoEm: string;
   tarefas: ConsultaTarefaDTO[];
+  desempenhoResponsaveis?: DesempenhoResponsavelDTO[];
+}
+
+export interface DesempenhoResponsavelDTO {
+  usuarioId: number;
+  nome: string;
+  email: string;
+  totalAtribuidas: number;
+  concluidas: number;
+  pendentes: number;
+  atrasadas: number;
+  taxaConclusaoPercentual: number;
+  mediaNotas?: number | null;
 }
 
 export interface DesempenhoMembroDTO {
@@ -244,6 +258,7 @@ export interface DesempenhoMembroDTO {
   pendentes: number;
   atrasadas: number;
   taxaConclusaoPercentual: number;
+  mediaNotas?: number | null;
 }
 
 export interface RelatorioEquipeDTO {

@@ -39,7 +39,7 @@ export default function Header({
   const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [filtro, setFiltro] = useState<'todas' | 'naoLidas'>('todas');
+  const [filtro, setFiltro] = useState<'naoLidas' | 'todas'>('naoLidas');
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const isDark = theme === 'dark';
@@ -215,6 +215,7 @@ export default function Header({
                 const next = !prev;
                 if (next) {
                   buscarNovasNotificacoes();
+                  setFiltro('naoLidas');
                 }
                 return next;
               });
@@ -257,17 +258,8 @@ export default function Header({
                 </button>
               </div>
 
-              {/* Abas: Todas (Histórico) vs Não Lidas */}
+              {/* Abas: Não Lidas vs Todas */}
               <div className={styles.dropdownTabs}>
-                <button
-                  type="button"
-                  className={`${styles.dropdownTabBtn} ${filtro === 'todas' ? styles.dropdownTabBtnActive : ''}`}
-                  onClick={() => setFiltro('todas')}
-                  title="Ver todo o histórico de notificações"
-                >
-                  Todas (Histórico)
-                  <span className={styles.tabBadge}>{notificacoes.length}</span>
-                </button>
                 <button
                   type="button"
                   className={`${styles.dropdownTabBtn} ${filtro === 'naoLidas' ? styles.dropdownTabBtnActive : ''}`}
@@ -276,6 +268,14 @@ export default function Header({
                 >
                   Não Lidas
                   {naoLidasCount > 0 && <span className={styles.tabBadge}>{naoLidasCount}</span>}
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.dropdownTabBtn} ${filtro === 'todas' ? styles.dropdownTabBtnActive : ''}`}
+                  onClick={() => setFiltro('todas')}
+                  title="Ver todas as notificações"
+                >
+                  Todas
                 </button>
               </div>
 
@@ -296,7 +296,7 @@ export default function Header({
                   </div>
                   <p className={styles.emptyDropdownTitle}>Tudo em dia!</p>
                   <p className={styles.emptyDropdownSubtitle}>
-                    Você não possui notificações não lidas. Acesse a aba <strong>Todas (Histórico)</strong> para consultar notificações anteriores.
+                    Você não possui notificações não lidas. Acesse a aba <strong>Todas</strong> para consultar notificações anteriores.
                   </p>
                 </div>
               ) : (
