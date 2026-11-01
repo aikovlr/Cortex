@@ -152,10 +152,12 @@ export interface CriarMetaDTO {
 
 export interface AtualizarMetaDTO {
   nome?: string;
-  dataFechamento?: string;
+  dataFechamento?: string | null;
   concluida?: boolean;
   tarefaId?: number;
+  tarefaIds?: number[];
   usuarioId?: number;
+  limparDataFechamento?: boolean;
 }
 
 export interface ConsultaSugestaoDTO {

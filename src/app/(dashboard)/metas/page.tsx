@@ -8,6 +8,7 @@ import { Badge } from '@/components/common/Badge/Badge';
 import { SearchBar } from '@/components/common/SearchBar/SearchBar';
 import { CalendarIcon } from '@/components/common/Icons/Icons';
 import { GoalCreateModal } from '@/components/goals/GoalCreateModal/GoalCreateModal';
+import { GoalEditModal } from '@/components/goals/GoalEditModal/GoalEditModal';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
 
@@ -18,6 +19,8 @@ export default function MetasPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingMeta, setEditingMeta] = useState<ConsultaMetaDTO | null>(null);
 
   const carregarMetas = useCallback(async () => {
     try {
@@ -82,6 +85,12 @@ export default function MetasPage() {
         showToast('Falha ao excluir meta.', 'error');
       }
     }
+  };
+
+  // Edição de meta
+  const handleEditMeta = (meta: ConsultaMetaDTO) => {
+    setEditingMeta(meta);
+    setIsEditModalOpen(true);
   };
 
   // Extrai as tarefas vinculadas a uma meta
@@ -319,17 +328,33 @@ export default function MetasPage() {
                         <span className={styles.progressPercentage}>{progresso}%</span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteMeta(meta.id)}
-                        className={styles.deleteBtn}
-                        title="Excluir meta"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      </button>
+                      <div className={styles.cardActions}>
+                        <button
+                          type="button"
+                          onClick={() => handleEditMeta(meta)}
+                          className={styles.editBtn}
+                          title="Editar meta"
+                          aria-label="Editar meta"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteMeta(meta.id)}
+                          className={styles.deleteBtn}
+                          title="Excluir meta"
+                          aria-label="Excluir meta"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -379,6 +404,17 @@ export default function MetasPage() {
       <GoalCreateModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSuccess={carregarMetas}
+      />
+
+      {/* Modal de Edição de Meta */}
+      <GoalEditModal
+        isOpen={isEditModalOpen}
+        meta={editingMeta}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingMeta(null);
+        }}
         onSuccess={carregarMetas}
       />
     </>

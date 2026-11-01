@@ -108,7 +108,24 @@
   background-color: var(--cortex-purple-hover);
 }
 
-/* Seção dos Gráficos Lado a Lado (Pizza/Donut e Torre de Membros) */
+/* Seção dos Gráficos Lado a Lado (Pizzas de Tarefas e Metas) */
+.pieChartsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .pieChartsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Gráfico de Desempenho (Torres) Abaixo das Pizzas */
+.performanceChartSection {
+  width: 100%;
+}
+
 .chartsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));

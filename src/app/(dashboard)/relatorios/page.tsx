@@ -5,11 +5,14 @@ import Header from '@/app/Components/Header/header';
 import { relatorioService, FiltroRelatorioQuery } from '@/services/relatorioService';
 import { equipeService } from '@/services/equipeService';
 import { usuarioService } from '@/services/usuarioService';
+import { metaService } from '@/services/metaService';
 import {
   RelatorioTarefasDTO,
   RelatorioEquipeDTO,
   ConsultaEquipeDTO,
   ConsultaUsuarioDTO,
+  ConsultaMetaDTO,
+  ConsultaTarefaDTO,
 } from '@/types/api';
 import { Badge } from '@/components/common/Badge/Badge';
 import { Modal } from '@/components/common/Modal/Modal';
@@ -76,9 +79,13 @@ export default function RelatoriosPage() {
   const [equipeSelecionadaId, setEquipeSelecionadaId] = useState<number | ''>('');
   const [relatorioEquipe, setRelatorioEquipe] = useState<RelatorioEquipeDTO | null>(null);
 
+  // Metas para o Gráfico de Conclusão de Metas
+  const [metas, setMetas] = useState<ConsultaMetaDTO[]>([]);
+
   // Opções para a Exportação em PDF (Refletindo o que está presente na página)
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfOptPizza, setPdfOptPizza] = useState(true);
+  const [pdfOptPizzaMetas, setPdfOptPizzaMetas] = useState(true);
   const [pdfOptTorre, setPdfOptTorre] = useState(true);
   const [pdfOptTabelaMembros, setPdfOptTabelaMembros] = useState(true);
   const [pdfOptTabelaTarefas, setPdfOptTabelaTarefas] = useState(true);
@@ -170,6 +177,40 @@ export default function RelatoriosPage() {
             filtro
           );
           setRelatorioEquipe(dados);
+        }
+
+        // Carrega metas para o gráfico de conclusão de metas
+        try {
+          if (viewAlvo === 'team' && equipeIdAlvo) {
+            let membrosIds: number[] = [];
+            const eqAtual = equipes.find((eq) => eq.id === Number(equipeIdAlvo));
+            if (eqAtual?.membros && eqAtual.membros.length > 0) {
+              membrosIds = eqAtual.membros.map((m) => m.usuarioId);
+            } else {
+              const eqDados = await equipeService.obterPorId(Number(equipeIdAlvo)).catch(() => null);
+              membrosIds = eqDados?.membros?.map((m) => m.usuarioId) || [];
+            }
+
+            if (membrosIds.length > 0) {
+              const metasPromises = membrosIds.map((uId) =>
+                metaService.listar(uId).catch(() => [])
+              );
+              const resultados = await Promise.all(metasPromises);
+              const map = new Map<number, ConsultaMetaDTO>();
+              resultados.flat().forEach((m) => {
+                if (m && m.id) map.set(m.id, m);
+              });
+              setMetas(Array.from(map.values()));
+            } else {
+              const mList = await metaService.listar().catch(() => []);
+              setMetas(mList || []);
+            }
+          } else {
+            const mList = await metaService.listar().catch(() => []);
+            setMetas(mList || []);
+          }
+        } catch {
+          setMetas([]);
         }
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -434,6 +475,168 @@ export default function RelatoriosPage() {
     });
   }, [metricas]);
 
+  // Extrai as tarefas vinculadas a uma meta
+  const getTarefasDaMeta = useCallback((meta: ConsultaMetaDTO): ConsultaTarefaDTO[] => {
+    if (meta.tarefas && meta.tarefas.length > 0) return meta.tarefas;
+    if (meta.tarefa) return [meta.tarefa as ConsultaTarefaDTO];
+    return [];
+  }, []);
+
+  const isMetaConcluida = useCallback(
+    (meta: ConsultaMetaDTO) => {
+      if (meta.concluida) return true;
+      const tarefas = getTarefasDaMeta(meta);
+      return tarefas.length > 0 && tarefas.every((t) => t.status === 'Concluida');
+    },
+    [getTarefasDaMeta]
+  );
+
+  // Determina o status da meta: Concluida, Atrasada ou Pendente
+  const getMetaStatus = useCallback(
+    (meta: ConsultaMetaDTO): 'Atrasada' | 'Pendente' | 'Concluida' => {
+      if (isMetaConcluida(meta)) {
+        return 'Concluida';
+      }
+
+      const agora = new Date();
+
+      if (meta.dataFechamento) {
+        const dataMeta = new Date(meta.dataFechamento);
+        if (meta.dataFechamento.includes('T00:00:00') || !meta.dataFechamento.includes('T')) {
+          const datePart = meta.dataFechamento.split('T')[0];
+          const [year, month, day] = datePart.split('-').map(Number);
+          if (year && month && day) {
+            const fim = new Date(year, month - 1, day, 23, 59, 59, 999);
+            if (fim < agora) return 'Atrasada';
+          } else if (dataMeta < agora) {
+            return 'Atrasada';
+          }
+        } else if (dataMeta < agora) {
+          return 'Atrasada';
+        }
+      }
+
+      const tarefas = getTarefasDaMeta(meta);
+      const temTarefaAtrasada = tarefas.some(
+        (t) =>
+          t.status === 'Atrasada' ||
+          (t.status !== 'Concluida' && t.dataVencimento && new Date(t.dataVencimento) < agora)
+      );
+
+      if (temTarefaAtrasada) {
+        return 'Atrasada';
+      }
+
+      return 'Pendente';
+    },
+    [getTarefasDaMeta, isMetaConcluida]
+  );
+
+  // Metas filtradas de acordo com os filtros aplicados
+  const metasFiltradas = useMemo(() => {
+    return metas.filter((m) => {
+      const statusMeta = getMetaStatus(m);
+
+      // Filtro de Status
+      if (filtrosAplicados.status && statusMeta !== filtrosAplicados.status) {
+        return false;
+      }
+
+      // Filtro de Responsáveis
+      if (filtrosAplicados.responsaveisIds.length > 0) {
+        const tarefasDaMeta = getTarefasDaMeta(m);
+        const matchCriadorOuUsuario = filtrosAplicados.responsaveisIds.includes(m.usuarioId);
+        const matchTarefaCriador = tarefasDaMeta.some((t) =>
+          filtrosAplicados.responsaveisIds.includes(t.criadorId)
+        );
+        if (!matchCriadorOuUsuario && !matchTarefaCriador) {
+          return false;
+        }
+      }
+
+      // Filtro de Período (Data Início e Data Fim)
+      if (filtrosAplicados.dataInicio && m.dataFechamento) {
+        if (new Date(m.dataFechamento) < new Date(filtrosAplicados.dataInicio)) {
+          return false;
+        }
+      }
+      if (filtrosAplicados.dataFim && m.dataFechamento) {
+        const fimDia = new Date(filtrosAplicados.dataFim);
+        fimDia.setHours(23, 59, 59, 999);
+        if (new Date(m.dataFechamento) > fimDia) {
+          return false;
+        }
+      }
+
+      // Se estiver no modo equipe, garantir que as tarefas pertençam às tarefas da equipe
+      if (view === 'team' && metricas?.tarefas) {
+        const teamTaskIds = new Set(metricas.tarefas.map((t) => t.id));
+        const tarefasDaMeta = getTarefasDaMeta(m);
+        if (tarefasDaMeta.length > 0 && !tarefasDaMeta.some((t) => teamTaskIds.has(t.id))) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [metas, filtrosAplicados, getMetaStatus, getTarefasDaMeta, view, metricas?.tarefas]);
+
+  // Métricas gerais de metas
+  const metricasMetas = useMemo(() => {
+    const total = metasFiltradas.length;
+    let concluidas = 0;
+    let pendentes = 0;
+    let atrasadas = 0;
+
+    for (const m of metasFiltradas) {
+      const st = getMetaStatus(m);
+      if (st === 'Concluida') concluidas++;
+      else if (st === 'Atrasada') atrasadas++;
+      else pendentes++;
+    }
+
+    const taxaConclusaoPercentual = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+
+    return {
+      total,
+      concluidas,
+      pendentes,
+      atrasadas,
+      taxaConclusaoPercentual,
+    };
+  }, [metasFiltradas, getMetaStatus]);
+
+  // Segmentos para o Gráfico de Pizza de Metas (Donut Borda Externa Fina)
+  const donutSlicesMetas = useMemo(() => {
+    const total = metricasMetas.total;
+    const r = 68;
+    const circ = 2 * Math.PI * r;
+
+    const data = [
+      { id: 'concluidas', label: 'Concluídas', count: metricasMetas.concluidas, color: '#10b981' },
+      { id: 'pendentes', label: 'Pendentes', count: metricasMetas.pendentes, color: '#f59e0b' },
+      { id: 'atrasadas', label: 'Atrasadas', count: metricasMetas.atrasadas, color: '#ef4444' },
+    ];
+
+    if (total <= 0) {
+      return [];
+    }
+
+    let accumulatedOffset = 0;
+    return data.map((item) => {
+      const sliceLength = (item.count / total) * circ;
+      const offset = accumulatedOffset;
+      accumulatedOffset += sliceLength;
+      const percent = (item.count / total) * 100;
+      return {
+        ...item,
+        length: sliceLength,
+        offset,
+        percent,
+      };
+    });
+  }, [metricasMetas]);
+
   // Função para gerar e exportar relatório em PDF com o que está presente na página
   const handleExportarPdf = () => {
     if (!metricas) {
@@ -517,6 +720,28 @@ export default function RelatoriosPage() {
               const curOffset = offsetPdf;
               offsetPdf += len;
               return `<circle cx="95" cy="95" r="68" fill="none" stroke="${s.color}" stroke-width="8" stroke-dasharray="${len} ${circPdf - len}" stroke-dashoffset="${-curOffset}" transform="rotate(-90 95 95)" />`;
+            })
+            .join('')
+        : '';
+
+    // Segmentos SVG do gráfico de pizza de metas para o PDF (borda externa fina)
+    const circMetasPdf = 2 * Math.PI * 68;
+    let offsetMetasPdf = 0;
+    const slicesMetasPdf = [
+      { label: 'Concluídas', count: metricasMetas.concluidas, color: '#10b981' },
+      { label: 'Pendentes', count: metricasMetas.pendentes, color: '#f59e0b' },
+      { label: 'Atrasadas', count: metricasMetas.atrasadas, color: '#ef4444' },
+    ];
+
+    const donutSvgSegmentsMetasPdf =
+      metricasMetas.total > 0
+        ? slicesMetasPdf
+            .filter((s) => s.count > 0)
+            .map((s) => {
+              const len = (s.count / metricasMetas.total) * circMetasPdf;
+              const curOffset = offsetMetasPdf;
+              offsetMetasPdf += len;
+              return `<circle cx="95" cy="95" r="68" fill="none" stroke="${s.color}" stroke-width="8" stroke-dasharray="${len} ${circMetasPdf - len}" stroke-dashoffset="${-curOffset}" transform="rotate(-90 95 95)" />`;
             })
             .join('')
         : '';
@@ -810,7 +1035,38 @@ export default function RelatoriosPage() {
         `
             : ''}
 
-        ${/* 2. Gráfico de Torres de Desempenho por Responsável (em linha separada, nunca na mesma linha da pizza, e oculto se for a aba onde sou responsável) */
+        ${/* 2. Gráfico de Pizza de Conclusão de Metas */
+          pdfOptPizzaMetas
+            ? `
+          <div class="chart-box">
+            <div class="column-chart-header">
+              <span class="column-chart-title">Conclusão de Metas</span>
+              <div class="chart-legend">
+                <span class="legend-pill"><span class="legend-dot" style="background: #10b981;"></span> Concluídas (${metricasMetas.concluidas})</span>
+                <span class="legend-pill"><span class="legend-dot" style="background: #f59e0b;"></span> Pendentes (${metricasMetas.pendentes})</span>
+                <span class="legend-pill"><span class="legend-dot" style="background: #ef4444;"></span> Atrasadas (${metricasMetas.atrasadas})</span>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: center; align-items: center; padding: 14px 0;">
+              <svg width="190" height="190" viewBox="0 0 190 190" style="display: block; margin: 0 auto;">
+                <circle cx="95" cy="95" r="68" fill="none" stroke="#e5e7eb" stroke-width="8" />
+                ${donutSvgSegmentsMetasPdf}
+                <text x="95" y="90" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">${metricasMetas.total}</text>
+                <text x="95" y="106" text-anchor="middle" font-size="9" font-weight="600" fill="#6b7280" letter-spacing="0.5">TOTAL DE METAS</text>
+              </svg>
+            </div>
+            <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #f3f4f6; font-size: 11px; color: #6b7280;">
+              ${
+                metricasMetas.total > 0
+                  ? `* Taxa de Conclusão: <strong style="color: #111827;">${metricasMetas.taxaConclusaoPercentual}%</strong> (${metricasMetas.concluidas} de ${metricasMetas.total} metas concluídas)`
+                  : '* Nenhuma meta vinculada para os filtros selecionados.'
+              }
+            </div>
+          </div>
+        `
+            : ''}
+
+        ${/* 3. Gráfico de Torres de Desempenho por Responsável (abaixo dos gráficos de pizza) */
           view !== 'personal' && pdfOptTorre
             ? `
           <div class="chart-box">
@@ -1333,8 +1589,8 @@ export default function RelatoriosPage() {
           </div>
         ) : (
           <>
-            {/* Seção dos Gráficos Lado a Lado: Pizza (Donut Borda Externa Fina) + Torres de Desempenho */}
-            <div className={`${styles.chartsGrid} ${view === 'personal' ? styles.chartsGridSingle : ''}`}>
+            {/* Seção dos Gráficos de Pizza Lado a Lado: Tarefas e Conclusão de Metas */}
+            <div className={styles.pieChartsGrid}>
               {/* Gráfico 1: Pizza só com borda externa contendo o número de tarefas e total central */}
               <div className={styles.chartCard}>
                 <div className={styles.chartCardHeader}>
@@ -1413,8 +1669,92 @@ export default function RelatoriosPage() {
                 </div>
               </div>
 
-              {/* Gráfico 2: Gráfico de Torre de Desempenho (exibido apenas nas outras abas, exceto "Tarefas Onde Sou Responsável") */}
-              {view !== 'personal' && (
+              {/* Gráfico 2: Pizza de Conclusão de Metas */}
+              <div className={styles.chartCard}>
+                <div className={styles.chartCardHeader}>
+                  <h3 className={styles.chartCardTitle}>Conclusão de Metas</h3>
+                  <div className={styles.chartHeaderLegend}>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendDot} style={{ backgroundColor: '#10b981' }} />
+                      Concluídas ({metricasMetas.concluidas})
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendDot} style={{ backgroundColor: '#f59e0b' }} />
+                      Pendentes ({metricasMetas.pendentes})
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendDot} style={{ backgroundColor: '#ef4444' }} />
+                      Atrasadas ({metricasMetas.atrasadas})
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.donutBodyCentered}>
+                  <div className={styles.donutChartWrapper}>
+                    <svg
+                      width="190"
+                      height="190"
+                      viewBox="0 0 190 190"
+                      className={styles.donutSvg}
+                      aria-label="Gráfico de pizza com borda externa fina do número de metas por status"
+                    >
+                      <circle
+                        cx="95"
+                        cy="95"
+                        r="68"
+                        fill="none"
+                        stroke="var(--border-input)"
+                        strokeWidth="8"
+                        opacity="0.35"
+                      />
+                      {donutSlicesMetas.map((slice) => {
+                        if (slice.count === 0) return null;
+                        return (
+                          <circle
+                            key={slice.id}
+                            cx="95"
+                            cy="95"
+                            r="68"
+                            fill="none"
+                            stroke={slice.color}
+                            strokeWidth="8"
+                            strokeDasharray={`${slice.length} ${2 * Math.PI * 68 - slice.length}`}
+                            strokeDashoffset={-slice.offset}
+                            transform="rotate(-90 95 95)"
+                            className={styles.donutSlice}
+                          >
+                            <title>{`${slice.label}: ${slice.count} metas (${slice.percent.toFixed(1)}%)`}</title>
+                          </circle>
+                        );
+                      })}
+                    </svg>
+
+                    {/* Texto interno com o Total de Metas */}
+                    <div className={styles.donutCenter}>
+                      <span className={styles.donutCenterNumber}>{metricasMetas.total}</span>
+                      <span className={styles.donutCenterLabel}>Total de Metas</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nota de rodapé: Taxa de Conclusão */}
+                <div className={styles.chartFooter}>
+                  <span className={styles.footerNoteText}>
+                    {metricasMetas.total > 0 ? (
+                      <>
+                        * Taxa de Conclusão: <strong>{metricasMetas.taxaConclusaoPercentual}%</strong> ({metricasMetas.concluidas} de {metricasMetas.total} metas concluídas)
+                      </>
+                    ) : (
+                      <>* Nenhuma meta vinculada para os filtros selecionados.</>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Gráfico 3: Gráfico de Torre de Desempenho (MOVIDO ABAIXO DOS DOIS GRÁFICOS DE PIZZA) */}
+            {view !== 'personal' && (
+              <div className={styles.performanceChartSection}>
                 <div className={styles.chartCard}>
                   <div className={styles.chartCardHeader}>
                     <h3 className={styles.chartCardTitle}>
@@ -1492,8 +1832,8 @@ export default function RelatoriosPage() {
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* TABELA DE MEMBROS (Modo Equipe - RN10) */}
             {view === 'team' && relatorioEquipe?.desempenhoMembros && (
@@ -1677,7 +2017,7 @@ export default function RelatoriosPage() {
           <div className={styles.optionsGroup}>
             <span className={styles.optionsGroupTitle}>Gráficos do Relatório</span>
 
-            {/* Opção Gráfico de Pizza */}
+            {/* Opção Gráfico de Pizza de Tarefas */}
             <label className={`${styles.checkboxCard} ${pdfOptPizza ? styles.checkboxCardActive : ''}`}>
               <input
                 type="checkbox"
@@ -1688,6 +2028,20 @@ export default function RelatoriosPage() {
               <div className={styles.checkboxInfo}>
                 <span className={styles.checkboxTitle}>Gráfico de Pizza: Distribuição de Tarefas por Status</span>
                 <span className={styles.checkboxDesc}>Borda externa fina com o total de tarefas no centro e nota de rodapé com taxa de conclusão.</span>
+              </div>
+            </label>
+
+            {/* Opção Gráfico de Pizza de Metas */}
+            <label className={`${styles.checkboxCard} ${pdfOptPizzaMetas ? styles.checkboxCardActive : ''}`}>
+              <input
+                type="checkbox"
+                checked={pdfOptPizzaMetas}
+                onChange={(e) => setPdfOptPizzaMetas(e.target.checked)}
+                className={styles.checkboxInput}
+              />
+              <div className={styles.checkboxInfo}>
+                <span className={styles.checkboxTitle}>Gráfico de Pizza: Conclusão de Metas</span>
+                <span className={styles.checkboxDesc}>Borda externa fina com o total de metas no centro e nota de rodapé com taxa de conclusão.</span>
               </div>
             </label>
 

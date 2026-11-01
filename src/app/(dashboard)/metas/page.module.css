@@ -225,13 +225,40 @@
   gap: 4px;
 }
 
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-gray-text);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.editBtn:hover {
+  color: var(--cortex-purple);
+  background-color: rgba(123, 79, 201, 0.12);
+}
+
 .deleteBtn {
   background: none;
   border: none;
   color: var(--cortex-gray-text);
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 6px;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 
