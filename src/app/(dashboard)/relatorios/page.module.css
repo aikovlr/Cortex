@@ -108,120 +108,328 @@
   background-color: var(--cortex-purple-hover);
 }
 
-/* Painel de Métricas / KPIs */
-.kpiGrid {
+/* Seção dos Gráficos Lado a Lado (Pizza/Donut e Torre de Membros) */
+.chartsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 20px;
 }
 
-.kpiCard {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-main);
-  border-radius: 16px;
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.25s;
+.chartsGridSingle {
+  grid-template-columns: 1fr;
 }
 
-.kpiCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+@media (max-width: 900px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.kpiIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(123, 79, 201, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cortex-purple);
-}
-
-.kpiInfo {
-  display: flex;
-  flex-direction: column;
-}
-
-.kpiValue {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.kpiLabel {
-  font-size: 12px;
-  color: var(--cortex-gray-text);
-  margin-top: 2px;
-}
-
-/* Gráficos e Distribuição */
-.distributionGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
-}
-
-.distCard {
+.chartCard {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-main);
   border-radius: 16px;
   padding: 22px;
+  box-shadow: var(--shadow-card);
+  transition: background-color 0.25s, border-color 0.25s, box-shadow 0.25s;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  box-shadow: var(--shadow-card);
-  transition: background-color 0.25s;
 }
 
-.distTitle {
+.chartCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chartCardTitle {
   font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.distList {
+.chartHeaderLegend {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 12px;
+  font-size: 11px;
+  flex-wrap: wrap;
 }
 
-.distRow {
+.legendPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Gráfico de Pizza / Donut só com borda externa fina */
+.donutBodyCentered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px 0;
+  flex: 1;
+}
+
+.donutContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 24px;
+  min-height: 200px;
+}
+
+.donutChartWrapper {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.donutSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.donutSlice {
+  transition: stroke-width 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.donutSlice:hover {
+  stroke-width: 11;
+  opacity: 0.9;
+}
+
+.donutCenter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
 }
 
-.distHeader {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
+.donutCenterNumber {
+  font-size: 32px;
+  font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.1;
 }
 
-.distCount {
+.donutCenterLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--cortex-gray-text);
+  margin-top: 4px;
+}
+
+/* Rodapé do Card com a Nota da Taxa de Conclusão */
+.chartFooter {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+}
+
+.footerNoteText {
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+}
+
+.footerNoteText strong {
+  color: var(--text-primary);
   font-weight: 600;
 }
 
-.distBarTrack {
-  height: 6px;
-  background-color: var(--border-input);
-  border-radius: 3px;
-  overflow: hidden;
+.donutLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 180px;
 }
 
-.distBarFill {
-  height: 100%;
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-light);
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.legendIndicator {
+  width: 12px;
+  height: 12px;
   border-radius: 3px;
-  background: var(--cortex-purple);
-  transition: width 0.4s ease;
+  flex-shrink: 0;
+}
+
+.legendDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.legendTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.legendValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendPercent {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cortex-gray-text);
+}
+
+/* Gráfico de Torre de Desempenho de Membro */
+.towerPlotWrapper {
+  display: flex;
+  gap: 10px;
+  height: 190px;
+  margin-top: 6px;
+  flex: 1;
+  min-height: 190px;
+}
+
+.towerYAxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--cortex-gray-text);
+  padding-bottom: 26px;
+  text-align: right;
+  width: 28px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.towerPlotArea {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  border-bottom: 2px solid var(--border-main);
+  border-left: 1px solid var(--border-light);
+  padding-bottom: 2px;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: repeating-linear-gradient(
+    to top,
+    transparent,
+    transparent 29px,
+    var(--border-light) 30px,
+    var(--border-light) 30px
+  );
+}
+
+.towerBarItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  min-width: 65px;
+  max-width: 85px;
+}
+
+.groupedBarsWrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 5px;
+}
+
+.singlePillarGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  flex: 1;
+}
+
+.pillarNum {
+  font-size: 9px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.singlePillar {
+  width: 100%;
+  max-width: 16px;
+  min-width: 8px;
+  border-radius: 4px 4px 0 0;
+  min-height: 3px;
+  transition: height 0.4s ease;
+}
+
+.towerMemberLabel {
+  height: 22px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: center;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.towerEmpty {
+  color: var(--cortex-gray-text);
+  font-size: 12px;
+  align-self: center;
+  text-align: center;
+  width: 100%;
+  margin: auto;
 }
 
 /* Tabela de Membros (RN10) */

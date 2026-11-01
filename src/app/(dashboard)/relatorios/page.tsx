@@ -76,13 +76,10 @@ export default function RelatoriosPage() {
   const [equipeSelecionadaId, setEquipeSelecionadaId] = useState<number | ''>('');
   const [relatorioEquipe, setRelatorioEquipe] = useState<RelatorioEquipeDTO | null>(null);
 
-  // Opções para a Exportação em PDF (Gráficos de Colunas e Seções)
+  // Opções para a Exportação em PDF (Refletindo o que está presente na página)
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-  const [pdfOptComparativo, setPdfOptComparativo] = useState(true);
-  const [pdfOptConcluidas, setPdfOptConcluidas] = useState(true);
-  const [pdfOptPendentes, setPdfOptPendentes] = useState(true);
-  const [pdfOptAtrasadas, setPdfOptAtrasadas] = useState(true);
-  const [pdfOptKpis, setPdfOptKpis] = useState(true);
+  const [pdfOptPizza, setPdfOptPizza] = useState(true);
+  const [pdfOptTorre, setPdfOptTorre] = useState(true);
   const [pdfOptTabelaMembros, setPdfOptTabelaMembros] = useState(true);
   const [pdfOptTabelaTarefas, setPdfOptTabelaTarefas] = useState(true);
 
@@ -373,23 +370,119 @@ export default function RelatoriosPage() {
     (eq) => eq.id === Number(equipeSelecionadaId)
   );
 
-  // Função para gerar e exportar relatório da equipe em PDF com Gráficos de Colunas
+  // Membros para o gráfico de torres de desempenho (lado a lado na tela)
+  const membrosGraficoTorres = useMemo(() => {
+    if (view === 'team') {
+      return membrosExibidos;
+    }
+    if (usuario && metricas) {
+      return [
+        {
+          usuarioId: usuario.id,
+          nome: usuario.nome || 'Você',
+          email: usuario.email || '',
+          cargo: view === 'created' ? 'Criador' : 'Responsável',
+          totalAtribuidas: metricas.totalTarefas,
+          concluidas: metricas.concluidas,
+          pendentes: metricas.pendentes,
+          atrasadas: metricas.atrasadas,
+          taxaConclusaoPercentual: metricas.taxaConclusaoPercentual,
+        },
+      ];
+    }
+    return [];
+  }, [view, membrosExibidos, usuario, metricas]);
+
+  // Escala máxima para as torres de desempenho
+  const maxTorresGeral = useMemo(() => {
+    if (!membrosGraficoTorres || membrosGraficoTorres.length === 0) return 1;
+    return Math.max(
+      ...membrosGraficoTorres.map((m) => Math.max(m.concluidas, m.pendentes, m.atrasadas)),
+      1
+    );
+  }, [membrosGraficoTorres]);
+
+  // Segmentos para o Gráfico de Pizza só com borda externa fina (Donut Chart)
+  const donutSlices = useMemo(() => {
+    if (!metricas) return [];
+    const total = metricas.totalTarefas;
+    const r = 68;
+    const circ = 2 * Math.PI * r;
+
+    const data = [
+      { id: 'concluidas', label: 'Concluídas', count: metricas.concluidas, color: '#10b981' },
+      { id: 'pendentes', label: 'Pendentes', count: metricas.pendentes, color: '#f59e0b' },
+      { id: 'atrasadas', label: 'Atrasadas', count: metricas.atrasadas, color: '#ef4444' },
+    ];
+
+    if (total <= 0) {
+      return [];
+    }
+
+    let accumulatedOffset = 0;
+    return data.map((item) => {
+      const sliceLength = (item.count / total) * circ;
+      const offset = accumulatedOffset;
+      accumulatedOffset += sliceLength;
+      const percent = (item.count / total) * 100;
+      return {
+        ...item,
+        length: sliceLength,
+        offset,
+        percent,
+      };
+    });
+  }, [metricas]);
+
+  // Função para gerar e exportar relatório em PDF com o que está presente na página
   const handleExportarPdf = () => {
-    if (!relatorioEquipe || !metricas) {
+    if (!metricas) {
       showToast('Nenhum dado disponível para exportação.', 'info');
       return;
     }
 
-    const equipeNome = relatorioEquipe.equipeNome;
+    const equipeNome = relatorioEquipe?.equipeNome || 'Equipe';
     const geradoEmFormatado = new Date().toLocaleString('pt-BR');
     const solicitanteNome = usuario?.nome || 'Administrador';
 
-    // Se o usuário escolher filtrar por responsável, o PDF deve constar somente os membros filtrados aplicados
-    const membros = (relatorioEquipe.desempenhoMembros || []).filter(
-      (m) =>
-        filtrosAplicados.responsaveisIds.length === 0 ||
-        filtrosAplicados.responsaveisIds.includes(m.usuarioId)
-    );
+    const tituloDoc =
+      view === 'team'
+        ? `Relatório Analítico de Desempenho — ${equipeNome}`
+        : view === 'created'
+        ? 'Relatório Analítico — Tarefas Criadas por Mim'
+        : 'Relatório Analítico — Tarefas Onde Sou Responsável';
+
+    const subtituloDoc =
+      view === 'team'
+        ? `Equipe: ${equipeNome}`
+        : view === 'created'
+        ? 'Visão: Tarefas Criadas por Mim'
+        : 'Visão: Tarefas Onde Sou Responsável';
+
+    // Membros para o gráfico de torres e tabela de responsáveis
+    const membrosPdf =
+      view === 'team'
+        ? (relatorioEquipe?.desempenhoMembros || []).filter(
+            (m) =>
+              filtrosAplicados.responsaveisIds.length === 0 ||
+              filtrosAplicados.responsaveisIds.includes(m.usuarioId)
+          )
+        : usuario && metricas
+        ? [
+            {
+              usuarioId: usuario.id,
+              nome: usuario.nome || 'Você',
+              email: usuario.email || '',
+              cargo: view === 'created' ? 'Criador' : 'Responsável',
+              totalAtribuidas: metricas.totalTarefas,
+              concluidas: metricas.concluidas,
+              pendentes: metricas.pendentes,
+              atrasadas: metricas.atrasadas,
+              taxaConclusaoPercentual: metricas.taxaConclusaoPercentual,
+            },
+          ]
+        : [];
+
     const tarefas = metricas.tarefas || [];
 
     const nomesResponsaveis =
@@ -400,22 +493,41 @@ export default function RelatoriosPage() {
             .join(', ') || 'Filtrados'
         : 'Todos';
 
-    // Cálculo das escalas máximas para os gráficos de colunas
-    const maxConcluidas = Math.max(...membros.map((m) => m.concluidas), 1);
-    const maxPendentes = Math.max(...membros.map((m) => m.pendentes), 1);
-    const maxAtrasadas = Math.max(...membros.map((m) => m.atrasadas), 1);
-    const maxGeral = Math.max(
-      ...membros.map((m) => Math.max(m.concluidas, m.pendentes, m.atrasadas)),
+    // Escala máxima para o gráfico de torres
+    const maxTorresPdf = Math.max(
+      ...membrosPdf.map((m) => Math.max(m.concluidas || 0, m.pendentes || 0, m.atrasadas || 0)),
       1
     );
 
-    // Constrói o HTML para impressão/PDF com gráficos de colunas verticais
+    // Segmentos SVG do gráfico de pizza para o PDF (borda externa fina)
+    const circPdf = 2 * Math.PI * 68;
+    let offsetPdf = 0;
+    const slicesPdf = [
+      { label: 'Concluídas', count: metricas.concluidas, color: '#10b981' },
+      { label: 'Pendentes', count: metricas.pendentes, color: '#f59e0b' },
+      { label: 'Atrasadas', count: metricas.atrasadas, color: '#ef4444' },
+    ];
+
+    const donutSvgSegmentsPdf =
+      metricas.totalTarefas > 0
+        ? slicesPdf
+            .filter((s) => s.count > 0)
+            .map((s) => {
+              const len = (s.count / metricas.totalTarefas) * circPdf;
+              const curOffset = offsetPdf;
+              offsetPdf += len;
+              return `<circle cx="95" cy="95" r="68" fill="none" stroke="${s.color}" stroke-width="8" stroke-dasharray="${len} ${circPdf - len}" stroke-dashoffset="${-curOffset}" transform="rotate(-90 95 95)" />`;
+            })
+            .join('')
+        : '';
+
+    // Constrói o HTML para impressão/PDF refletindo o que está presente na página
     const printContent = `
       <!DOCTYPE html>
       <html lang="pt-BR">
       <head>
         <meta charset="utf-8" />
-        <title>Relatório Analítico de Desempenho - ${equipeNome}</title>
+        <title>${tituloDoc}</title>
         <style>
           @page {
             size: A4;
@@ -474,32 +586,6 @@ export default function RelatoriosPage() {
             gap: 16px;
             flex-wrap: wrap;
           }
-          .kpi-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-            break-inside: avoid;
-          }
-          .kpi-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            background-color: #ffffff;
-          }
-          .kpi-val {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 2px;
-            color: #111827;
-          }
-          .kpi-lbl {
-            font-size: 10px;
-            color: #6b7280;
-            font-weight: 600;
-            text-transform: uppercase;
-          }
           .section-title {
             font-size: 14px;
             font-weight: 700;
@@ -510,14 +596,18 @@ export default function RelatoriosPage() {
             break-after: avoid;
           }
 
-          /* Estrutura de Gráfico de Colunas */
-          .column-chart-box {
+          /* Gráficos em linhas separadas (nunca na mesma linha) */
+          .chart-box {
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            padding: 16px 18px 12px 18px;
-            margin-bottom: 20px;
+            padding: 16px 18px 14px 18px;
+            margin-bottom: 22px;
             background-color: #ffffff;
             break-inside: avoid;
+            page-break-inside: avoid;
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
           }
           .column-chart-header {
             display: flex;
@@ -589,30 +679,6 @@ export default function RelatoriosPage() {
             height: 100%;
             max-width: 70px;
           }
-          .column-pillar-wrapper {
-            flex: 1;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            position: relative;
-          }
-          .column-val-text {
-            font-size: 10px;
-            font-weight: 700;
-            margin-bottom: 4px;
-          }
-          .column-val-zero {
-            font-size: 10px;
-            color: #9ca3af;
-            margin-bottom: 4px;
-          }
-          .column-pillar {
-            width: 28px;
-            border-radius: 4px 4px 0 0;
-            min-height: 2px;
-          }
           .column-member-label {
             height: 22px;
             font-size: 10px;
@@ -626,7 +692,7 @@ export default function RelatoriosPage() {
             width: 100%;
           }
 
-          /* Colunas Agrupadas (Comparativo Lado a Lado) */
+          /* Colunas Agrupadas (Comparativo de Torres) */
           .grouped-bars-wrapper {
             flex: 1;
             width: 100%;
@@ -700,10 +766,10 @@ export default function RelatoriosPage() {
         <div class="header">
           <div>
             <h1 class="brand-title">CORTEX</h1>
-            <div class="report-subtitle">Relatório Analítico de Desempenho de Equipe</div>
+            <div class="report-subtitle">${subtituloDoc}</div>
           </div>
           <div class="meta-info">
-            <div>Equipe: <strong>${equipeNome}</strong></div>
+            ${view === 'team' ? `<div>Equipe: <strong>${equipeNome}</strong></div>` : ''}
             <div>Emitido por: <strong>${solicitanteNome}</strong></div>
             <div>Data de Emissão: <strong>${geradoEmFormatado}</strong></div>
           </div>
@@ -714,44 +780,44 @@ export default function RelatoriosPage() {
           <div><strong>Status:</strong> ${filtrosAplicados.status || 'Todos'}</div>
           <div><strong>Prioridade:</strong> ${filtrosAplicados.prioridade || 'Todas'}</div>
           <div><strong>Responsáveis:</strong> ${nomesResponsaveis}</div>
-          <div><strong>Integrantes Analisados:</strong> ${membros.length}</div>
+          ${view === 'team' ? `<div><strong>Responsáveis Analisados:</strong> ${membrosPdf.length}</div>` : ''}
         </div>
 
-        ${
-          pdfOptKpis
+        ${/* 1. Gráfico de Pizza com borda externa fina (em sua própria linha) */
+          pdfOptPizza
             ? `
-          <div class="kpi-row">
-            <div class="kpi-card">
-              <div class="kpi-val">${metricas.totalTarefas}</div>
-              <div class="kpi-lbl">Total de Tarefas</div>
+          <div class="chart-box">
+            <div class="column-chart-header">
+              <span class="column-chart-title">Distribuição de Tarefas por Status</span>
+              <div class="chart-legend">
+                <span class="legend-pill"><span class="legend-dot" style="background: #10b981;"></span> Concluídas (${metricas.concluidas})</span>
+                <span class="legend-pill"><span class="legend-dot" style="background: #f59e0b;"></span> Pendentes (${metricas.pendentes})</span>
+                <span class="legend-pill"><span class="legend-dot" style="background: #ef4444;"></span> Atrasadas (${metricas.atrasadas})</span>
+              </div>
             </div>
-            <div class="kpi-card">
-              <div class="kpi-val" style="color: #10b981;">${metricas.concluidas}</div>
-              <div class="kpi-lbl">Concluídas</div>
+            <div style="display: flex; justify-content: center; align-items: center; padding: 14px 0;">
+              <svg width="190" height="190" viewBox="0 0 190 190" style="display: block; margin: 0 auto;">
+                <circle cx="95" cy="95" r="68" fill="none" stroke="#e5e7eb" stroke-width="8" />
+                ${donutSvgSegmentsPdf}
+                <text x="95" y="90" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">${metricas.totalTarefas}</text>
+                <text x="95" y="106" text-anchor="middle" font-size="9" font-weight="600" fill="#6b7280" letter-spacing="0.5">TOTAL DE TAREFAS</text>
+              </svg>
             </div>
-            <div class="kpi-card">
-              <div class="kpi-val" style="color: #f59e0b;">${metricas.pendentes}</div>
-              <div class="kpi-lbl">Pendentes</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-val" style="color: #ef4444;">${metricas.atrasadas}</div>
-              <div class="kpi-lbl">Atrasadas</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-val" style="color: #7c3aed;">${metricas.taxaConclusaoPercentual}%</div>
-              <div class="kpi-lbl">Taxa de Conclusão</div>
+            <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #f3f4f6; font-size: 11px; color: #6b7280;">
+              * Taxa de Conclusão: <strong style="color: #111827;">${metricas.taxaConclusaoPercentual}%</strong> (${metricas.concluidas} de ${metricas.totalTarefas} tarefas concluídas)
             </div>
           </div>
         `
-            : ''
-        }
+            : ''}
 
-        ${/* Gráfico de Colunas Agrupadas: Comparativo Geral */
-          pdfOptComparativo
+        ${/* 2. Gráfico de Torres de Desempenho por Responsável (em linha separada, nunca na mesma linha da pizza, e oculto se for a aba onde sou responsável) */
+          view !== 'personal' && pdfOptTorre
             ? `
-          <div class="column-chart-box">
+          <div class="chart-box">
             <div class="column-chart-header">
-              <span class="column-chart-title">Gráfico de Colunas: Desempenho Comparativo por Integrante</span>
+              <span class="column-chart-title">
+                ${view === 'team' ? 'Desempenho Comparativo por Responsável' : 'Desempenho por Responsável'}
+              </span>
               <div class="chart-legend">
                 <span class="legend-pill"><span class="legend-dot" style="background: #10b981;"></span> Concluídas</span>
                 <span class="legend-pill"><span class="legend-dot" style="background: #f59e0b;"></span> Pendentes</span>
@@ -760,19 +826,19 @@ export default function RelatoriosPage() {
             </div>
             <div class="column-plot-wrapper">
               <div class="column-y-axis">
-                <span>${maxGeral}</span>
-                <span>${Math.round(maxGeral / 2)}</span>
+                <span>${maxTorresPdf}</span>
+                <span>${Math.round(maxTorresPdf / 2)}</span>
                 <span>0</span>
               </div>
               <div class="column-plot-area">
                 ${
-                  membros.length === 0
-                    ? '<div style="color: #9ca3af; font-size: 11px; align-self: center;">Nenhum membro registrado.</div>'
-                    : membros
+                  membrosPdf.length === 0
+                    ? '<div style="color: #9ca3af; font-size: 11px; align-self: center;">Nenhum responsável registrado.</div>'
+                    : membrosPdf
                         .map((m) => {
-                          const hConcluidas = maxGeral > 0 ? (m.concluidas / maxGeral) * 100 : 0;
-                          const hPendentes = maxGeral > 0 ? (m.pendentes / maxGeral) * 100 : 0;
-                          const hAtrasadas = maxGeral > 0 ? (m.atrasadas / maxGeral) * 100 : 0;
+                          const hConcluidas = maxTorresPdf > 0 ? (m.concluidas / maxTorresPdf) * 100 : 0;
+                          const hPendentes = maxTorresPdf > 0 ? (m.pendentes / maxTorresPdf) * 100 : 0;
+                          const hAtrasadas = maxTorresPdf > 0 ? (m.atrasadas / maxTorresPdf) * 100 : 0;
                           return `
                       <div class="column-bar-item" style="max-width: 80px;">
                         <div class="grouped-bars-wrapper">
@@ -801,131 +867,14 @@ export default function RelatoriosPage() {
         `
             : ''}
 
-        ${/* Gráfico de Colunas: Tarefas Concluídas */
-          pdfOptConcluidas
+        ${/* 3. Tabela de Desempenho Individual por Responsável (presente no modo equipe) */
+          view === 'team' && pdfOptTabelaMembros
             ? `
-          <div class="column-chart-box">
-            <div class="column-chart-header">
-              <span class="column-chart-title">Gráfico de Colunas: Tarefas Concluídas por Membro</span>
-              <span style="font-size: 11px; font-weight: 700; color: #10b981;">Total de Concluídas: ${metricas.concluidas}</span>
-            </div>
-            <div class="column-plot-wrapper">
-              <div class="column-y-axis">
-                <span>${maxConcluidas}</span>
-                <span>${Math.round(maxConcluidas / 2)}</span>
-                <span>0</span>
-              </div>
-              <div class="column-plot-area">
-                ${
-                  membros.length === 0
-                    ? '<div style="color: #9ca3af; font-size: 11px; align-self: center;">Nenhum membro registrado.</div>'
-                    : membros
-                        .map((m) => {
-                          const height = maxConcluidas > 0 ? (m.concluidas / maxConcluidas) * 100 : 0;
-                          return `
-                      <div class="column-bar-item">
-                        <div class="column-pillar-wrapper">
-                          <span class="${m.concluidas > 0 ? 'column-val-text' : 'column-val-zero'}" style="color: #10b981;">${m.concluidas}</span>
-                          <div class="column-pillar" style="height: ${height}%; background-color: #10b981;"></div>
-                        </div>
-                        <div class="column-member-label" title="${m.nome}">${m.nome}</div>
-                      </div>
-                    `;
-                        })
-                        .join('')
-                }
-              </div>
-            </div>
-          </div>
-        `
-            : ''}
-
-        ${/* Gráfico de Colunas: Tarefas Pendentes */
-          pdfOptPendentes
-            ? `
-          <div class="column-chart-box">
-            <div class="column-chart-header">
-              <span class="column-chart-title">Gráfico de Colunas: Tarefas Pendentes por Membro</span>
-              <span style="font-size: 11px; font-weight: 700; color: #f59e0b;">Total de Pendentes: ${metricas.pendentes}</span>
-            </div>
-            <div class="column-plot-wrapper">
-              <div class="column-y-axis">
-                <span>${maxPendentes}</span>
-                <span>${Math.round(maxPendentes / 2)}</span>
-                <span>0</span>
-              </div>
-              <div class="column-plot-area">
-                ${
-                  membros.length === 0
-                    ? '<div style="color: #9ca3af; font-size: 11px; align-self: center;">Nenhum membro registrado.</div>'
-                    : membros
-                        .map((m) => {
-                          const height = maxPendentes > 0 ? (m.pendentes / maxPendentes) * 100 : 0;
-                          return `
-                      <div class="column-bar-item">
-                        <div class="column-pillar-wrapper">
-                          <span class="${m.pendentes > 0 ? 'column-val-text' : 'column-val-zero'}" style="color: #f59e0b;">${m.pendentes}</span>
-                          <div class="column-pillar" style="height: ${height}%; background-color: #f59e0b;"></div>
-                        </div>
-                        <div class="column-member-label" title="${m.nome}">${m.nome}</div>
-                      </div>
-                    `;
-                        })
-                        .join('')
-                }
-              </div>
-            </div>
-          </div>
-        `
-            : ''}
-
-        ${/* Gráfico de Colunas: Tarefas Atrasadas */
-          pdfOptAtrasadas
-            ? `
-          <div class="column-chart-box">
-            <div class="column-chart-header">
-              <span class="column-chart-title">Gráfico de Colunas: Tarefas Atrasadas por Membro</span>
-              <span style="font-size: 11px; font-weight: 700; color: #ef4444;">Total de Atrasadas: ${metricas.atrasadas}</span>
-            </div>
-            <div class="column-plot-wrapper">
-              <div class="column-y-axis">
-                <span>${maxAtrasadas}</span>
-                <span>${Math.round(maxAtrasadas / 2)}</span>
-                <span>0</span>
-              </div>
-              <div class="column-plot-area">
-                ${
-                  membros.length === 0
-                    ? '<div style="color: #9ca3af; font-size: 11px; align-self: center;">Nenhum membro registrado.</div>'
-                    : membros
-                        .map((m) => {
-                          const height = maxAtrasadas > 0 ? (m.atrasadas / maxAtrasadas) * 100 : 0;
-                          return `
-                      <div class="column-bar-item">
-                        <div class="column-pillar-wrapper">
-                          <span class="${m.atrasadas > 0 ? 'column-val-text' : 'column-val-zero'}" style="color: #ef4444;">${m.atrasadas}</span>
-                          <div class="column-pillar" style="height: ${height}%; background-color: #ef4444;"></div>
-                        </div>
-                        <div class="column-member-label" title="${m.nome}">${m.nome}</div>
-                      </div>
-                    `;
-                        })
-                        .join('')
-                }
-              </div>
-            </div>
-          </div>
-        `
-            : ''}
-
-        ${
-          pdfOptTabelaMembros
-            ? `
-          <h2 class="section-title">Desempenho Individual por Integrante</h2>
+          <h2 class="section-title">Desempenho Individual por Responsável</h2>
           <table>
             <thead>
               <tr>
-                <th>Integrante</th>
+                <th>Responsável</th>
                 <th>Cargo</th>
                 <th style="text-align: center;">Atribuídas</th>
                 <th style="text-align: center;">Concluídas</th>
@@ -936,9 +885,9 @@ export default function RelatoriosPage() {
             </thead>
             <tbody>
               ${
-                membros.length === 0
-                  ? '<tr><td colspan="7" style="text-align: center;">Nenhum membro registrado.</td></tr>'
-                  : membros
+                membrosPdf.length === 0
+                  ? '<tr><td colspan="7" style="text-align: center;">Nenhum responsável registrado.</td></tr>'
+                  : membrosPdf
                       .map((m) => {
                         const badgeCls =
                           m.cargo === 'Dono'
@@ -963,13 +912,12 @@ export default function RelatoriosPage() {
             </tbody>
           </table>
         `
-            : ''
-        }
+            : ''}
 
-        ${
+        ${/* 4. Lista Detalhada de Tarefas */
           pdfOptTabelaTarefas
             ? `
-          <h2 class="section-title">Lista Detalhada de Tarefas da Equipe</h2>
+          <h2 class="section-title">Lista Detalhada de Tarefas</h2>
           <table>
             <thead>
               <tr>
@@ -1001,11 +949,10 @@ export default function RelatoriosPage() {
             </tbody>
           </table>
         `
-            : ''
-        }
+            : ''}
 
         <div class="footer">
-          Cortex Platform &copy; 2026 — Documento gerado automaticamente para fins de gestão analítica e auditoria de equipe.
+          Cortex Platform &copy; 2026 — Documento gerado automaticamente para fins de gestão analítica e auditoria.
         </div>
       </body>
       </html>
@@ -1074,33 +1021,33 @@ export default function RelatoriosPage() {
           </div>
 
           {/* Controles do modo equipe: Filtro de equipe e Botão de Exportar PDF */}
-          {view === 'team' && usuarioEhAdminOuDonoDaEquipeSelecionada && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              {equipesOndeEhAdminOuDono.length > 1 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Filtrar por Equipe:
-                  </span>
-                  <select
-                    value={equipeSelecionadaId}
-                    onChange={(e) => handleTrocarEquipe(Number(e.target.value))}
-                    className={styles.filterInput}
-                    style={{ minWidth: '180px' }}
-                  >
-                    {equipesOndeEhAdminOuDono.map((eq) => (
-                      <option key={eq.id} value={eq.id}>
-                        {eq.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            {view === 'team' && usuarioEhAdminOuDonoDaEquipeSelecionada && equipesOndeEhAdminOuDono.length > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  Filtrar por Equipe:
+                </span>
+                <select
+                  value={equipeSelecionadaId}
+                  onChange={(e) => handleTrocarEquipe(Number(e.target.value))}
+                  className={styles.filterInput}
+                  style={{ minWidth: '180px' }}
+                >
+                  {equipesOndeEhAdminOuDono.map((eq) => (
+                    <option key={eq.id} value={eq.id}>
+                      {eq.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
+            {(view !== 'team' || usuarioEhAdminOuDonoDaEquipeSelecionada) && (
               <button
                 type="button"
                 onClick={() => setIsPdfModalOpen(true)}
                 className={styles.exportPdfBtn}
-                title="Exportar relatório da equipe em PDF"
+                title="Exportar relatório em PDF"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1111,8 +1058,8 @@ export default function RelatoriosPage() {
                 </svg>
                 Exportar PDF
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Barra de Filtros: Status, Prioridade, Responsável, Período */}
@@ -1386,130 +1333,166 @@ export default function RelatoriosPage() {
           </div>
         ) : (
           <>
-            {/* Painel de Indicadores / KPIs */}
-            <div className={styles.kpiGrid}>
-              <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
+            {/* Seção dos Gráficos Lado a Lado: Pizza (Donut Borda Externa Fina) + Torres de Desempenho */}
+            <div className={`${styles.chartsGrid} ${view === 'personal' ? styles.chartsGridSingle : ''}`}>
+              {/* Gráfico 1: Pizza só com borda externa contendo o número de tarefas e total central */}
+              <div className={styles.chartCard}>
+                <div className={styles.chartCardHeader}>
+                  <h3 className={styles.chartCardTitle}>Distribuição de Tarefas por Status</h3>
+                  <div className={styles.chartHeaderLegend}>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendDot} style={{ backgroundColor: '#10b981' }} />
+                      Concluídas ({metricas.concluidas})
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendDot} style={{ backgroundColor: '#f59e0b' }} />
+                      Pendentes ({metricas.pendentes})
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendDot} style={{ backgroundColor: '#ef4444' }} />
+                      Atrasadas ({metricas.atrasadas})
+                    </span>
+                  </div>
                 </div>
-                <div className={styles.kpiInfo}>
-                  <span className={styles.kpiValue}>{metricas.totalTarefas}</span>
-                  <span className={styles.kpiLabel}>Total de Tarefas</span>
+
+                <div className={styles.donutBodyCentered}>
+                  <div className={styles.donutChartWrapper}>
+                    <svg
+                      width="190"
+                      height="190"
+                      viewBox="0 0 190 190"
+                      className={styles.donutSvg}
+                      aria-label="Gráfico de pizza com borda externa fina do número de tarefas por status"
+                    >
+                      {/* Borda externa fina de trilho base (fundo sutil) */}
+                      <circle
+                        cx="95"
+                        cy="95"
+                        r="68"
+                        fill="none"
+                        stroke="var(--border-input)"
+                        strokeWidth="8"
+                        opacity="0.35"
+                      />
+                      {/* Segmentos coloridos da borda externa fina */}
+                      {donutSlices.map((slice) => {
+                        if (slice.count === 0) return null;
+                        return (
+                          <circle
+                            key={slice.id}
+                            cx="95"
+                            cy="95"
+                            r="68"
+                            fill="none"
+                            stroke={slice.color}
+                            strokeWidth="8"
+                            strokeDasharray={`${slice.length} ${2 * Math.PI * 68 - slice.length}`}
+                            strokeDashoffset={-slice.offset}
+                            transform="rotate(-90 95 95)"
+                            className={styles.donutSlice}
+                          >
+                            <title>{`${slice.label}: ${slice.count} tarefas (${slice.percent.toFixed(1)}%)`}</title>
+                          </circle>
+                        );
+                      })}
+                    </svg>
+
+                    {/* Texto interno com o Total de Tarefas */}
+                    <div className={styles.donutCenter}>
+                      <span className={styles.donutCenterNumber}>{metricas.totalTarefas}</span>
+                      <span className={styles.donutCenterLabel}>Total de Tarefas</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nota de rodapé: Taxa de Conclusão */}
+                <div className={styles.chartFooter}>
+                  <span className={styles.footerNoteText}>
+                    * Taxa de Conclusão: <strong>{metricas.taxaConclusaoPercentual}%</strong> ({metricas.concluidas} de {metricas.totalTarefas} tarefas concluídas)
+                  </span>
                 </div>
               </div>
 
-              <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon} style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <div className={styles.kpiInfo}>
-                  <span className={styles.kpiValue}>{metricas.concluidas}</span>
-                  <span className={styles.kpiLabel}>Tarefas Concluídas</span>
-                </div>
-              </div>
+              {/* Gráfico 2: Gráfico de Torre de Desempenho (exibido apenas nas outras abas, exceto "Tarefas Onde Sou Responsável") */}
+              {view !== 'personal' && (
+                <div className={styles.chartCard}>
+                  <div className={styles.chartCardHeader}>
+                    <h3 className={styles.chartCardTitle}>
+                      {view === 'team'
+                        ? 'Desempenho Comparativo por Responsável'
+                        : 'Desempenho por Responsável'}
+                    </h3>
+                    <div className={styles.chartHeaderLegend}>
+                      <span className={styles.legendPill}>
+                        <span className={styles.legendDot} style={{ backgroundColor: '#10b981' }} />
+                        Concluídas
+                      </span>
+                      <span className={styles.legendPill}>
+                        <span className={styles.legendDot} style={{ backgroundColor: '#f59e0b' }} />
+                        Pendentes
+                      </span>
+                      <span className={styles.legendPill}>
+                        <span className={styles.legendDot} style={{ backgroundColor: '#ef4444' }} />
+                        Atrasadas
+                      </span>
+                    </div>
+                  </div>
 
-              <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon} style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                </div>
-                <div className={styles.kpiInfo}>
-                  <span className={styles.kpiValue}>{metricas.pendentes}</span>
-                  <span className={styles.kpiLabel}>Tarefas Pendentes</span>
-                </div>
-              </div>
-
-              <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon} style={{ background: 'rgba(214, 49, 49, 0.12)', color: 'var(--cortex-red-danger)' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                </div>
-                <div className={styles.kpiInfo}>
-                  <span className={styles.kpiValue}>{metricas.atrasadas}</span>
-                  <span className={styles.kpiLabel}>Tarefas Atrasadas</span>
-                </div>
-              </div>
-
-              <div className={styles.kpiCard}>
-                <div className={styles.kpiIcon} style={{ background: 'rgba(123, 79, 201, 0.12)', color: 'var(--cortex-purple)' }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                  </svg>
-                </div>
-                <div className={styles.kpiInfo}>
-                  <span className={styles.kpiValue}>{metricas.taxaConclusaoPercentual}%</span>
-                  <span className={styles.kpiLabel}>Taxa de Conclusão</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Gráficos Gerais de Distribuição */}
-            <div className={styles.distributionGrid}>
-              <div className={styles.distCard}>
-                <h3 className={styles.distTitle}>Distribuição por Prioridade</h3>
-                <div className={styles.distList}>
-                  {Object.entries(metricas.porPrioridade || {}).map(([prioridade, qtd]) => {
-                    const percent = metricas.totalTarefas > 0 ? (qtd / metricas.totalTarefas) * 100 : 0;
-                    return (
-                      <div key={prioridade} className={styles.distRow}>
-                        <div className={styles.distHeader}>
-                          <span>{prioridade}</span>
-                          <span className={styles.distCount}>{qtd} ({percent.toFixed(0)}%)</span>
+                  <div className={styles.towerPlotWrapper}>
+                    <div className={styles.towerYAxis}>
+                      <span>{maxTorresGeral}</span>
+                      <span>{Math.round(maxTorresGeral / 2)}</span>
+                      <span>0</span>
+                    </div>
+                    <div className={styles.towerPlotArea}>
+                      {membrosGraficoTorres.length === 0 ? (
+                        <div className={styles.towerEmpty}>
+                          {view === 'team'
+                            ? 'Nenhum responsável registrado para o filtro aplicado.'
+                            : 'Nenhum dado registrado para exibição no gráfico.'}
                         </div>
-                        <div className={styles.distBarTrack}>
-                          <div className={styles.distBarFill} style={{ width: `${percent}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
+                      ) : (
+                        membrosGraficoTorres.map((m) => {
+                          const hConcluidas = maxTorresGeral > 0 ? (m.concluidas / maxTorresGeral) * 100 : 0;
+                          const hPendentes = maxTorresGeral > 0 ? (m.pendentes / maxTorresGeral) * 100 : 0;
+                          const hAtrasadas = maxTorresGeral > 0 ? (m.atrasadas / maxTorresGeral) * 100 : 0;
+                          return (
+                            <div key={m.usuarioId} className={styles.towerBarItem} style={{ maxWidth: '85px' }}>
+                              <div className={styles.groupedBarsWrapper}>
+                                <div className={styles.singlePillarGroup}>
+                                  <span className={styles.pillarNum} style={{ color: '#10b981' }}>{m.concluidas}</span>
+                                  <div
+                                    className={styles.singlePillar}
+                                    style={{ height: `${hConcluidas}%`, backgroundColor: '#10b981' }}
+                                    title={`${m.nome} - Concluídas: ${m.concluidas}`}
+                                  />
+                                </div>
+                                <div className={styles.singlePillarGroup}>
+                                  <span className={styles.pillarNum} style={{ color: '#f59e0b' }}>{m.pendentes}</span>
+                                  <div
+                                    className={styles.singlePillar}
+                                    style={{ height: `${hPendentes}%`, backgroundColor: '#f59e0b' }}
+                                    title={`${m.nome} - Pendentes: ${m.pendentes}`}
+                                  />
+                                </div>
+                                <div className={styles.singlePillarGroup}>
+                                  <span className={styles.pillarNum} style={{ color: '#ef4444' }}>{m.atrasadas}</span>
+                                  <div
+                                    className={styles.singlePillar}
+                                    style={{ height: `${hAtrasadas}%`, backgroundColor: '#ef4444' }}
+                                    title={`${m.nome} - Atrasadas: ${m.atrasadas}`}
+                                  />
+                                </div>
+                              </div>
+                              <div className={styles.towerMemberLabel} title={m.nome}>{m.nome}</div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div className={styles.distCard}>
-                <h3 className={styles.distTitle}>Distribuição por Status</h3>
-                <div className={styles.distList}>
-                  {Object.entries(metricas.porStatus || {}).map(([status, qtd]) => {
-                    const percent = metricas.totalTarefas > 0 ? (qtd / metricas.totalTarefas) * 100 : 0;
-                    return (
-                      <div key={status} className={styles.distRow}>
-                        <div className={styles.distHeader}>
-                          <span>{status}</span>
-                          <span className={styles.distCount}>{qtd} ({percent.toFixed(0)}%)</span>
-                        </div>
-                        <div className={styles.distBarTrack}>
-                          <div
-                            className={styles.distBarFill}
-                            style={{
-                              width: `${percent}%`,
-                              background:
-                                status.toLowerCase().includes('concl')
-                                  ? '#10b981'
-                                  : status.toLowerCase().includes('atras')
-                                  ? 'var(--cortex-red-danger)'
-                                  : '#f59e0b',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              )}
             </div>
 
             {/* TABELA DE MEMBROS (Modo Equipe - RN10) */}
@@ -1520,7 +1503,7 @@ export default function RelatoriosPage() {
                     Desempenho Individual por Membro — {relatorioEquipe.equipeNome}
                   </h3>
                   <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
-                    Total de Integrantes: {membrosExibidos.length}
+                    Total de Responsáveis: {membrosExibidos.length}
                   </span>
                 </div>
 
@@ -1656,8 +1639,8 @@ export default function RelatoriosPage() {
         )}
       </main>
 
-      {/* Modal de Configuração e Exportação de Relatório em PDF com Gráficos de Colunas */}
-      {relatorioEquipe && (
+      {/* Modal de Configuração e Exportação de Relatório em PDF com o que está presente na página */}
+      {metricas && (
         <Modal
           isOpen={isPdfModalOpen}
           onClose={() => setIsPdfModalOpen(false)}
@@ -1688,99 +1671,61 @@ export default function RelatoriosPage() {
           }
         >
           <p className={styles.modalDescription}>
-            Selecione quais <strong>gráficos de colunas</strong> e seções analíticas deseja incluir no documento PDF da equipe <strong>{relatorioEquipe.equipeNome}</strong>:
+            Selecione quais seções e gráficos presentes na página deseja incluir no documento PDF:
           </p>
 
           <div className={styles.optionsGroup}>
-            <span className={styles.optionsGroupTitle}>Gráficos de Colunas (Desempenho dos Membros)</span>
+            <span className={styles.optionsGroupTitle}>Gráficos do Relatório</span>
 
-            {/* Opção Gráfico de Colunas Agrupadas */}
-            <label className={`${styles.checkboxCard} ${pdfOptComparativo ? styles.checkboxCardActive : ''}`}>
+            {/* Opção Gráfico de Pizza */}
+            <label className={`${styles.checkboxCard} ${pdfOptPizza ? styles.checkboxCardActive : ''}`}>
               <input
                 type="checkbox"
-                checked={pdfOptComparativo}
-                onChange={(e) => setPdfOptComparativo(e.target.checked)}
+                checked={pdfOptPizza}
+                onChange={(e) => setPdfOptPizza(e.target.checked)}
                 className={styles.checkboxInput}
               />
               <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Gráfico de Colunas Comparativo Geral</span>
-                <span className={styles.checkboxDesc}>Colunas verticais agrupadas (concluídas em verde, pendentes em amarelo e atrasadas em vermelho lado a lado).</span>
+                <span className={styles.checkboxTitle}>Gráfico de Pizza: Distribuição de Tarefas por Status</span>
+                <span className={styles.checkboxDesc}>Borda externa fina com o total de tarefas no centro e nota de rodapé com taxa de conclusão.</span>
               </div>
             </label>
 
-            {/* Opção Gráfico Colunas Concluídas */}
-            <label className={`${styles.checkboxCard} ${pdfOptConcluidas ? styles.checkboxCardActive : ''}`}>
-              <input
-                type="checkbox"
-                checked={pdfOptConcluidas}
-                onChange={(e) => setPdfOptConcluidas(e.target.checked)}
-                className={styles.checkboxInput}
-              />
-              <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Gráfico de Colunas: Tarefas Concluídas por Membro</span>
-                <span className={styles.checkboxDesc}>Colunas verticais em verde com a quantidade exata de tarefas finalizadas por cada integrante.</span>
-              </div>
-            </label>
-
-            {/* Opção Gráfico Colunas Pendentes */}
-            <label className={`${styles.checkboxCard} ${pdfOptPendentes ? styles.checkboxCardActive : ''}`}>
-              <input
-                type="checkbox"
-                checked={pdfOptPendentes}
-                onChange={(e) => setPdfOptPendentes(e.target.checked)}
-                className={styles.checkboxInput}
-              />
-              <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Gráfico de Colunas: Tarefas Pendentes por Membro</span>
-                <span className={styles.checkboxDesc}>Colunas verticais em amarelo mostrando o volume de tarefas em andamento.</span>
-              </div>
-            </label>
-
-            {/* Opção Gráfico Colunas Atrasadas */}
-            <label className={`${styles.checkboxCard} ${pdfOptAtrasadas ? styles.checkboxCardActive : ''}`}>
-              <input
-                type="checkbox"
-                checked={pdfOptAtrasadas}
-                onChange={(e) => setPdfOptAtrasadas(e.target.checked)}
-                className={styles.checkboxInput}
-              />
-              <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Gráfico de Colunas: Tarefas Atrasadas por Membro</span>
-                <span className={styles.checkboxDesc}>Colunas verticais em vermelho destacando tarefas vencidas não concluídas.</span>
-              </div>
-            </label>
+            {/* Opção Gráfico de Torres (exibido apenas quando presente na página: view !== 'personal') */}
+            {view !== 'personal' && (
+              <label className={`${styles.checkboxCard} ${pdfOptTorre ? styles.checkboxCardActive : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={pdfOptTorre}
+                  onChange={(e) => setPdfOptTorre(e.target.checked)}
+                  className={styles.checkboxInput}
+                />
+                <div className={styles.checkboxInfo}>
+                  <span className={styles.checkboxTitle}>Gráfico de Torres: Desempenho por Responsável</span>
+                  <span className={styles.checkboxDesc}>Colunas verticais comparativas (concluídas, pendentes e atrasadas).</span>
+                </div>
+              </label>
+            )}
           </div>
 
           <div className={styles.optionsGroup}>
-            <span className={styles.optionsGroupTitle}>Tabelas e Indicadores do Relatório</span>
+            <span className={styles.optionsGroupTitle}>Tabelas Analíticas</span>
 
-            {/* Opção KPIs */}
-            <label className={`${styles.checkboxCard} ${pdfOptKpis ? styles.checkboxCardActive : ''}`}>
-              <input
-                type="checkbox"
-                checked={pdfOptKpis}
-                onChange={(e) => setPdfOptKpis(e.target.checked)}
-                className={styles.checkboxInput}
-              />
-              <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Painel de Indicadores Gerais (KPIs)</span>
-                <span className={styles.checkboxDesc}>Total, concluídas, pendentes, atrasadas e taxa de conclusão geral da equipe.</span>
-              </div>
-            </label>
-
-            {/* Opção Tabela Membros */}
-            <label className={`${styles.checkboxCard} ${pdfOptTabelaMembros ? styles.checkboxCardActive : ''}`}>
-              <input
-                type="checkbox"
-                checked={pdfOptTabelaMembros}
-                onChange={(e) => setPdfOptTabelaMembros(e.target.checked)}
-                className={styles.checkboxInput}
-              />
-              <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Tabela Individual por Integrante</span>
-                <span className={styles.checkboxDesc}>Membros com seus respectivos cargos, quantidades de tarefas e taxa percentual.</span>
-              </div>
-            </label>
+            {/* Opção Tabela Membros (somente se view === 'team') */}
+            {view === 'team' && (
+              <label className={`${styles.checkboxCard} ${pdfOptTabelaMembros ? styles.checkboxCardActive : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={pdfOptTabelaMembros}
+                  onChange={(e) => setPdfOptTabelaMembros(e.target.checked)}
+                  className={styles.checkboxInput}
+                />
+                <div className={styles.checkboxInfo}>
+                  <span className={styles.checkboxTitle}>Tabela Individual por Responsável</span>
+                  <span className={styles.checkboxDesc}>Lista detalhada de membros com seus respectivos cargos, quantidades de tarefas e taxa percentual.</span>
+                </div>
+              </label>
+            )}
 
             {/* Opção Tabela Tarefas */}
             <label className={`${styles.checkboxCard} ${pdfOptTabelaTarefas ? styles.checkboxCardActive : ''}`}>
@@ -1791,7 +1736,7 @@ export default function RelatoriosPage() {
                 className={styles.checkboxInput}
               />
               <div className={styles.checkboxInfo}>
-                <span className={styles.checkboxTitle}>Lista Detalhada de Tarefas da Equipe</span>
+                <span className={styles.checkboxTitle}>Lista Detalhada de Tarefas</span>
                 <span className={styles.checkboxDesc}>Tabela completa com título, data de criação, vencimento, status e prioridade.</span>
               </div>
             </label>
