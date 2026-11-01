@@ -232,6 +232,12 @@ export default function DetalhesTarefaPage() {
     }
   };
 
+  const getAvatarUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return url.startsWith('/') ? url : `/${url}`;
+  };
+
   const formatarData = (isoString?: string | null) => {
     if (!isoString) return 'Sem prazo definido';
     const data = new Date(isoString);
@@ -251,23 +257,20 @@ export default function DetalhesTarefaPage() {
       .replace(/(?:^|\r?\n)*\[Sugest[aã]o\s*#?\d*\s*(?:Aprovada|Aceita)[^\]]*\]:?[\s\S]*/gi, '')
       .trim();
   };
-  const isVencida = () => {
-    if (!tarefa?.dataVencimento) return false;
-    return new Date(tarefa.dataVencimento) < new Date() && tarefa.status !== 'Concluida';
-  };
-
-  const isConcluida = tarefa?.status === 'Concluida';
-
-  const getAvatarUrl = (url?: string | null) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return url.startsWith('/') ? url : `/${url}`;
-  };
-
   // Anexos vinculados à resposta do responsável
   const respostasDoResponsavel = tarefa?.respostas?.filter(
     (r) => !usuario?.id || r.usuarioId === usuario.id
   ) || [];
+
+  const isMultiResponsavel = (tarefa?.responsaveis?.length ?? 0) > 1;
+  const isConcluida = isMultiResponsavel
+    ? respostasDoResponsavel.length > 0
+    : tarefa?.status === 'Concluida';
+
+  const isVencida = () => {
+    if (!tarefa?.dataVencimento) return false;
+    return new Date(tarefa.dataVencimento) < new Date() && !isConcluida;
+  };
   const anexosResposta = (respostasDoResponsavel.length > 0 ? respostasDoResponsavel : (tarefa?.respostas || []))
     .flatMap((r) => r.anexos || []);
   const respostaAvaliada = respostasDoResponsavel.find(

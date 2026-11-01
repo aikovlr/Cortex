@@ -154,11 +154,21 @@
   border: 1px solid var(--border-main);
   box-shadow: var(--shadow-card);
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
   transition: background-color 0.25s, border-color 0.25s;
+}
+
+.tableResponsive {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   text-align: left;
 }
@@ -172,6 +182,91 @@
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-main);
   background-color: var(--bg-surface-secondary);
+  position: relative;
+}
+
+.thSortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.thSortable:hover {
+  color: var(--cortex-purple);
+  background-color: var(--bg-surface-hover);
+}
+
+.thSortable:focus-visible {
+  outline: 2px solid var(--cortex-purple);
+  outline-offset: -2px;
+}
+
+.thContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 12px);
+  overflow: hidden;
+}
+
+.resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resizer::after {
+  content: '';
+  width: 2px;
+  height: 55%;
+  background-color: var(--border-main);
+  opacity: 0;
+  border-radius: 2px;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.th:hover .resizer::after,
+.resizer:hover::after {
+  opacity: 1;
+  background-color: var(--cortex-purple);
+}
+
+.resizerActive::after {
+  opacity: 1;
+  background-color: var(--cortex-purple);
+  width: 3px;
+  height: 85%;
+}
+
+.sortIconContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.sortIconActive {
+  color: var(--cortex-purple);
+}
+
+.sortIconInactive {
+  opacity: 0.35;
+  color: var(--text-secondary);
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.thSortable:hover .sortIconInactive {
+  opacity: 0.85;
+  color: var(--cortex-purple);
 }
 
 .tr {
@@ -189,24 +284,31 @@
   font-size: 14px;
   color: var(--text-primary);
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .taskTitleCol {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .taskTitle {
   font-weight: 600;
   color: var(--text-primary);
   font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .taskDesc {
   font-size: 12px;
   color: var(--cortex-gray-text);
-  max-width: 380px;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
