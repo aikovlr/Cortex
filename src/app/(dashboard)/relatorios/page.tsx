@@ -1284,7 +1284,7 @@ export default function RelatoriosPage() {
 
   return (
     <>
-      <Header titulo="Relatórios" subtitulo="Workspace / Cortex" />
+      <Header titulo="Relatórios" />
       <main className={styles.container}>
         {/* Barra de Seleção de Relatório (Responsável vs Criador vs Equipe) */}
         <div className={styles.topBar}>

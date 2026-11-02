@@ -6,11 +6,19 @@ import { metaService } from '@/services/metaService';
 import { ConsultaMetaDTO, ConsultaTarefaDTO } from '@/types/api';
 import { Badge } from '@/components/common/Badge/Badge';
 import { SearchBar } from '@/components/common/SearchBar/SearchBar';
-import { CalendarIcon } from '@/components/common/Icons/Icons';
+import {
+  CalendarIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ArrowUpDownIcon,
+} from '@/components/common/Icons/Icons';
 import { GoalCreateModal } from '@/components/goals/GoalCreateModal/GoalCreateModal';
 import { GoalEditModal } from '@/components/goals/GoalEditModal/GoalEditModal';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
+
+export type CriterioOrdenacao = 'status' | 'prazo' | 'nome' | 'progresso' | 'recentes' | 'manual';
+export type DirecaoOrdenacao = 'asc' | 'desc';
 
 export default function MetasPage() {
   const { showToast } = useToast();
@@ -18,9 +26,43 @@ export default function MetasPage() {
   const [metas, setMetas] = useState<ConsultaMetaDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [criterioOrdenacao, setCriterioOrdenacao] = useState<CriterioOrdenacao>('status');
+  const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<DirecaoOrdenacao>('asc');
+  const [customOrderIds, setCustomOrderIds] = useState<number[]>([]);
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingMeta, setEditingMeta] = useState<ConsultaMetaDTO | null>(null);
+
+  // Carrega preferências de ordenação salvas no localStorage
+  useEffect(() => {
+    try {
+      const savedCriterio = localStorage.getItem('cortex_metas_criterio') as CriterioOrdenacao | null;
+      if (
+        savedCriterio &&
+        ['status', 'prazo', 'nome', 'progresso', 'recentes', 'manual'].includes(savedCriterio)
+      ) {
+        setCriterioOrdenacao(savedCriterio);
+      }
+
+      const savedDirecao = localStorage.getItem('cortex_metas_direcao') as DirecaoOrdenacao | null;
+      if (savedDirecao && ['asc', 'desc'].includes(savedDirecao)) {
+        setDirecaoOrdenacao(savedDirecao);
+      }
+
+      const savedOrder = localStorage.getItem('cortex_metas_ordem_ids');
+      if (savedOrder) {
+        const parsed = JSON.parse(savedOrder);
+        if (Array.isArray(parsed)) {
+          setCustomOrderIds(parsed);
+        }
+      }
+    } catch {
+      // Ignora falhas de leitura do localStorage
+    }
+  }, []);
 
   const carregarMetas = useCallback(async () => {
     try {
@@ -70,6 +112,41 @@ export default function MetasPage() {
     };
   }, [showToast]);
 
+  // Sincroniza a ordem manual com os IDs das metas atuais
+  useEffect(() => {
+    if (metas.length === 0) return;
+    setCustomOrderIds((prev) => {
+      const metaIds = metas.map((m) => m.id);
+      const mantidos = prev.filter((id) => metaIds.includes(id));
+      const novos = metaIds.filter((id) => !mantidos.includes(id));
+      const unificados = [...mantidos, ...novos];
+      return unificados;
+    });
+  }, [metas]);
+
+  // Alteração de critério de ordenação
+  const handleCriterioChange = (novoCriterio: CriterioOrdenacao) => {
+    setCriterioOrdenacao(novoCriterio);
+    try {
+      localStorage.setItem('cortex_metas_criterio', novoCriterio);
+    } catch {
+      // Ignora
+    }
+  };
+
+  // Alterna direção asc/desc
+  const alternarDirecao = () => {
+    setDirecaoOrdenacao((prev) => {
+      const proxima: DirecaoOrdenacao = prev === 'asc' ? 'desc' : 'asc';
+      try {
+        localStorage.setItem('cortex_metas_direcao', proxima);
+      } catch {
+        // Ignora
+      }
+      return proxima;
+    });
+  };
+
   // Exclusão de meta
   const handleDeleteMeta = async (id: number) => {
     if (!confirm('Deseja realmente excluir esta meta?')) return;
@@ -78,6 +155,15 @@ export default function MetasPage() {
       await metaService.deletar(id);
       showToast('Meta removida com sucesso.', 'success');
       setMetas((prev) => prev.filter((m) => m.id !== id));
+      setCustomOrderIds((prev) => {
+        const atualizados = prev.filter((mId) => mId !== id);
+        try {
+          localStorage.setItem('cortex_metas_ordem_ids', JSON.stringify(atualizados));
+        } catch {
+          // Ignora
+        }
+        return atualizados;
+      });
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -155,7 +241,7 @@ export default function MetasPage() {
     [getTarefasDaMeta, isMetaConcluida]
   );
 
-  // Filtragem por busca e ordenação por status (Atrasada > Pendente > Concluida)
+  // Filtragem por busca e ordenação
   const metasFiltradas = useMemo(() => {
     let filtradas = metas;
     if (searchTerm.trim()) {
@@ -175,32 +261,251 @@ export default function MetasPage() {
     };
 
     return [...filtradas].sort((a, b) => {
-      const statusA = getMetaStatus(a);
-      const statusB = getMetaStatus(b);
-      const pesoDiff = (PRIORIDADE_STATUS[statusA] ?? 99) - (PRIORIDADE_STATUS[statusB] ?? 99);
-      if (pesoDiff !== 0) return pesoDiff;
+      let diff = 0;
+
+      switch (criterioOrdenacao) {
+        case 'status': {
+          const statusA = getMetaStatus(a);
+          const statusB = getMetaStatus(b);
+          const pesoA = PRIORIDADE_STATUS[statusA] ?? 99;
+          const pesoB = PRIORIDADE_STATUS[statusB] ?? 99;
+          diff = pesoA - pesoB;
+          break;
+        }
+
+        case 'prazo': {
+          const timeA = a.dataFechamento ? new Date(a.dataFechamento).getTime() : Infinity;
+          const timeB = b.dataFechamento ? new Date(b.dataFechamento).getTime() : Infinity;
+          diff = timeA - timeB;
+          break;
+        }
+
+        case 'nome': {
+          diff = a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
+          break;
+        }
+
+        case 'progresso': {
+          const progA = getProgressoMeta(a);
+          const progB = getProgressoMeta(b);
+          diff = progA - progB;
+          break;
+        }
+
+        case 'recentes': {
+          diff = a.id - b.id;
+          break;
+        }
+
+        case 'manual': {
+          const idxA = customOrderIds.indexOf(a.id);
+          const idxB = customOrderIds.indexOf(b.id);
+          const posA = idxA !== -1 ? idxA : 99999;
+          const posB = idxB !== -1 ? idxB : 99999;
+          diff = posA - posB;
+          break;
+        }
+
+        default:
+          diff = 0;
+      }
+
+      if (diff !== 0) {
+        return direcaoOrdenacao === 'asc' ? diff : -diff;
+      }
+
       return a.id - b.id;
     });
-  }, [metas, searchTerm, getTarefasDaMeta, getMetaStatus]);
+  }, [
+    metas,
+    searchTerm,
+    criterioOrdenacao,
+    direcaoOrdenacao,
+    customOrderIds,
+    getTarefasDaMeta,
+    getMetaStatus,
+    getProgressoMeta,
+  ]);
 
-  // Métricas gerais de gamificação
-  const totalMetas = metas.length;
-  const metasConcluidas = metas.filter((m) => isMetaConcluida(m)).length;
-  const metasPendentes = totalMetas - metasConcluidas;
-  const percentualGeral = totalMetas > 0 ? Math.round((metasConcluidas / totalMetas) * 100) : 0;
+  // Move uma meta para cima ou para baixo
+  const moverMeta = (id: number, direcao: 'up' | 'down') => {
+    const indexAtual = metasFiltradas.findIndex((m) => m.id === id);
+    if (indexAtual === -1) return;
+
+    const targetIndex = direcao === 'up' ? indexAtual - 1 : indexAtual + 1;
+    if (targetIndex < 0 || targetIndex >= metasFiltradas.length) return;
+
+    const targetId = metasFiltradas[targetIndex].id;
+
+    // Base para reordenação
+    const baseIds = customOrderIds.length > 0 ? [...customOrderIds] : metas.map((m) => m.id);
+    const idxA = baseIds.indexOf(id);
+    const idxB = baseIds.indexOf(targetId);
+
+    let novaOrdem = [...baseIds];
+    if (idxA !== -1 && idxB !== -1) {
+      novaOrdem[idxA] = targetId;
+      novaOrdem[idxB] = id;
+    } else {
+      const idsAtuais = metasFiltradas.map((m) => m.id);
+      idsAtuais[indexAtual] = targetId;
+      idsAtuais[targetIndex] = id;
+      novaOrdem = idsAtuais;
+    }
+
+    setCustomOrderIds(novaOrdem);
+    try {
+      localStorage.setItem('cortex_metas_ordem_ids', JSON.stringify(novaOrdem));
+    } catch {
+      // Ignora
+    }
+
+    if (criterioOrdenacao !== 'manual') {
+      setCriterioOrdenacao('manual');
+      setDirecaoOrdenacao('asc');
+      try {
+        localStorage.setItem('cortex_metas_criterio', 'manual');
+        localStorage.setItem('cortex_metas_direcao', 'asc');
+      } catch {
+        // Ignora
+      }
+      showToast('Ordem alterada para Personalizada.', 'info');
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, id: number) => {
+    e.dataTransfer.setData('text/plain', String(id));
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverId !== id) {
+      setDragOverId(id);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: number) => {
+    e.preventDefault();
+    const sourceId = Number(e.dataTransfer.getData('text/plain')) || draggedId;
+    setDraggedId(null);
+    setDragOverId(null);
+
+    if (!sourceId || sourceId === targetId) return;
+
+    const baseIds = customOrderIds.length > 0 ? [...customOrderIds] : metas.map((m) => m.id);
+    const novaOrdem = [...baseIds];
+
+    const sourceIdx = novaOrdem.indexOf(sourceId);
+    const targetIdx = novaOrdem.indexOf(targetId);
+
+    if (sourceIdx !== -1 && targetIdx !== -1) {
+      novaOrdem.splice(sourceIdx, 1);
+      novaOrdem.splice(targetIdx, 0, sourceId);
+    }
+
+    setCustomOrderIds(novaOrdem);
+    try {
+      localStorage.setItem('cortex_metas_ordem_ids', JSON.stringify(novaOrdem));
+    } catch {
+      // Ignora
+    }
+
+    if (criterioOrdenacao !== 'manual') {
+      setCriterioOrdenacao('manual');
+      setDirecaoOrdenacao('asc');
+      try {
+        localStorage.setItem('cortex_metas_criterio', 'manual');
+        localStorage.setItem('cortex_metas_direcao', 'asc');
+      } catch {
+        // Ignora
+      }
+      showToast('Ordem alterada para Personalizada.', 'info');
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDragOverId(null);
+  };
+
+  // Rótulo amigável para o botão de direção
+  const labelDirecao = useMemo(() => {
+    if (criterioOrdenacao === 'nome') {
+      return direcaoOrdenacao === 'asc' ? 'A → Z' : 'Z → A';
+    }
+    if (criterioOrdenacao === 'progresso') {
+      return direcaoOrdenacao === 'asc' ? 'Menor %' : 'Maior %';
+    }
+    if (criterioOrdenacao === 'prazo') {
+      return direcaoOrdenacao === 'asc' ? 'Mais próximas' : 'Mais distantes';
+    }
+    if (criterioOrdenacao === 'recentes') {
+      return direcaoOrdenacao === 'asc' ? 'Mais antigas' : 'Mais recentes';
+    }
+    return direcaoOrdenacao === 'asc' ? 'Crescente' : 'Decrescente';
+  }, [criterioOrdenacao, direcaoOrdenacao]);
 
   return (
     <>
-      <Header titulo="Metas" subtitulo="Workspace / Cortex" />
+      <Header titulo="Metas" />
       <main className={styles.container}>
-        {/* Barra de Ações Superior Padronizada */}
+        {/* Barra de Ações Superior Padronizada com Filtro e Ordenação */}
         <div className={styles.topBar}>
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Buscar por meta ou tarefa vinculada..."
-            maxWidth={420}
-          />
+          <div className={styles.filtersWrapper}>
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Buscar por meta ou tarefa vinculada..."
+              maxWidth={360}
+            />
+
+            <div className={styles.sortContainer}>
+              <label htmlFor="meta-sort-select" className={styles.sortLabel}>
+                Ordenar:
+              </label>
+              <div className={styles.selectWrapper}>
+                <select
+                  id="meta-sort-select"
+                  value={criterioOrdenacao}
+                  onChange={(e) => handleCriterioChange(e.target.value as CriterioOrdenacao)}
+                  className={styles.sortSelect}
+                >
+                  <option value="status">Status</option>
+                  <option value="prazo">Prazo</option>
+                  <option value="nome">Nome</option>
+                  <option value="progresso">Progresso</option>
+                  <option value="recentes">Data de criação</option>
+                  <option value="manual">Personalizada (Manual)</option>
+                </select>
+                <span className={styles.selectChevron}>
+                  <ChevronDownIcon size={14} />
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={alternarDirecao}
+                className={styles.directionBtn}
+                title={direcaoOrdenacao === 'asc' ? 'Ordem crescente' : 'Ordem decrescente'}
+                aria-label={
+                  direcaoOrdenacao === 'asc'
+                    ? 'Mudar para ordem decrescente'
+                    : 'Mudar para ordem crescente'
+                }
+              >
+                <ArrowUpDownIcon size={14} />
+                <span className={styles.directionText}>{labelDirecao}</span>
+              </button>
+            </div>
+          </div>
 
           <button
             type="button"
@@ -215,58 +520,6 @@ export default function MetasPage() {
           </button>
         </div>
 
-        {/* Painel de Gamificação / KPIs */}
-        <div className={styles.metricsGrid}>
-          <div className={styles.metricCard}>
-            <div className={styles.metricIcon}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{totalMetas}</span>
-              <span className={styles.metricLabel}>Total de Metas</span>
-            </div>
-          </div>
-
-          <div className={styles.metricCard}>
-            <div className={styles.metricIcon} style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{metasConcluidas}</span>
-              <span className={styles.metricLabel}>Metas Concluídas</span>
-            </div>
-          </div>
-
-          <div className={styles.metricCard}>
-            <div className={styles.metricIcon} style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{metasPendentes}</span>
-              <span className={styles.metricLabel}>Metas em Andamento</span>
-            </div>
-          </div>
-
-          <div className={styles.metricCard}>
-            <div className={styles.metricIcon} style={{ background: 'rgba(123, 79, 201, 0.12)', color: 'var(--cortex-purple)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{percentualGeral}%</span>
-              <span className={styles.metricLabel}>Taxa de Conclusão</span>
-            </div>
-          </div>
-        </div>
-
         {/* Conteúdo Principal: Lista de Metas com Tarefas Vinculadas */}
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--cortex-gray-text)' }}>
@@ -278,9 +531,13 @@ export default function MetasPage() {
               <circle cx="12" cy="12" r="10" />
               <path d="m9 12 2 2 4-4" />
             </svg>
-            <h3 className={styles.emptyTitle}>Nenhuma meta encontrada</h3>
+            <h3 className={styles.emptyTitle}>
+              {searchTerm ? 'Nenhuma meta encontrada' : 'Nenhuma meta cadastrada'}
+            </h3>
             <p className={styles.emptyText}>
-              Crie metas e vincule uma ou mais tarefas para acompanhar seu progresso e atingir objetivos estratégicos.
+              {searchTerm
+                ? 'Tente buscar com outros termos.'
+                : 'Crie metas e vincule uma ou mais tarefas para acompanhar seu progresso e atingir objetivos estratégicos.'}
             </p>
             <button
               type="button"
@@ -293,16 +550,44 @@ export default function MetasPage() {
           </div>
         ) : (
           <div className={styles.groupsContainer}>
-            {metasFiltradas.map((meta) => {
+            {metasFiltradas.map((meta, index) => {
               const tarefas = getTarefasDaMeta(meta);
               const progresso = getProgressoMeta(meta);
               const status = getMetaStatus(meta);
               const concluida = status === 'Concluida';
+              const isDraggingThis = draggedId === meta.id;
+              const isDragOverThis = dragOverId === meta.id;
 
               return (
-                <div key={meta.id} className={styles.taskGroupCard}>
+                <div
+                  key={meta.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, meta.id)}
+                  onDragOver={(e) => handleDragOver(e, meta.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, meta.id)}
+                  onDragEnd={handleDragEnd}
+                  className={`${styles.taskGroupCard} ${isDraggingThis ? styles.cardDragging : ''} ${
+                    isDragOverThis ? styles.cardDragOver : ''
+                  }`}
+                >
                   <div className={styles.groupHeader}>
                     <div className={styles.groupTitleWrapper}>
+                      <span
+                        className={styles.dragHandle}
+                        title="Arraste para reordenar"
+                        aria-label="Arraste para reordenar"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="8" cy="6" r="2" />
+                          <circle cx="16" cy="6" r="2" />
+                          <circle cx="8" cy="12" r="2" />
+                          <circle cx="16" cy="12" r="2" />
+                          <circle cx="8" cy="18" r="2" />
+                          <circle cx="16" cy="18" r="2" />
+                        </svg>
+                      </span>
+
                       <span className={`${styles.taskName} ${concluida ? styles.goalNameCompleted : ''}`}>
                         {meta.nome}
                       </span>
@@ -329,6 +614,30 @@ export default function MetasPage() {
                       </div>
 
                       <div className={styles.cardActions}>
+                        {/* Botões para definir / mover ordem */}
+                        <div className={styles.reorderActions}>
+                          <button
+                            type="button"
+                            onClick={() => moverMeta(meta.id, 'up')}
+                            disabled={index === 0}
+                            className={styles.reorderBtn}
+                            title="Mover meta para cima"
+                            aria-label={`Mover meta ${meta.nome} para cima`}
+                          >
+                            <ChevronUpIcon size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moverMeta(meta.id, 'down')}
+                            disabled={index === metasFiltradas.length - 1}
+                            className={styles.reorderBtn}
+                            title="Mover meta para baixo"
+                            aria-label={`Mover meta ${meta.nome} para baixo`}
+                          >
+                            <ChevronDownIcon size={14} />
+                          </button>
+                        </div>
+
                         <button
                           type="button"
                           onClick={() => handleEditMeta(meta)}

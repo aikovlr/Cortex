@@ -504,7 +504,7 @@ export default function TarefaAtribuidaDetalhesPage() {
 
   return (
     <>
-      <Header titulo="Gerenciar Tarefa Atribuída" subtitulo="Workspace / Cortex" />
+      <Header titulo="Gerenciar Tarefa Atribuída" />
 
       <main className={styles.container}>
         <button

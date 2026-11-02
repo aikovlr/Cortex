@@ -4,8 +4,33 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import { SidebarProvider, useSidebar } from '@/contexts/SidebarContext';
 import Sidebar from '@/app/Components/Sidebar/sidebar';
 import styles from './layout.module.css';
+
+function DashboardContent({ children }: { children: React.ReactNode }) {
+  const { isCollapsed, isMobileOpen, closeMobile } = useSidebar();
+
+  return (
+    <div className={styles.wrapper}>
+      {isMobileOpen && (
+        <div
+          className={styles.backdrop}
+          onClick={closeMobile}
+          aria-hidden="true"
+        />
+      )}
+      <Sidebar />
+      <div
+        className={`${styles.mainContent} ${
+          isCollapsed ? styles.mainContentCollapsed : ''
+        }`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardLayout({
   children,
@@ -41,11 +66,8 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className={styles.wrapper}>
-      <Sidebar />
-      <div className={styles.mainContent}>
-        {children}
-      </div>
-    </div>
+    <SidebarProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </SidebarProvider>
   );
 }

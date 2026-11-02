@@ -329,7 +329,7 @@ export default function MinhasTarefasPage() {
 
   return (
     <>
-      <Header titulo="Minhas tarefas" subtitulo="Workspace / Cortex" />
+      <Header titulo="Minhas tarefas" />
 
       <main className={styles.container}>
         {/* Abas Padronizadas no estilo de Configurações */}

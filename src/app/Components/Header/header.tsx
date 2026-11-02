@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
 import { useNotifications, NotificacaoItem } from '@/contexts/NotificationContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import {
   FileTextIcon,
   AlertTriangleIcon,
@@ -14,21 +16,78 @@ import {
   LightbulbIcon,
   TrashIcon,
   UsersIcon,
+  ChevronDownIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './header.module.css';
+
+export interface BreadcrumbOption {
+  label: string;
+  href: string;
+  icon?: string;
+  descricao?: string;
+}
+
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  options?: BreadcrumbOption[];
+}
 
 export interface HeaderProps {
   titulo: string;
   subtitulo?: string;
+  breadcrumbs?: BreadcrumbItem[];
   onToggleSidebar?: () => void;
 }
 
+const WORKSPACE_MODULES: BreadcrumbOption[] = [
+  {
+    label: 'Minhas tarefas',
+    href: '/minhas-tarefas',
+    icon: '/clipboard-text.svg',
+    descricao: 'Painel de tarefas pessoais e fluxo de trabalho',
+  },
+  {
+    label: 'Tarefas atribuídas',
+    href: '/tarefas-atribuidas',
+    icon: '/clipboard-data.svg',
+    descricao: 'Tarefas delegadas e acompanhamento',
+  },
+  {
+    label: 'Equipes',
+    href: '/equipes',
+    icon: '/users.svg',
+    descricao: 'Gestão de membros, grupos e tickets',
+  },
+  {
+    label: 'Metas',
+    href: '/metas',
+    icon: '/target.svg',
+    descricao: 'Objetivos estratégicos e progresso',
+  },
+  {
+    label: 'Relatórios',
+    href: '/relatorios',
+    icon: '/chart-bar.svg',
+    descricao: 'Métricas, desempenho e exportação',
+  },
+  {
+    label: 'Configurações',
+    href: '/configuracoes',
+    icon: '/adjustments-horizontal.svg',
+    descricao: 'Preferências do sistema, tema e perfil',
+  },
+];
+
 export default function Header({
   titulo,
-  subtitulo = 'Workspace / Cortex',
+  subtitulo,
+  breadcrumbs,
   onToggleSidebar,
 }: HeaderProps) {
   const { theme, toggleTheme } = useAccessibility();
+  const { isCollapsed, toggleSidebar } = useSidebar();
+  const handleToggleSidebar = onToggleSidebar || toggleSidebar;
   const {
     notificacoes,
     naoLidasCount,
@@ -39,6 +98,112 @@ export default function Header({
     buscarNovasNotificacoes,
   } = useNotifications();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const breadcrumbItems: BreadcrumbItem[] = useMemo(() => {
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      return breadcrumbs;
+    }
+
+    // 1. Workspace: texto plano, sem link e sem dropdown
+    // 2. Cortex: link para a página inicial (/), único com a seta para baixo e menu de navegação
+    const items: BreadcrumbItem[] = [
+      {
+        label: 'Workspace',
+      },
+      {
+        label: 'Cortex',
+        href: '/',
+        options: WORKSPACE_MODULES,
+      },
+    ];
+
+    if (pathname) {
+      if (pathname.startsWith('/equipes/') && pathname !== '/equipes') {
+        items.push({
+          label: 'Equipes',
+          href: '/equipes',
+        });
+      } else if (pathname.startsWith('/minhas-tarefas/') && pathname !== '/minhas-tarefas') {
+        items.push({
+          label: 'Minhas tarefas',
+          href: '/minhas-tarefas',
+        });
+      } else if (pathname.startsWith('/tarefas-atribuidas/') && pathname !== '/tarefas-atribuidas') {
+        items.push({
+          label: 'Tarefas atribuídas',
+          href: '/tarefas-atribuidas',
+        });
+      }
+    }
+
+    if (
+      subtitulo &&
+      subtitulo !== 'Workspace / Cortex' &&
+      subtitulo !== 'Workspace / Cortex / Equipes'
+    ) {
+      const parts = subtitulo
+        .split('/')
+        .map((p) => p.trim())
+        .filter(
+          (p) =>
+            p.length > 0 &&
+            p.toLowerCase() !== 'workspace' &&
+            p.toLowerCase() !== 'cortex'
+        );
+
+      parts.forEach((part) => {
+        if (!items.some((it) => it.label.toLowerCase() === part.toLowerCase())) {
+          items.push({ label: part });
+        }
+      });
+    }
+
+    if (!items.some((it) => it.label.toLowerCase() === titulo.toLowerCase())) {
+      items.push({
+        label: titulo,
+        href: pathname || undefined,
+      });
+    }
+
+    return items;
+  }, [breadcrumbs, pathname, subtitulo, titulo]);
+
+  const [openBreadcrumbIndex, setOpenBreadcrumbIndex] = useState<number | null>(null);
+  const breadcrumbNavRef = useRef<HTMLElement | null>(null);
+
+  // Fecha dropdown do breadcrumb ao trocar de rota
+  useEffect(() => {
+    setOpenBreadcrumbIndex(null);
+  }, [pathname]);
+
+  // Fecha dropdown de breadcrumb ao clicar fora ou apertar Escape
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        breadcrumbNavRef.current &&
+        !breadcrumbNavRef.current.contains(event.target as Node)
+      ) {
+        setOpenBreadcrumbIndex(null);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpenBreadcrumbIndex(null);
+      }
+    }
+
+    if (openBreadcrumbIndex !== null) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openBreadcrumbIndex]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [filtro, setFiltro] = useState<'naoLidas' | 'todas'>('naoLidas');
@@ -181,24 +346,145 @@ export default function Header({
   return (
     <header className={styles.header}>
       <div className={styles.leftSection}>
-        {onToggleSidebar && (
-          <button
-            type="button"
-            className={styles.toggleButton}
-            onClick={onToggleSidebar}
-            aria-label="Alternar barra lateral"
-          >
-            <Image
-              src="/layout-sidebar-right-expand.svg"
-              alt="Menu"
-              width={24}
-              height={24}
-            />
-          </button>
-        )}
+        <button
+          type="button"
+          className={styles.toggleButton}
+          onClick={handleToggleSidebar}
+          title={isCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
+          aria-label={isCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
+        >
+          <Image
+            src={isCollapsed ? '/layout-sidebar-right-expand.svg' : '/layout-sidebar-right-collapse.svg'}
+            alt=""
+            width={24}
+            height={24}
+          />
+        </button>
 
         <div className={styles.titulo}>
-          <span className={styles.breadcrumb}>{subtitulo}</span>
+          <nav
+            ref={breadcrumbNavRef}
+            aria-label="Trilha de navegação estrutural estilo explorador de arquivos"
+            className={styles.breadcrumbNav}
+          >
+            <ol className={styles.breadcrumb}>
+              {breadcrumbItems.map((item, index) => {
+                const isLast = index === breadcrumbItems.length - 1;
+                const isDropdownOpen = openBreadcrumbIndex === index;
+                const hasOptions = !!item.options && item.options.length > 0;
+                const isWorkspace = item.label.toLowerCase() === 'workspace';
+                const isClickable = !isWorkspace && !isLast && !!item.href;
+
+                return (
+                  <li key={`${item.label}-${index}`} className={styles.breadcrumbItem}>
+                    {index > 0 && (
+                      <span className={styles.breadcrumbSeparator} aria-hidden="true">
+                        /
+                      </span>
+                    )}
+                    <div className={styles.breadcrumbSegment}>
+                      {isClickable ? (
+                        <Link
+                          href={item.href!}
+                          className={styles.breadcrumbLink}
+                          {...(isLast ? { 'aria-current': 'page' as const } : {})}
+                          onClick={() => setOpenBreadcrumbIndex(null)}
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span
+                          className={isLast ? styles.breadcrumbCurrentText : styles.breadcrumbStaticText}
+                          {...(isLast ? { 'aria-current': 'page' as const } : {})}
+                        >
+                          {item.label}
+                        </span>
+                      )}
+
+                      {hasOptions && (
+                        <button
+                          type="button"
+                          className={`${styles.breadcrumbChevronBtn} ${
+                            isDropdownOpen ? styles.breadcrumbChevronOpen : ''
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenBreadcrumbIndex((prev) => (prev === index ? null : index));
+                          }}
+                          aria-expanded={isDropdownOpen}
+                          aria-haspopup="menu"
+                          aria-label={`Listar subpastas e páginas de ${item.label}`}
+                          title={`Listar opções de ${item.label}`}
+                        >
+                          <ChevronDownIcon size={12} strokeWidth={2.5} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Menu Dropdown Suspenso no estilo Windows Explorer / VS Code */}
+                    {hasOptions && isDropdownOpen && (
+                      <div
+                        className={styles.breadcrumbDropdown}
+                        role="menu"
+                        aria-label={`Menu de navegação para ${item.label}`}
+                      >
+                        <div className={styles.dropdownHeaderMini}>
+                          <span>{item.label}</span>
+                        </div>
+                        <div
+                          className={`${styles.dropdownList} ${
+                            (item.options?.length ?? 0) > 6
+                              ? styles.dropdownListScrollable
+                              : ''
+                          }`}
+                        >
+                          {item.options?.map((opt) => {
+                            const isCurrent =
+                              pathname === opt.href ||
+                              (opt.href !== '/minhas-tarefas' &&
+                                pathname?.startsWith(opt.href));
+
+                            return (
+                              <Link
+                                key={opt.href}
+                                href={opt.href}
+                                className={`${styles.dropdownItem} ${
+                                  isCurrent ? styles.dropdownItemActive : ''
+                                }`}
+                                role="menuitem"
+                                onClick={() => setOpenBreadcrumbIndex(null)}
+                              >
+                                {opt.icon && (
+                                  <div className={styles.dropdownItemIcon}>
+                                    <Image src={opt.icon} alt="" width={16} height={16} />
+                                  </div>
+                                )}
+                                <div className={styles.dropdownItemContent}>
+                                  <span className={styles.dropdownItemLabel}>
+                                    {opt.label}
+                                  </span>
+                                  {opt.descricao && (
+                                    <span className={styles.dropdownItemDesc}>
+                                      {opt.descricao}
+                                    </span>
+                                  )}
+                                </div>
+                                {isCurrent && (
+                                  <span className={styles.dropdownItemBadge}>
+                                    Atual
+                                  </span>
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
           <h1 className={styles.pageTitle}>{titulo}</h1>
         </div>
       </div>

@@ -158,6 +158,27 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
     // Sincroniza com as preferências do banco de dados
     sincronizar();
+
+    // Monitora alterações dinâmicas na preferência de sistema do usuário
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+        const savedTheme = localStorage.getItem('cortex_theme');
+        if (!savedTheme) {
+          const systemTheme: Theme = e.matches ? 'dark' : 'light';
+          setThemeState(systemTheme);
+          setFontSizeState((currSize) => {
+            setHighContrastState((currContrast) => {
+              applyAccessibilityToDOM(currSize, currContrast, systemTheme);
+              return currContrast;
+            });
+            return currSize;
+          });
+        }
+      };
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+      return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    }
   }, [sincronizar]);
 
   const setFontSize = useCallback((newSizeInput: FontSize) => {

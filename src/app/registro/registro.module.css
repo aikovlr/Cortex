@@ -4,14 +4,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 15%, rgba(123, 79, 201, 0.18) 0%, rgba(18, 25, 44, 1) 75%);
+  position: relative;
+  background-color: var(--bg-main);
   padding: 30px 20px;
+  transition: background-color 0.3s ease;
 }
 
+/* Fundo padrão respeitando a preferência de sistema do usuário */
+@media (prefers-color-scheme: dark) {
+  .container {
+    background-color: #0b0f1a;
+  }
+}
+
+:global(html[data-theme="light"]) .container {
+  background-color: var(--bg-main);
+}
+
+:global(html[data-theme="dark"]) .container,
+:global(html.dark) .container {
+  background-color: #0b0f1a;
+}
+
+/* O modal / card possui exatamente a cor de fundo da logo (#12192C) */
 .card {
   width: 100%;
   max-width: 480px;
-  background-color: var(--cortex-dark-card);
+  background-color: var(--cortex-dark-blue);
   border: 1px solid var(--cortex-border);
   border-radius: 20px;
   padding: 36px 32px;
@@ -50,7 +69,7 @@
 
 .headerSubtitle {
   font-size: 14px;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
   margin-top: 4px;
   text-align: center;
 }
@@ -77,7 +96,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--cortex-purple);
-  background-color: #242424;
+  background-color: var(--cortex-dark-input);
 }
 
 .avatarPlaceholder {
@@ -87,8 +106,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: var(--cortex-gray-text);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #94A3B8;
   font-size: 20px;
 }
 
@@ -102,19 +121,19 @@
 .uploadLabel {
   font-size: 12px;
   font-weight: 600;
-  color: var(--cortex-purple);
+  color: #A78BFA;
   cursor: pointer;
   align-self: flex-start;
-  transition: opacity 0.2s;
+  transition: color 0.2s ease;
 }
 
 .uploadLabel:hover {
-  opacity: 0.85;
+  color: #C4B5FD;
 }
 
 .uploadHint {
   font-size: 11px;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
 }
 
 .field {
@@ -126,7 +145,7 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .inputWrapper {
@@ -154,7 +173,7 @@
 }
 
 .input::placeholder {
-  color: rgba(137, 136, 153, 0.6);
+  color: rgba(148, 163, 184, 0.6);
 }
 
 /* Validações visuais da RN02 (Requisitos de Senha) */
@@ -162,8 +181,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background-color: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--cortex-border);
   border-radius: 8px;
   margin-top: 4px;
 }
@@ -173,13 +193,13 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--cortex-gray-text);
-  transition: color 0.2s;
+  color: #94A3B8;
+  transition: color 0.2s ease;
 }
 
 .reqItemValid {
-  color: #2ecc71;
-  font-weight: 500;
+  color: #6EE7B7;
+  font-weight: 600;
 }
 
 .errorBanner {
@@ -187,7 +207,7 @@
   border: 1px solid var(--cortex-red-danger);
   border-radius: 10px;
   padding: 12px 14px;
-  color: #ff9999;
+  color: #FCA5A5;
   font-size: 13px;
   line-height: 1.4;
 }
@@ -206,7 +226,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(123, 79, 201, 0.35);
+  box-shadow: 0 4px 14px var(--cortex-purple-glow);
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
@@ -224,17 +244,18 @@
   margin-top: 20px;
   text-align: center;
   font-size: 13px;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
 }
 
 .link {
-  color: var(--cortex-purple);
+  color: #A78BFA;
   font-weight: 600;
   margin-left: 4px;
-  transition: text-decoration 0.2s ease;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
 }
 
 .link:hover {
+  color: #C4B5FD;
   text-decoration: underline;
 }
 
@@ -242,7 +263,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -254,7 +275,7 @@
 .modalBox {
   width: 100%;
   max-width: 400px;
-  background-color: var(--cortex-dark-card);
+  background-color: var(--cortex-dark-blue);
   border: 1px solid var(--cortex-border);
   border-radius: 16px;
   padding: 28px;
@@ -272,7 +293,7 @@
 
 .modalText {
   font-size: 13px;
-  color: var(--cortex-gray-text);
+  color: #CBD5E1;
   line-height: 1.4;
 }
 
@@ -291,9 +312,26 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  box-shadow: 0 2px 8px var(--cortex-purple-glow);
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .confirmBtn:hover:not(:disabled) {
   background-color: var(--cortex-purple-hover);
+  transform: translateY(-1px);
+}
+
+/* ====================================================
+   Acessibilidade: Modo Alto Contraste
+   ==================================================== */
+:global(html.high-contrast) .card,
+:global(html[data-high-contrast="true"]) .card,
+:global(html.high-contrast) .modalBox,
+:global(html[data-high-contrast="true"]) .modalBox {
+  border: 2px solid currentColor !important;
+}
+
+:global(html.high-contrast) .input,
+:global(html[data-high-contrast="true"]) .input {
+  border: 2px solid currentColor !important;
 }

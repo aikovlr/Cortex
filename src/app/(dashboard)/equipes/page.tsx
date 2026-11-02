@@ -62,7 +62,7 @@ export default function EquipesPage() {
 
   return (
     <>
-      <Header titulo="Equipes" subtitulo="Workspace / Cortex" />
+      <Header titulo="Equipes" />
 
       <main className={styles.container}>
         {/* Barra de Busca Padronizada + Botão Adicionar */}

@@ -143,7 +143,7 @@ export default function TarefasAtribuidasPage() {
 
   return (
     <>
-      <Header titulo="Tarefas atribuídas" subtitulo="Workspace / Cortex" />
+      <Header titulo="Tarefas atribuídas" />
 
       <main className={styles.container}>
         {/* Barra de Pesquisa Padronizada */}

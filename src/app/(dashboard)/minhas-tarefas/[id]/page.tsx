@@ -279,7 +279,7 @@ export default function DetalhesTarefaPage() {
 
   return (
     <>
-      <Header titulo="Detalhes da Tarefa" subtitulo="Workspace / Cortex" />
+      <Header titulo="Detalhes da Tarefa" />
 
       <main className={styles.container}>
         <button

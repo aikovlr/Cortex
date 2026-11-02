@@ -36,57 +36,95 @@
   transform: translateY(-1px);
 }
 
-/* Painel de Gamificação / Métricas */
-.metricsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.metricCard {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-main);
-  border-radius: 16px;
-  padding: 18px 20px;
+/* Filtros e Ordenação */
+.filtersWrapper {
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.25s;
+  flex-wrap: wrap;
+  flex: 1;
 }
 
-.metricCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.metricIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(123, 79, 201, 0.12);
+.sortLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cortex-gray-text);
+  white-space: nowrap;
+}
+
+.selectWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sortSelect {
+  height: 40px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  padding: 0 32px 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s;
+}
+
+.sortSelect:hover {
+  border-color: rgba(123, 79, 201, 0.4);
+}
+
+.sortSelect:focus {
+  border-color: var(--cortex-purple);
+  box-shadow: 0 0 0 3px rgba(123, 79, 201, 0.15);
+}
+
+.selectChevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--cortex-gray-text);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--cortex-purple);
 }
 
-.metricInfo {
-  display: flex;
-  flex-direction: column;
-}
-
-.metricValue {
-  font-size: 22px;
-  font-weight: 700;
+.directionBtn {
+  height: 40px;
+  padding: 0 12px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
   color: var(--text-primary);
-  line-height: 1.2;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
 
-.metricLabel {
+.directionBtn:hover {
+  border-color: var(--cortex-purple);
+  color: var(--cortex-purple);
+  background-color: var(--bg-surface-hover);
+}
+
+.directionText {
   font-size: 12px;
-  color: var(--cortex-gray-text);
-  margin-top: 2px;
+  font-weight: 500;
 }
 
 /* Grupos de Metas por Tarefa (Charter 6.5) */
@@ -102,12 +140,44 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s, transform 0.15s ease, opacity 0.15s ease;
 }
 
 .taskGroupCard:hover {
   border-color: rgba(123, 79, 201, 0.4);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.cardDragging {
+  opacity: 0.4;
+  border-style: dashed;
+  border-color: var(--cortex-purple);
+}
+
+.cardDragOver {
+  border-color: var(--cortex-purple);
+  box-shadow: 0 0 0 2px var(--cortex-purple);
+  transform: translateY(-2px);
+}
+
+.dragHandle {
+  color: var(--cortex-gray-text);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.dragHandle:hover {
+  color: var(--cortex-purple);
+  background-color: rgba(123, 79, 201, 0.08);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
 }
 
 .groupHeader {
@@ -228,7 +298,40 @@
 .cardActions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.reorderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-main);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.reorderBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--cortex-gray-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.reorderBtn:hover:not(:disabled) {
+  background-color: rgba(123, 79, 201, 0.12);
+  color: var(--cortex-purple);
+}
+
+.reorderBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .editBtn {

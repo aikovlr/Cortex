@@ -98,7 +98,7 @@ export default function RegistroPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={fotoPreview} alt="Preview Foto" className={styles.avatarPreview} />
             ) : (
-              <div className={styles.avatarPlaceholder} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cortex-gray-text)' }}>
+              <div className={styles.avatarPlaceholder} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CameraIcon size={24} />
               </div>
             )}

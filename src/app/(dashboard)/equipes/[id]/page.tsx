@@ -238,10 +238,7 @@ export default function EquipeDetalhesPage({
 
   return (
     <>
-      <Header
-        titulo={equipe?.nome || 'Equipe'}
-        subtitulo="Workspace / Cortex / Equipes"
-      />
+      <Header titulo={equipe?.nome || 'Equipe'} />
 
       <main className={styles.container}>
         <div className={styles.topBar}>

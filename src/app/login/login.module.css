@@ -4,14 +4,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 20%, rgba(123, 79, 201, 0.18) 0%, rgba(18, 25, 44, 1) 75%);
-  padding: 20px;
+  position: relative;
+  background-color: var(--bg-main);
+  padding: 24px 20px;
+  transition: background-color 0.3s ease;
 }
 
+/* Fundo padrão respeitando a preferência de sistema do usuário */
+@media (prefers-color-scheme: dark) {
+  .container {
+    background-color: #0b0f1a;
+  }
+}
+
+:global(html[data-theme="light"]) .container {
+  background-color: var(--bg-main);
+}
+
+:global(html[data-theme="dark"]) .container,
+:global(html.dark) .container {
+  background-color: #0b0f1a;
+}
+
+/* O modal / card possui exatamente a cor de fundo da logo (#12192C) */
 .card {
   width: 100%;
   max-width: 440px;
-  background-color: var(--cortex-dark-card);
+  background-color: var(--cortex-dark-blue);
   border: 1px solid var(--cortex-border);
   border-radius: 20px;
   padding: 40px 32px;
@@ -39,10 +58,6 @@
   margin-bottom: 24px;
 }
 
-.logoWrapper img {
-  filter: drop-shadow(0 4px 12px rgba(123, 79, 201, 0.3));
-}
-
 .headerTitle {
   font-size: 24px;
   font-weight: 700;
@@ -54,7 +69,7 @@
 
 .headerSubtitle {
   font-size: 14px;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
   margin-top: 4px;
   text-align: center;
 }
@@ -74,7 +89,7 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .inputWrapper {
@@ -102,7 +117,7 @@
 }
 
 .input::placeholder {
-  color: rgba(137, 136, 153, 0.6);
+  color: rgba(148, 163, 184, 0.6);
 }
 
 .togglePasswordBtn {
@@ -110,7 +125,7 @@
   right: 12px;
   background: none;
   border: none;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
   font-size: 12px;
   font-weight: 500;
   padding: 4px 6px;
@@ -128,7 +143,7 @@
   border: 1px solid var(--cortex-red-danger);
   border-radius: 10px;
   padding: 12px 14px;
-  color: #ff9999;
+  color: #FCA5A5;
   font-size: 13px;
   line-height: 1.4;
   display: flex;
@@ -138,17 +153,17 @@
 
 .verifyBtn {
   align-self: flex-start;
-  color: #ffffff;
+  color: var(--cortex-white);
   background-color: var(--cortex-red-danger);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 600;
-  transition: opacity 0.2s ease;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
 .verifyBtn:hover {
-  opacity: 0.9;
+  background-color: var(--cortex-red-danger-hover);
 }
 
 .submitBtn {
@@ -165,7 +180,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(123, 79, 201, 0.35);
+  box-shadow: 0 4px 14px var(--cortex-purple-glow);
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
@@ -183,17 +198,18 @@
   margin-top: 24px;
   text-align: center;
   font-size: 13px;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
 }
 
 .link {
-  color: var(--cortex-purple);
+  color: #A78BFA;
   font-weight: 600;
   margin-left: 4px;
-  transition: text-decoration 0.2s ease;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
 }
 
 .link:hover {
+  color: #C4B5FD;
   text-decoration: underline;
 }
 
@@ -203,7 +219,7 @@
 .verifyCard {
   width: 100%;
   max-width: 460px;
-  background-color: var(--cortex-dark-card);
+  background-color: var(--cortex-dark-blue);
   border: 1px solid var(--cortex-border);
   border-radius: 20px;
   padding: 36px 32px;
@@ -243,11 +259,11 @@
 }
 
 .warningNotice {
-  background: rgba(123, 79, 201, 0.08);
+  background: rgba(123, 79, 201, 0.1);
   border: 1px solid rgba(123, 79, 201, 0.25);
   border-radius: 12px;
   padding: 14px 16px;
-  color: #d1d5db;
+  color: #CBD5E1;
   font-size: 13px;
   line-height: 1.5;
   text-align: center;
@@ -270,7 +286,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
   font-weight: 600;
 }
 
@@ -294,7 +310,7 @@
   justify-content: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
   margin-bottom: 24px;
 }
 
@@ -302,7 +318,7 @@
   background: none;
   border: none;
   padding: 0;
-  color: var(--cortex-purple);
+  color: #A78BFA;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -311,7 +327,7 @@
 }
 
 .resendLink:hover:not(:disabled) {
-  color: #a78bfa;
+  color: #C4B5FD;
 }
 
 .resendLink:disabled {
@@ -321,11 +337,20 @@
 }
 
 .resendFeedback {
-  color: #2ecc71;
+  color: #6EE7B7;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
   margin-top: -16px;
+  margin-bottom: 16px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.verifySuccessMessage {
+  color: #6EE7B7;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
   margin-bottom: 16px;
   animation: fadeIn 0.2s ease-out;
 }
@@ -341,7 +366,7 @@
 .codeLabel {
   font-size: 12px;
   font-weight: 600;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -380,8 +405,8 @@
 }
 
 .digitInputFilled {
-  border-color: rgba(123, 79, 201, 0.6);
-  background-color: rgba(123, 79, 201, 0.08);
+  border-color: var(--cortex-purple);
+  background-color: rgba(123, 79, 201, 0.12);
 }
 
 .verifyActions {
@@ -393,7 +418,7 @@
 .backBtn {
   background: none;
   border: none;
-  color: var(--cortex-gray-text);
+  color: #94A3B8;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -404,4 +429,21 @@
 
 .backBtn:hover {
   color: var(--cortex-white);
+}
+
+/* ====================================================
+   Acessibilidade: Modo Alto Contraste
+   ==================================================== */
+:global(html.high-contrast) .card,
+:global(html[data-high-contrast="true"]) .card,
+:global(html.high-contrast) .verifyCard,
+:global(html[data-high-contrast="true"]) .verifyCard {
+  border: 2px solid currentColor !important;
+}
+
+:global(html.high-contrast) .input,
+:global(html[data-high-contrast="true"]) .input,
+:global(html.high-contrast) .digitInput,
+:global(html[data-high-contrast="true"]) .digitInput {
+  border: 2px solid currentColor !important;
 }

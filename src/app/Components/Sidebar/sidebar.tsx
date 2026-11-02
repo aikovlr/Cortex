@@ -5,12 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import styles from './sidebar.module.css';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { usuario, logout } = useAuth();
+  const { isCollapsed, isMobileOpen, closeMobile } = useSidebar();
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
+
   const getAvatarUrl = (url?: string | null) => {
     if (!url) return '';
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
@@ -53,7 +56,13 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className={styles.sidebar}>
+    <aside
+      className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''} ${
+        isMobileOpen ? styles.mobileOpen : ''
+      }`}
+      aria-label="Barra lateral principal de navegação"
+      aria-hidden={isCollapsed}
+    >
       <div className={styles.logo}>
         <Image
           src="/logo.png"
@@ -72,7 +81,17 @@ export default function Sidebar() {
             pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
-            <Link key={item.href} href={item.href} className={styles.link}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={styles.link}
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                  closeMobile();
+                }
+              }}
+              aria-current={isSelected ? 'page' : undefined}
+            >
               <div
                 className={`${styles.menuItem} ${
                   isSelected ? styles.selected : ''
@@ -81,7 +100,7 @@ export default function Sidebar() {
                 <div className={styles.menuIcon}>
                   <Image
                     src={item.icon}
-                    alt={item.label}
+                    alt=""
                     width={20}
                     height={20}
                   />
@@ -104,11 +123,13 @@ export default function Sidebar() {
             onError={() => setFailedUrl(fotoUrl)}
           />
         ) : (
-          <div className={styles.avatarFallback} aria-label={usuario?.nome || 'Usuário'}>
+          <div
+            className={styles.avatarFallback}
+            aria-label={usuario?.nome || 'Usuário'}
+          >
             {usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'U'}
           </div>
         )}
-
 
         <div className={styles.userInfo}>
           <span className={styles.userName}>

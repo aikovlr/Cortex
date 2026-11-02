@@ -87,9 +87,9 @@ function LoginForm() {
               `Tempo limite de expiração: 15 minutos (gerado automaticamente no login).`,
               'background: #7B4FC9; color: #fff; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
               'color: inherit;',
-              'color: #a78bfa; font-weight: bold;',
+              'color: #9B6EE9; font-weight: bold;',
               'color: inherit;',
-              'background: #18223B; color: #2ecc71; font-size: 20px; font-weight: bold; letter-spacing: 4px; padding: 4px 10px; border: 1px dashed #2ecc71; border-radius: 4px; margin: 4px 0;',
+              'background: #18223B; color: #4ADE80; font-size: 20px; font-weight: bold; letter-spacing: 4px; padding: 4px 10px; border: 1px dashed #4ADE80; border-radius: 4px; margin: 4px 0;',
               'color: #8E9BAE;'
             );
           } else {
@@ -391,7 +391,7 @@ function LoginForm() {
           )}
 
           {verifySuccess && (
-            <div style={{ color: '#2ecc71', fontSize: '13px', fontWeight: 600, textAlign: 'center', marginBottom: '16px' }}>
+            <div className={styles.verifySuccessMessage}>
               {verifySuccess}
             </div>
           )}

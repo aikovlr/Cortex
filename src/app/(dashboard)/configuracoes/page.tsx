@@ -332,7 +332,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <>
-      <Header titulo="Configurações" subtitulo="Workspace / Cortex" />
+      <Header titulo="Configurações" />
       <main className={styles.container}>
         {/* Abas de Navegação das Configurações */}
       <div className={styles.tabsHeader}>
