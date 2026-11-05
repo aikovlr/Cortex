@@ -369,7 +369,21 @@ html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
     [class*="resolveTicketBtn"],
     [style*="--cortex-dark"],
     [style*="#12192C"],
-    [style*="#18223B"]
+    [style*="#18223B"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="gamificationInteractiveCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
   ) *
 ),
 html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
@@ -412,7 +426,21 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
     [class*="resolveTicketBtn"],
     [style*="--cortex-dark"],
     [style*="#12192C"],
-    [style*="#18223B"]
+    [style*="#18223B"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="gamificationInteractiveCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
   ) *
 ) {
   color: #000000 !important;
@@ -422,29 +450,149 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
 
 /* Reforço de peso para maior legibilidade em superfícies claras */
 html.high-contrast:not([data-theme="dark"]):not(.dark) :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]):not(
-  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
+  ) *
 ),
 html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(h1, h2, [class*="pageTitle"], [class*="cardTitle"]):not(
-  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
+  ) *
 ) {
   font-weight: 700 !important;
 }
 
 html.high-contrast:not([data-theme="dark"]):not(.dark) :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]):not(
-  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
+  ) *
 ),
 html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is([class*="cardSubtitle"], [class*="toggleDesc"], [class*="breadcrumb"]):not(
-  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
+  ) *
 ) {
   font-weight: 500 !important;
   opacity: 0.95 !important;
 }
 
 html.high-contrast:not([data-theme="dark"]):not(.dark) :is(label, [class*="label"], [class*="toggleTitle"]):not(
-  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
+  ) *
 ),
 html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(label, [class*="label"], [class*="toggleTitle"]):not(
-  :is([class*="sidebar"], [class*="detailsCard"], [class*="responsaveisSection"], [class*="responseCard"], [class*="modal"], [class*="Modal"]) *
+  :is(
+    [class*="sidebar"],
+    [class*="detailsCard"],
+    [class*="responsaveisSection"],
+    [class*="responseCard"],
+    [class*="modal"],
+    [class*="Modal"],
+    [class*="navbar"],
+    [class*="heroSection"],
+    [class*="sectionDark"],
+    [class*="sectionDeepDark"],
+    [class*="ctaSection"],
+    [class*="footer"],
+    [class*="heroTaskCard"],
+    [class*="featureCard"],
+    [class*="gamificationCard"],
+    [class*="pillarCard"],
+    [class*="accessibilityBox"],
+    [class*="accessibilityPreviewBox"],
+    [class*="ctaCard"]
+  ) *
 ) {
   font-weight: 600 !important;
 }
@@ -484,7 +632,7 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(input, s
 
 /* ============================================================
    Acessibilidade: Containers com Fundo Azul / Escuro no Modo Claro
-   (Sidebar, DetailsCard, ResponsaveisSection, ResponseCard, Modais, etc.)
+   (Sidebar, DetailsCard, ResponsaveisSection, ResponseCard, Modais, Landing Page etc.)
    Garante texto em branco 100% visível, nítido e em conformidade WCAG AAA
    ============================================================ */
 html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
@@ -501,6 +649,20 @@ html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
   [class*="confirmModal"],
   [class*="emptySugestoes"],
   [class*="loadingScreen"],
+  [class*="navbar"],
+  [class*="heroSection"],
+  [class*="sectionDark"],
+  [class*="sectionDeepDark"],
+  [class*="ctaSection"],
+  [class*="footer"],
+  [class*="heroTaskCard"],
+  [class*="featureCard"],
+  [class*="gamificationCard"],
+  [class*="gamificationInteractiveCard"],
+  [class*="pillarCard"],
+  [class*="accessibilityBox"],
+  [class*="accessibilityPreviewBox"],
+  [class*="ctaCard"],
   [style*="--cortex-dark"],
   [style*="#12192C"],
   [style*="#18223B"]
@@ -519,6 +681,20 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
   [class*="confirmModal"],
   [class*="emptySugestoes"],
   [class*="loadingScreen"],
+  [class*="navbar"],
+  [class*="heroSection"],
+  [class*="sectionDark"],
+  [class*="sectionDeepDark"],
+  [class*="ctaSection"],
+  [class*="footer"],
+  [class*="heroTaskCard"],
+  [class*="featureCard"],
+  [class*="gamificationCard"],
+  [class*="gamificationInteractiveCard"],
+  [class*="pillarCard"],
+  [class*="accessibilityBox"],
+  [class*="accessibilityPreviewBox"],
+  [class*="ctaCard"],
   [style*="--cortex-dark"],
   [style*="#12192C"],
   [style*="#18223B"]
@@ -547,6 +723,20 @@ html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
   [class*="confirmModal"],
   [class*="emptySugestoes"],
   [class*="loadingScreen"],
+  [class*="navbar"],
+  [class*="heroSection"],
+  [class*="sectionDark"],
+  [class*="sectionDeepDark"],
+  [class*="ctaSection"],
+  [class*="footer"],
+  [class*="heroTaskCard"],
+  [class*="featureCard"],
+  [class*="gamificationCard"],
+  [class*="gamificationInteractiveCard"],
+  [class*="pillarCard"],
+  [class*="accessibilityBox"],
+  [class*="accessibilityPreviewBox"],
+  [class*="ctaCard"],
   [style*="--cortex-dark"],
   [style*="#12192C"],
   [style*="#18223B"]
@@ -599,6 +789,20 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
   [class*="confirmModal"],
   [class*="emptySugestoes"],
   [class*="loadingScreen"],
+  [class*="navbar"],
+  [class*="heroSection"],
+  [class*="sectionDark"],
+  [class*="sectionDeepDark"],
+  [class*="ctaSection"],
+  [class*="footer"],
+  [class*="heroTaskCard"],
+  [class*="featureCard"],
+  [class*="gamificationCard"],
+  [class*="gamificationInteractiveCard"],
+  [class*="pillarCard"],
+  [class*="accessibilityBox"],
+  [class*="accessibilityPreviewBox"],
+  [class*="ctaCard"],
   [style*="--cortex-dark"],
   [style*="#12192C"],
   [style*="#18223B"]
@@ -652,7 +856,21 @@ html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
   [class*="loadingWrapper"],
   [class*="modal"],
   [class*="Modal"],
-  [class*="dialog"]
+  [class*="dialog"],
+  [class*="navbar"],
+  [class*="heroSection"],
+  [class*="sectionDark"],
+  [class*="sectionDeepDark"],
+  [class*="ctaSection"],
+  [class*="footer"],
+  [class*="heroTaskCard"],
+  [class*="featureCard"],
+  [class*="gamificationCard"],
+  [class*="gamificationInteractiveCard"],
+  [class*="pillarCard"],
+  [class*="accessibilityBox"],
+  [class*="accessibilityPreviewBox"],
+  [class*="ctaCard"]
 ) :is(h1, h2, h3, label, [class*="taskTitle"], [class*="sectionTitle"], [class*="label"], [class*="cardTitle"]),
 html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
   [class*="sidebar"],
@@ -663,7 +881,21 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
   [class*="loadingWrapper"],
   [class*="modal"],
   [class*="Modal"],
-  [class*="dialog"]
+  [class*="dialog"],
+  [class*="navbar"],
+  [class*="heroSection"],
+  [class*="sectionDark"],
+  [class*="sectionDeepDark"],
+  [class*="ctaSection"],
+  [class*="footer"],
+  [class*="heroTaskCard"],
+  [class*="featureCard"],
+  [class*="gamificationCard"],
+  [class*="gamificationInteractiveCard"],
+  [class*="pillarCard"],
+  [class*="accessibilityBox"],
+  [class*="accessibilityPreviewBox"],
+  [class*="ctaCard"]
 ) :is(h1, h2, h3, label, [class*="taskTitle"], [class*="sectionTitle"], [class*="label"], [class*="cardTitle"]) {
   color: #ffffff !important;
   font-weight: 700 !important;

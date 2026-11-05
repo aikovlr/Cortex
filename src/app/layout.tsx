@@ -31,25 +31,14 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var size = localStorage.getItem('cortex_font_size');
-                  if (size) {
-                    var num = size === 'small' ? 14 : size === 'large' ? 18 : size === 'medium' ? 16 : parseInt(size, 10);
-                    if (!isNaN(num) && num >= 12 && num <= 24 && num % 2 === 0) {
-                      document.documentElement.setAttribute('data-font-size', num + 'px');
-                      document.documentElement.style.fontSize = num + 'px';
-                    } else {
-                      document.documentElement.setAttribute('data-font-size', '16px');
-                      document.documentElement.style.fontSize = '16px';
-                    }
-                  }
-                  var hc = localStorage.getItem('cortex_high_contrast');
-                  if (hc === 'true') {
-                    document.documentElement.classList.add('high-contrast');
-                    document.documentElement.setAttribute('data-high-contrast', 'true');
-                  }
-                  var theme = localStorage.getItem('cortex_theme');
+                  // Limpa todos os itens de acessibilidade do localStorage que pertencem ao banco de dados
+                  localStorage.removeItem('cortex_font_size');
+                  localStorage.removeItem('cortex_high_contrast');
+                  localStorage.removeItem('cortex_theme');
+                  localStorage.removeItem('theme');
+
                   var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (theme === 'dark' || (!theme && prefersDark)) {
+                  if (prefersDark) {
                     document.documentElement.classList.add('dark');
                     document.documentElement.setAttribute('data-theme', 'dark');
                   } else {

@@ -99,7 +99,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
           tamanhoFonte: newSize,
         });
       } catch {
-        // Se o usuário não estiver autenticado (401) ou offline, o estado local e localStorage permanecem válidos
+        // Se o usuário não estiver autenticado (401) ou offline, o estado local em memória permanece válido
       } finally {
         setIsSyncing(false);
       }
@@ -109,7 +109,6 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   // Busca as preferências sincronizadas do banco de dados
   const sincronizar = useCallback(async () => {
     try {
-      setIsSyncing(true);
       const remotas = await preferenciaService.obterAcessibilidade();
       if (remotas) {
         const remoteSize = toNumericFontSize(remotas.tamanhoFonte);
@@ -121,72 +120,103 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         setThemeState(remoteTheme);
 
         try {
-          localStorage.setItem('cortex_font_size', String(remoteSize));
-          localStorage.setItem('cortex_high_contrast', String(remoteContrast));
-          localStorage.setItem('cortex_theme', remoteTheme);
+          localStorage.removeItem('cortex_font_size');
+          localStorage.removeItem('cortex_high_contrast');
+          localStorage.removeItem('cortex_theme');
+          localStorage.removeItem('theme');
         } catch {}
 
         applyAccessibilityToDOM(remoteSize, remoteContrast, remoteTheme);
       }
     } catch {
       // Ignora falha de autenticação inicial / modo visitante
-    } finally {
-      setIsSyncing(false);
     }
   }, []);
 
-  // Inicialização no cliente: lê localStorage primeiro (sem flash), depois sincroniza com a nuvem/banco
+  // Inicialização no cliente: sem server/client mismatch na hidratação, sincroniza direto com o banco de dados
   useEffect(() => {
+    let ignore = false;
+
     try {
-      const savedSize = localStorage.getItem('cortex_font_size');
-      const initialSize = toNumericFontSize(savedSize);
-
-      const savedContrast = localStorage.getItem('cortex_high_contrast');
-      const initialContrast = savedContrast === 'true';
-
-      const savedTheme = localStorage.getItem('cortex_theme') as Theme | null;
-      const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme: Theme = savedTheme && ['light', 'dark'].includes(savedTheme)
-        ? savedTheme
-        : (prefersDark ? 'dark' : 'light');
-
-      setFontSizeState(initialSize);
-      setHighContrastState(initialContrast);
-      setThemeState(initialTheme);
-      applyAccessibilityToDOM(initialSize, initialContrast, initialTheme);
+      // Remove do localStorage todas as preferências que já pertencem ao banco de dados
+      localStorage.removeItem('cortex_font_size');
+      localStorage.removeItem('cortex_high_contrast');
+      localStorage.removeItem('cortex_theme');
+      localStorage.removeItem('theme');
     } catch {}
 
-    // Sincroniza com as preferências do banco de dados
-    sincronizar();
+    async function carregarPreferencias() {
+      // Executa de forma assíncrona para não quebrar a hidratação do React
+      await Promise.resolve();
+      if (ignore) return;
+
+      // 1. Aplica tema do sistema se usuário não autenticado estiver em dark mode
+      try {
+        const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          setThemeState('dark');
+          applyAccessibilityToDOM(16, false, 'dark');
+        }
+      } catch {}
+
+      // 2. Busca e sincroniza preferências persistidas no backend
+      try {
+        const remotas = await preferenciaService.obterAcessibilidade();
+        if (!ignore && remotas) {
+          const remoteSize = toNumericFontSize(remotas.tamanhoFonte);
+          const remoteContrast = Boolean(remotas.altoContraste);
+          const remoteTheme: Theme = remotas.tema === 'dark' ? 'dark' : 'light';
+
+          setFontSizeState(remoteSize);
+          setHighContrastState(remoteContrast);
+          setThemeState(remoteTheme);
+
+          try {
+            localStorage.removeItem('cortex_font_size');
+            localStorage.removeItem('cortex_high_contrast');
+            localStorage.removeItem('cortex_theme');
+            localStorage.removeItem('theme');
+          } catch {}
+
+          applyAccessibilityToDOM(remoteSize, remoteContrast, remoteTheme);
+        }
+      } catch {}
+    }
+
+    carregarPreferencias();
 
     // Monitora alterações dinâmicas na preferência de sistema do usuário
     if (typeof window !== 'undefined' && window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-        const savedTheme = localStorage.getItem('cortex_theme');
-        if (!savedTheme) {
-          const systemTheme: Theme = e.matches ? 'dark' : 'light';
-          setThemeState(systemTheme);
-          setFontSizeState((currSize) => {
-            setHighContrastState((currContrast) => {
-              applyAccessibilityToDOM(currSize, currContrast, systemTheme);
-              return currContrast;
-            });
-            return currSize;
+        const systemTheme: Theme = e.matches ? 'dark' : 'light';
+        setThemeState(systemTheme);
+        setFontSizeState((currSize) => {
+          setHighContrastState((currContrast) => {
+            applyAccessibilityToDOM(currSize, currContrast, systemTheme);
+            return currContrast;
           });
-        }
+          return currSize;
+        });
       };
       mediaQuery.addEventListener('change', handleSystemThemeChange);
-      return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      return () => {
+        ignore = true;
+        mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      };
     }
-  }, [sincronizar]);
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const setFontSize = useCallback((newSizeInput: FontSize) => {
     const newSize = toNumericFontSize(newSizeInput);
     setFontSizeState(newSize);
 
     try {
-      localStorage.setItem('cortex_font_size', String(newSize));
+      localStorage.removeItem('cortex_font_size');
     } catch {}
 
     setHighContrastState((currContrast) => {
@@ -203,7 +233,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     setHighContrastState(enabled);
 
     try {
-      localStorage.setItem('cortex_high_contrast', String(enabled));
+      localStorage.removeItem('cortex_high_contrast');
     } catch {}
 
     setFontSizeState((currSize) => {
@@ -220,7 +250,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     setThemeState(newTheme);
 
     try {
-      localStorage.setItem('cortex_theme', newTheme);
+      localStorage.removeItem('theme');
+      localStorage.removeItem('cortex_theme');
     } catch {}
 
     setFontSizeState((currSize) => {
@@ -238,7 +269,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       const nextTheme: Theme = currTheme === 'dark' ? 'light' : 'dark';
 
       try {
-        localStorage.setItem('cortex_theme', nextTheme);
+        localStorage.removeItem('theme');
+        localStorage.removeItem('cortex_theme');
       } catch {}
 
       setFontSizeState((currSize) => {
