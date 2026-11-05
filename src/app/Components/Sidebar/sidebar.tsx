@@ -142,7 +142,12 @@ export default function Sidebar() {
 
         <button
           type="button"
-          onClick={logout}
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+              closeMobile();
+            }
+            logout('/');
+          }}
           className={styles.logout}
           title="Encerrar sessão"
           aria-label="Encerrar sessão"

@@ -8,8 +8,9 @@ import { authService } from '@/services/authService';
 interface AuthContextType {
   usuario: ConsultaUsuarioDTO | null;
   loading: boolean;
+  isLoggingOut: boolean;
   login: (dto: DadosLoginDTO) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: (redirectTo?: string) => Promise<void>;
   recarregarPerfil: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = useState<ConsultaUsuarioDTO | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
   const recarregarPerfil = useCallback(async () => {
@@ -56,19 +58,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/minhas-tarefas');
   };
 
-  const logout = async () => {
+  const logout = async (redirectTo: string = '/') => {
+    setIsLoggingOut(true);
     try {
       await authService.logout();
     } catch {
       // Ignora falha de rede no logout e limpa o estado local
     } finally {
       setUsuario(null);
-      router.push('/login');
+      router.push(redirectTo);
+      setTimeout(() => {
+        setIsLoggingOut(false);
+      }, 1000);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, loading, login, logout, recarregarPerfil }}>
+    <AuthContext.Provider value={{ usuario, loading, isLoggingOut, login, logout, recarregarPerfil }}>
       {children}
     </AuthContext.Provider>
   );

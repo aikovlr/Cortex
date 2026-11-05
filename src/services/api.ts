@@ -63,7 +63,14 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     // Sessão expirada ou não autenticada: redireciona apenas se não estiver nas telas públicas
     if (response.status === 401 && typeof window !== 'undefined') {
       const pathname = window.location.pathname;
-      if (pathname !== '/login' && pathname !== '/registro') {
+      const isPublicPath =
+        pathname === '/' ||
+        pathname === '/login' ||
+        pathname === '/registro' ||
+        pathname.startsWith('/login') ||
+        pathname.startsWith('/registro');
+
+      if (!isPublicPath) {
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = '/login';
       }
