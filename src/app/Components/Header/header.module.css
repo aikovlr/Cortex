@@ -878,9 +878,172 @@
   background-color: rgba(239, 68, 68, 0.1);
 }
 
+.breadcrumbBackdropMobile {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .header {
-    padding: 14px 16px;
+    padding: 12px 14px;
+    min-height: 64px;
+  }
+
+  .leftSection {
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .toggleButton {
+    padding: 4px;
+    flex-shrink: 0;
+  }
+
+  .titulo {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .breadcrumbNav {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    gap: 2px;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    scrollbar-width: none;
+  }
+
+  .breadcrumb::-webkit-scrollbar {
+    display: none;
+  }
+
+  .breadcrumbWorkspace,
+  .separatorAfterWorkspace,
+  .breadcrumbItemHiddenMobile,
+  .separatorFirstMobile {
+    display: none !important;
+  }
+
+  .breadcrumbItem {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+
+  .breadcrumbItemSingle {
+    max-width: 100%;
+  }
+
+  .breadcrumbItemTwoItems {
+    max-width: calc(50% - 4px);
+  }
+
+  .breadcrumbSeparator {
+    flex-shrink: 0;
+    margin: 0 2px;
+    font-size: 10px;
+  }
+
+  .breadcrumbSegment {
+    background-color: rgba(123, 79, 201, 0.08);
+    border: 1px solid rgba(123, 79, 201, 0.18);
+    border-radius: 6px;
+    padding: 1px 4px;
+    min-height: 24px;
+    max-height: 28px;
+    min-width: 0;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .breadcrumbLink {
+    color: var(--cortex-purple);
+    font-weight: 700;
+    padding: 0 2px;
+    display: block !important;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    line-height: 1.4;
+  }
+
+  .breadcrumbChevronBtn {
+    flex-shrink: 0;
+    padding: 1px 2px;
+    color: var(--cortex-purple);
+  }
+
+  .breadcrumbCurrentText,
+  .breadcrumbStaticText {
+    padding: 0 2px;
+    display: block !important;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    line-height: 1.4;
+  }
+
+  .pageTitle {
+    font-size: 17px;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    margin-top: 2px;
+  }
+
+  .breadcrumbBackdropMobile {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: transparent;
+    z-index: 999;
+  }
+
+  .breadcrumbDropdown {
+    position: fixed;
+    top: 66px;
+    left: 14px;
+    right: 14px;
+    width: auto;
+    min-width: 0;
+    max-width: calc(100vw - 28px);
+    z-index: 1000;
+  }
+
+  .rightSection {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .iconButton {
+    width: 36px;
+    height: 36px;
   }
 }
 

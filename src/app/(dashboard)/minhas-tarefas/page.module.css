@@ -364,3 +364,199 @@
 .createFirstBtn:hover {
   background-color: var(--cortex-purple-hover);
 }
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchBarFlex {
+  flex: 1;
+  min-width: 0;
+}
+
+.addButtonDesktop {
+  display: flex;
+}
+
+.addButtonMobile {
+  display: none;
+}
+
+.mobileCardsList {
+  display: none;
+}
+
+.mobileCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.mobileCard:hover,
+.mobileCard:active {
+  border-color: var(--cortex-purple);
+  background-color: var(--bg-surface-hover);
+  transform: translateY(-1px);
+}
+
+.mobileCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobileCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.mobileCardDesc {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mobileCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 2px;
+}
+
+.mobileCardBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mobileDueDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px 14px;
+    gap: 16px;
+  }
+
+  .tabsHeader {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
+  .tabBtn {
+    padding: 8px 12px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .searchFilters {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 100%;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .searchRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .searchBarFlex {
+    flex: 1;
+    min-width: 0;
+    max-width: 100% !important;
+  }
+
+  .filtersRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .filterSelect {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    font-size: 12.5px;
+    padding: 0 10px;
+  }
+
+  .addButtonDesktop {
+    display: none !important;
+  }
+
+  .addButtonMobile {
+    display: flex !important;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+  }
+
+  .tableResponsive {
+    display: none;
+  }
+
+  .tableCard {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .mobileCardsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+  }
+}

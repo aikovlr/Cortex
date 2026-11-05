@@ -18,6 +18,10 @@
   align-items: center;
   gap: 8px;
   padding: 6px 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.2s ease;
 }
 
@@ -516,3 +520,135 @@
   color: var(--cortex-gray-text);
   font-size: 14px;
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px 14px;
+    gap: 16px;
+  }
+
+  .tabsHeader {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
+  .tabsHeader::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabBtn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .detailsCard {
+    padding: 16px 14px;
+    border-radius: 14px;
+    gap: 16px;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding-bottom: 14px;
+  }
+
+  .titleArea {
+    width: 100%;
+  }
+
+  .taskTitle {
+    font-size: 19px;
+    word-break: break-word;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .btnPrimary,
+  .btnSecondary,
+  .btnDanger,
+  .btnCancelDelivery {
+    width: 100%;
+    justify-content: center;
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .descriptionBox {
+    padding: 12px 14px;
+    font-size: 13px;
+    word-break: break-word;
+  }
+
+  .responseCard {
+    padding: 16px 14px;
+    border-radius: 14px;
+    gap: 14px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .responseHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding-bottom: 12px;
+  }
+
+  .responseTitleArea {
+    width: 100%;
+  }
+
+  .responseTitle {
+    font-size: 16px;
+  }
+
+  .responseHeader > div:last-child {
+    width: 100%;
+  }
+
+  .responseHeader .btnSecondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .itemCard {
+    padding: 14px 12px;
+  }
+
+  .itemHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .itemDescription {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

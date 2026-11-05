@@ -214,3 +214,120 @@
   margin-top: 4px;
   max-width: 320px;
 }
+
+.searchBarFlex {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileCardsList {
+  display: none;
+}
+
+.mobileCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.mobileCard:hover,
+.mobileCard:active {
+  border-color: var(--cortex-purple);
+  background-color: var(--bg-surface-hover);
+  transform: translateY(-1px);
+}
+
+.mobileCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobileCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.mobileCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 2px;
+}
+
+.mobileCardBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mobileDatesGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mobileDueDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.mobileCreatedDate {
+  font-size: 11.5px;
+  color: var(--cortex-gray-text);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px 14px;
+    gap: 16px;
+  }
+
+  .toolbar {
+    width: 100%;
+  }
+
+  .searchBarFlex {
+    width: 100%;
+    max-width: 100% !important;
+  }
+
+  .tableResponsive {
+    display: none;
+  }
+
+  .tableCard {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .mobileCardsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+  }
+}

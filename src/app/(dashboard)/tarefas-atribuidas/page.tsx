@@ -12,6 +12,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   ArrowUpDownIcon,
+  CalendarIcon,
 } from '@/components/common/Icons/Icons';
 import { ConsultaTarefaDTO } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
@@ -153,6 +154,7 @@ export default function TarefasAtribuidasPage() {
             onChange={setTermoBusca}
             placeholder="Pesquisar tarefa criada..."
             maxWidth={480}
+            className={styles.searchBarFlex}
           />
         </div>
 
@@ -171,199 +173,255 @@ export default function TarefasAtribuidasPage() {
               description="Você ainda não criou nem atribuiu nenhuma tarefa a membros ou equipes."
             />
           ) : (
-            <div className={styles.tableResponsive}>
-              <table className={styles.table}>
-                <thead>
-                <tr>
-                  <th
-                    className={`${styles.th} ${styles.thSortable}`}
-                    onClick={() => alternarOrdenacao('titulo')}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        alternarOrdenacao('titulo');
+            <>
+              <div className={styles.tableResponsive}>
+                <table className={styles.table}>
+                  <thead>
+                  <tr>
+                    <th
+                      className={`${styles.th} ${styles.thSortable}`}
+                      onClick={() => alternarOrdenacao('titulo')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          alternarOrdenacao('titulo');
+                        }
+                      }}
+                      role="columnheader"
+                      tabIndex={0}
+                      aria-sort={
+                        campoOrdenacao === 'titulo'
+                          ? direcaoOrdenacao === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
                       }
-                    }}
-                    role="columnheader"
-                    tabIndex={0}
-                    aria-sort={
-                      campoOrdenacao === 'titulo'
-                        ? direcaoOrdenacao === 'asc'
-                          ? 'ascending'
-                          : 'descending'
-                        : 'none'
-                    }
-                    title="Clique para alternar a ordem por Tarefa (crescente/decrescente)"
-                  >
-                    <div className={styles.thContent}>
-                      <span>Tarefa</span>
-                      <span className={styles.sortIconContainer}>
-                        {renderIconeOrdenacao('titulo')}
-                      </span>
-                    </div>
-                  </th>
-
-                  <th
-                    className={`${styles.th} ${styles.thSortable}`}
-                    onClick={() => alternarOrdenacao('vencimento')}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        alternarOrdenacao('vencimento');
-                      }
-                    }}
-                    role="columnheader"
-                    tabIndex={0}
-                    aria-sort={
-                      campoOrdenacao === 'vencimento'
-                        ? direcaoOrdenacao === 'asc'
-                          ? 'ascending'
-                          : 'descending'
-                        : 'none'
-                    }
-                    title="Clique para alternar a ordem por Data de Vencimento (crescente/decrescente)"
-                  >
-                    <div className={styles.thContent}>
-                      <span>Vencimento</span>
-                      <span className={styles.sortIconContainer}>
-                        {renderIconeOrdenacao('vencimento')}
-                      </span>
-                    </div>
-                  </th>
-
-                  <th
-                    className={`${styles.th} ${styles.thSortable}`}
-                    onClick={() => alternarOrdenacao('status')}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        alternarOrdenacao('status');
-                      }
-                    }}
-                    role="columnheader"
-                    tabIndex={0}
-                    aria-sort={
-                      campoOrdenacao === 'status'
-                        ? direcaoOrdenacao === 'asc'
-                          ? 'ascending'
-                          : 'descending'
-                        : 'none'
-                    }
-                    title="Clique para alternar a ordem por Status (crescente/decrescente)"
-                  >
-                    <div className={styles.thContent}>
-                      <span>Status</span>
-                      <span className={styles.sortIconContainer}>
-                        {renderIconeOrdenacao('status')}
-                      </span>
-                    </div>
-                  </th>
-
-                  <th
-                    className={`${styles.th} ${styles.thSortable}`}
-                    onClick={() => alternarOrdenacao('prioridade')}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        alternarOrdenacao('prioridade');
-                      }
-                    }}
-                    role="columnheader"
-                    tabIndex={0}
-                    aria-sort={
-                      campoOrdenacao === 'prioridade'
-                        ? direcaoOrdenacao === 'asc'
-                          ? 'ascending'
-                          : 'descending'
-                        : 'none'
-                    }
-                    title="Clique para alternar a ordem por Prioridade (crescente/decrescente)"
-                  >
-                    <div className={styles.thContent}>
-                      <span>Prioridade</span>
-                      <span className={styles.sortIconContainer}>
-                        {renderIconeOrdenacao('prioridade')}
-                      </span>
-                    </div>
-                  </th>
-
-                  <th
-                    className={`${styles.th} ${styles.thSortable}`}
-                    onClick={() => alternarOrdenacao('criacao')}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        alternarOrdenacao('criacao');
-                      }
-                    }}
-                    role="columnheader"
-                    tabIndex={0}
-                    aria-sort={
-                      campoOrdenacao === 'criacao'
-                        ? direcaoOrdenacao === 'asc'
-                          ? 'ascending'
-                          : 'descending'
-                        : 'none'
-                    }
-                    title="Clique para alternar a ordem por Data de Criação (crescente/decrescente)"
-                  >
-                    <div className={styles.thContent}>
-                      <span>Data de Criação</span>
-                      <span className={styles.sortIconContainer}>
-                        {renderIconeOrdenacao('criacao')}
-                      </span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {tarefasExibidas.map((tarefa) => {
-                  const vencida = isVencida(tarefa.dataVencimento, tarefa.status);
-
-                  return (
-                    <tr
-                      key={tarefa.id}
-                      className={styles.tr}
-                      onClick={() => router.push(`/tarefas-atribuidas/${tarefa.id}`)}
-                      style={{ cursor: 'pointer' }}
+                      title="Clique para alternar a ordem por Tarefa (crescente/decrescente)"
                     >
-                      <td className={styles.td}>
-                        <div className={styles.taskTitleCol}>
-                          <span className={styles.taskTitle}>{tarefa.titulo}</span>
-                        </div>
-                      </td>
+                      <div className={styles.thContent}>
+                        <span>Tarefa</span>
+                        <span className={styles.sortIconContainer}>
+                          {renderIconeOrdenacao('titulo')}
+                        </span>
+                      </div>
+                    </th>
 
-                      <td className={styles.td}>
+                    <th
+                      className={`${styles.th} ${styles.thSortable}`}
+                      onClick={() => alternarOrdenacao('vencimento')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          alternarOrdenacao('vencimento');
+                        }
+                      }}
+                      role="columnheader"
+                      tabIndex={0}
+                      aria-sort={
+                        campoOrdenacao === 'vencimento'
+                          ? direcaoOrdenacao === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
+                      title="Clique para alternar a ordem por Data de Vencimento (crescente/decrescente)"
+                    >
+                      <div className={styles.thContent}>
+                        <span>Vencimento</span>
+                        <span className={styles.sortIconContainer}>
+                          {renderIconeOrdenacao('vencimento')}
+                        </span>
+                      </div>
+                    </th>
+
+                    <th
+                      className={`${styles.th} ${styles.thSortable}`}
+                      onClick={() => alternarOrdenacao('status')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          alternarOrdenacao('status');
+                        }
+                      }}
+                      role="columnheader"
+                      tabIndex={0}
+                      aria-sort={
+                        campoOrdenacao === 'status'
+                          ? direcaoOrdenacao === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
+                      title="Clique para alternar a ordem por Status (crescente/decrescente)"
+                    >
+                      <div className={styles.thContent}>
+                        <span>Status</span>
+                        <span className={styles.sortIconContainer}>
+                          {renderIconeOrdenacao('status')}
+                        </span>
+                      </div>
+                    </th>
+
+                    <th
+                      className={`${styles.th} ${styles.thSortable}`}
+                      onClick={() => alternarOrdenacao('prioridade')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          alternarOrdenacao('prioridade');
+                        }
+                      }}
+                      role="columnheader"
+                      tabIndex={0}
+                      aria-sort={
+                        campoOrdenacao === 'prioridade'
+                          ? direcaoOrdenacao === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
+                      title="Clique para alternar a ordem por Prioridade (crescente/decrescente)"
+                    >
+                      <div className={styles.thContent}>
+                        <span>Prioridade</span>
+                        <span className={styles.sortIconContainer}>
+                          {renderIconeOrdenacao('prioridade')}
+                        </span>
+                      </div>
+                    </th>
+
+                    <th
+                      className={`${styles.th} ${styles.thSortable}`}
+                      onClick={() => alternarOrdenacao('criacao')}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          alternarOrdenacao('criacao');
+                        }
+                      }}
+                      role="columnheader"
+                      tabIndex={0}
+                      aria-sort={
+                        campoOrdenacao === 'criacao'
+                          ? direcaoOrdenacao === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
+                      title="Clique para alternar a ordem por Data de Criação (crescente/decrescente)"
+                    >
+                      <div className={styles.thContent}>
+                        <span>Data de Criação</span>
+                        <span className={styles.sortIconContainer}>
+                          {renderIconeOrdenacao('criacao')}
+                        </span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tarefasExibidas.map((tarefa) => {
+                    const vencida = isVencida(tarefa.dataVencimento, tarefa.status);
+
+                    return (
+                      <tr
+                        key={tarefa.id}
+                        className={styles.tr}
+                        onClick={() => router.push(`/tarefas-atribuidas/${tarefa.id}`)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <td className={styles.td}>
+                          <div className={styles.taskTitleCol}>
+                            <span className={styles.taskTitle}>{tarefa.titulo}</span>
+                          </div>
+                        </td>
+
+                        <td className={styles.td}>
+                          <span
+                            className={`${styles.dueDateCol} ${vencida ? styles.dueDateOverdue : ''}`}
+                            suppressHydrationWarning
+                          >
+                            {formatarData(tarefa.dataVencimento)}
+                          </span>
+                        </td>
+
+                        <td className={styles.td}>
+                          <Badge
+                            type="status"
+                            value={vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status}
+                          />
+                        </td>
+
+                        <td className={styles.td}>
+                          <Badge type="prioridade" value={tarefa.prioridade} />
+                        </td>
+
+                        <td className={styles.td}>
+                          <span className={styles.createdDateCol} suppressHydrationWarning>
+                            {tarefa.dataCriacao ? formatarData(tarefa.dataCriacao) : '-'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className={styles.mobileCardsList}>
+              {tarefasExibidas.map((tarefa) => {
+                const vencida = isVencida(tarefa.dataVencimento, tarefa.status);
+                const statusReal = vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status;
+
+                return (
+                  <div
+                    key={tarefa.id}
+                    className={styles.mobileCard}
+                    onClick={() => router.push(`/tarefas-atribuidas/${tarefa.id}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(`/tarefas-atribuidas/${tarefa.id}`);
+                      }
+                    }}
+                  >
+                    <div className={styles.mobileCardHeader}>
+                      <span className={styles.mobileCardTitle}>{tarefa.titulo}</span>
+                    </div>
+
+                    <div className={styles.mobileCardFooter}>
+                      <div className={styles.mobileCardBadges}>
+                        <Badge type="status" value={statusReal} />
+                        <Badge type="prioridade" value={tarefa.prioridade} />
+                      </div>
+
+                      <div className={styles.mobileDatesGroup}>
                         <span
-                          className={`${styles.dueDateCol} ${vencida ? styles.dueDateOverdue : ''}`}
+                          className={`${styles.mobileDueDate} ${vencida ? styles.dueDateOverdue : ''}`}
                           suppressHydrationWarning
+                          title="Data de vencimento"
                         >
+                          <CalendarIcon size={12} />
                           {formatarData(tarefa.dataVencimento)}
                         </span>
-                      </td>
-
-                      <td className={styles.td}>
-                        <Badge
-                          type="status"
-                          value={vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status}
-                        />
-                      </td>
-
-                      <td className={styles.td}>
-                        <Badge type="prioridade" value={tarefa.prioridade} />
-                      </td>
-
-                      <td className={styles.td}>
-                        <span className={styles.createdDateCol} suppressHydrationWarning>
-                          {tarefa.dataCriacao ? formatarData(tarefa.dataCriacao) : '-'}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        {tarefa.dataCriacao && (
+                          <span
+                            className={styles.mobileCreatedDate}
+                            suppressHydrationWarning
+                            title="Data de criação"
+                          >
+                            Criada: {formatarData(tarefa.dataCriacao)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
           )}
         </div>
       </main>

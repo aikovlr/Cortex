@@ -19,6 +19,10 @@
   align-items: center;
   gap: 8px;
   padding: 6px 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.2s ease;
 }
 
@@ -928,3 +932,157 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px 14px;
+    gap: 16px;
+  }
+
+  .tabsHeader {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
+  .tabsHeader::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabBtn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .detailsCard,
+  .responsaveisSection {
+    padding: 16px 14px;
+    border-radius: 14px;
+    gap: 16px;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding-bottom: 14px;
+  }
+
+  .titleArea {
+    width: 100%;
+  }
+
+  .taskTitle {
+    font-size: 19px;
+    word-break: break-word;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .btnSave,
+  .btnComplete,
+  .btnDelete {
+    width: 100%;
+    justify-content: center;
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .addResponsavelBox {
+    padding: 14px 12px;
+    border-radius: 10px;
+  }
+
+  .addResponsavelRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .addResponsavelRow select,
+  .addResponsavelRow button {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center;
+  }
+
+  .addResponsavelRow > div[style*="width: 1px"] {
+    display: none;
+  }
+
+  .responsavelCard {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 12px;
+  }
+
+  .responsavelInfo {
+    width: 100%;
+  }
+
+  .removeRespBtn {
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+  }
+
+  .collapsibleHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 12px;
+  }
+
+  .collapsibleMeta {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .gradeContainer {
+    padding: 14px 12px;
+  }
+
+  .gradeFormRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .gradeInput {
+    width: 100%;
+  }
+
+  .gradeSubmitBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .itemCard {
+    padding: 14px 12px;
+  }
+
+  .itemHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+

@@ -582,6 +582,7 @@ export default function MetasPage() {
               onChange={setSearchTerm}
               placeholder="Buscar por meta ou tarefa vinculada..."
               maxWidth={360}
+              className={styles.searchBarFlex}
             />
 
             <div className={styles.sortContainer}>
@@ -764,7 +765,7 @@ export default function MetasPage() {
                       )}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div className={styles.groupRightActionsWrapper}>
                       <div className={styles.groupProgressWrapper}>
                         <div className={styles.progressBarTrack}>
                           <div

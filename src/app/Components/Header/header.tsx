@@ -375,10 +375,31 @@ export default function Header({
                 const isWorkspace = item.label.toLowerCase() === 'workspace';
                 const isClickable = !isWorkspace && !isLast && !!item.href;
 
+                // Em telas móveis, exibe no máximo 2 caminhos (o penúltimo e o último) para evitar overflow
+                const isHiddenMobile = breadcrumbItems.length > 2 && index < breadcrumbItems.length - 2;
+                const isFirstVisibleMobile =
+                  breadcrumbItems.length > 2
+                    ? index === breadcrumbItems.length - 2
+                    : index === 0 || (index === 1 && breadcrumbItems[0]?.label.toLowerCase() === 'workspace');
+
                 return (
-                  <li key={`${item.label}-${index}`} className={styles.breadcrumbItem}>
+                  <li
+                    key={`${item.label}-${index}`}
+                    className={`${styles.breadcrumbItem} ${isWorkspace ? styles.breadcrumbWorkspace : ''} ${
+                      isHiddenMobile ? styles.breadcrumbItemHiddenMobile : ''
+                    } ${breadcrumbItems.length > 2 ? styles.breadcrumbItemTwoItems : styles.breadcrumbItemSingle}`}
+                  >
                     {index > 0 && (
-                      <span className={styles.breadcrumbSeparator} aria-hidden="true">
+                      <span
+                        className={`${styles.breadcrumbSeparator} ${
+                          index === 1 && breadcrumbItems[0]?.label.toLowerCase() === 'workspace'
+                            ? styles.separatorAfterWorkspace
+                            : ''
+                        } ${
+                          isFirstVisibleMobile ? styles.separatorFirstMobile : ''
+                        }`}
+                        aria-hidden="true"
+                      >
                         /
                       </span>
                     )}
@@ -389,6 +410,7 @@ export default function Header({
                           className={styles.breadcrumbLink}
                           {...(isLast ? { 'aria-current': 'page' as const } : {})}
                           onClick={() => setOpenBreadcrumbIndex(null)}
+                          title={item.label}
                         >
                           {item.label}
                         </Link>
@@ -396,6 +418,7 @@ export default function Header({
                         <span
                           className={isLast ? styles.breadcrumbCurrentText : styles.breadcrumbStaticText}
                           {...(isLast ? { 'aria-current': 'page' as const } : {})}
+                          title={item.label}
                         >
                           {item.label}
                         </span>
@@ -423,62 +446,69 @@ export default function Header({
 
                     {/* Menu Dropdown Suspenso no estilo Windows Explorer / VS Code */}
                     {hasOptions && isDropdownOpen && (
-                      <div
-                        className={styles.breadcrumbDropdown}
-                        role="menu"
-                        aria-label={`Menu de navegação para ${item.label}`}
-                      >
-                        <div className={styles.dropdownHeaderMini}>
-                          <span>{item.label}</span>
-                        </div>
+                      <>
                         <div
-                          className={`${styles.dropdownList} ${
-                            (item.options?.length ?? 0) > 6
-                              ? styles.dropdownListScrollable
-                              : ''
-                          }`}
+                          className={styles.breadcrumbBackdropMobile}
+                          onClick={() => setOpenBreadcrumbIndex(null)}
+                          aria-hidden="true"
+                        />
+                        <div
+                          className={styles.breadcrumbDropdown}
+                          role="menu"
+                          aria-label={`Menu de navegação para ${item.label}`}
                         >
-                          {item.options?.map((opt) => {
-                            const isCurrent =
-                              pathname === opt.href ||
-                              (opt.href !== '/minhas-tarefas' &&
-                                pathname?.startsWith(opt.href));
+                          <div className={styles.dropdownHeaderMini}>
+                            <span>{item.label}</span>
+                          </div>
+                          <div
+                            className={`${styles.dropdownList} ${
+                              (item.options?.length ?? 0) > 6
+                                ? styles.dropdownListScrollable
+                                : ''
+                            }`}
+                          >
+                            {item.options?.map((opt) => {
+                              const isCurrent =
+                                pathname === opt.href ||
+                                (opt.href !== '/minhas-tarefas' &&
+                                  pathname?.startsWith(opt.href));
 
-                            return (
-                              <Link
-                                key={opt.href}
-                                href={opt.href}
-                                className={`${styles.dropdownItem} ${
-                                  isCurrent ? styles.dropdownItemActive : ''
-                                }`}
-                                role="menuitem"
-                                onClick={() => setOpenBreadcrumbIndex(null)}
-                              >
-                                {opt.icon && (
-                                  <div className={styles.dropdownItemIcon}>
-                                    <Image src={opt.icon} alt="" width={16} height={16} />
+                              return (
+                                <Link
+                                  key={opt.href}
+                                  href={opt.href}
+                                  className={`${styles.dropdownItem} ${
+                                    isCurrent ? styles.dropdownItemActive : ''
+                                  }`}
+                                  role="menuitem"
+                                  onClick={() => setOpenBreadcrumbIndex(null)}
+                                >
+                                  {opt.icon && (
+                                    <div className={styles.dropdownItemIcon}>
+                                      <Image src={opt.icon} alt="" width={16} height={16} />
+                                    </div>
+                                  )}
+                                  <div className={styles.dropdownItemContent}>
+                                    <span className={styles.dropdownItemLabel}>
+                                      {opt.label}
+                                    </span>
+                                    {opt.descricao && (
+                                      <span className={styles.dropdownItemDesc}>
+                                        {opt.descricao}
+                                      </span>
+                                    )}
                                   </div>
-                                )}
-                                <div className={styles.dropdownItemContent}>
-                                  <span className={styles.dropdownItemLabel}>
-                                    {opt.label}
-                                  </span>
-                                  {opt.descricao && (
-                                    <span className={styles.dropdownItemDesc}>
-                                      {opt.descricao}
+                                  {isCurrent && (
+                                    <span className={styles.dropdownItemBadge}>
+                                      Atual
                                     </span>
                                   )}
-                                </div>
-                                {isCurrent && (
-                                  <span className={styles.dropdownItemBadge}>
-                                    Atual
-                                  </span>
-                                )}
-                              </Link>
-                            );
-                          })}
+                                </Link>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
+                      </>
                     )}
                   </li>
                 );

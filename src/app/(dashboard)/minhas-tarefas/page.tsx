@@ -13,6 +13,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   ArrowUpDownIcon,
+  CalendarIcon,
 } from '@/components/common/Icons/Icons';
 import { TaskCreateModal } from '@/components/tasks/TaskCreateModal/TaskCreateModal';
 import { ConsultaTarefaDTO, Prioridade } from '@/types/api';
@@ -353,41 +354,56 @@ export default function MinhasTarefasPage() {
         {/* Barra de Ferramentas: Busca + Filtros + Botão Adicionar */}
         <div className={styles.toolbar}>
           <div className={styles.searchFilters}>
-            <SearchBar
-              value={termoBusca}
-              onChange={setTermoBusca}
-              placeholder="Pesquisar tarefa..."
-              maxWidth={360}
-            />
+            <div className={styles.searchRow}>
+              <SearchBar
+                value={termoBusca}
+                onChange={setTermoBusca}
+                placeholder="Pesquisar tarefa..."
+                maxWidth={360}
+                className={styles.searchBarFlex}
+              />
 
-            {abaAtiva === 'pendentes' && (
+              <button
+                type="button"
+                className={`${styles.addButton} ${styles.addButtonMobile}`}
+                onClick={() => setIsCreateOpen(true)}
+                title="Criar nova tarefa"
+                aria-label="Criar nova tarefa"
+              >
+                <PlusIcon size={20} color="#ffffff" />
+              </button>
+            </div>
+
+            <div className={styles.filtersRow}>
+              {abaAtiva === 'pendentes' && (
+                <select
+                  value={filtroStatus}
+                  onChange={(e) => setFiltroStatus(e.target.value)}
+                  className={styles.filterSelect}
+                >
+                  <option value="todos">Todos os status</option>
+                  <option value="Pendente">Apenas Pendente</option>
+                  <option value="Atrasada">Apenas Atrasada</option>
+                </select>
+              )}
+
               <select
-                value={filtroStatus}
-                onChange={(e) => setFiltroStatus(e.target.value)}
+                value={filtroPrioridade}
+                onChange={(e) => setFiltroPrioridade(e.target.value)}
                 className={styles.filterSelect}
               >
-                <option value="todos">Todos os status</option>
-                <option value="Pendente">Apenas Pendente</option>
-                <option value="Atrasada">Apenas Atrasada</option>
+                <option value="todas">Todas as prioridades</option>
+                <option value="Baixa">Baixa</option>
+                <option value="Media">Média</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">Urgente</option>
               </select>
-            )}
-
-            <select
-              value={filtroPrioridade}
-              onChange={(e) => setFiltroPrioridade(e.target.value)}
-              className={styles.filterSelect}
-            >
-              <option value="todas">Todas as prioridades</option>
-              <option value="Baixa">Baixa</option>
-              <option value="Media">Média</option>
-              <option value="Alta">Alta</option>
-              <option value="Urgente">Urgente</option>
-            </select>
+            </div>
           </div>
 
           <button
             type="button"
-            className={styles.addButton}
+            className={`${styles.addButton} ${styles.addButtonDesktop}`}
             onClick={() => setIsCreateOpen(true)}
             title="Criar nova tarefa"
             aria-label="Criar nova tarefa"
@@ -430,7 +446,8 @@ export default function MinhasTarefasPage() {
               }
             />
           ) : (
-            <div className={styles.tableResponsive}>
+            <>
+              <div className={styles.tableResponsive}>
               <table ref={tableRef} className={styles.table}>
                 <colgroup>
                   <col style={{ width: `${columnPercentages.titulo}%` }} />
@@ -635,6 +652,51 @@ export default function MinhasTarefasPage() {
                 </tbody>
               </table>
             </div>
+
+            <div className={styles.mobileCardsList}>
+              {tarefasExibidas.map((tarefa) => {
+                const vencida = isVencida(tarefa.dataVencimento, tarefa.status);
+                const statusReal = vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status;
+                const desc = obterDescricaoLimpa(tarefa.descricao);
+
+                return (
+                  <div
+                    key={tarefa.id}
+                    className={styles.mobileCard}
+                    onClick={() => router.push(`/minhas-tarefas/${tarefa.id}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(`/minhas-tarefas/${tarefa.id}`);
+                      }
+                    }}
+                  >
+                    <div className={styles.mobileCardHeader}>
+                      <span className={styles.mobileCardTitle}>{tarefa.titulo}</span>
+                    </div>
+
+                    {desc && <p className={styles.mobileCardDesc}>{desc}</p>}
+
+                    <div className={styles.mobileCardFooter}>
+                      <div className={styles.mobileCardBadges}>
+                        <Badge type="status" value={statusReal} />
+                        <Badge type="prioridade" value={tarefa.prioridade} />
+                      </div>
+                      <span
+                        className={`${styles.mobileDueDate} ${vencida ? styles.dueDateOverdue : ''}`}
+                        suppressHydrationWarning
+                      >
+                        <CalendarIcon size={13} />
+                        {formatarData(tarefa.dataVencimento)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            </>
           )}
         </div>
       </main>

@@ -1302,17 +1302,16 @@ export default function RelatoriosPage() {
           </div>
 
           {/* Controles do modo equipe: Filtro de equipe e Botão de Exportar PDF */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div className={styles.topBarControls}>
             {view === 'team' && usuarioEhAdminOuDonoDaEquipeSelecionada && equipesOndeEhAdminOuDono.length > 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              <div className={styles.teamSelectWrapper}>
+                <span className={styles.teamSelectLabel}>
                   Filtrar por Equipe:
                 </span>
                 <select
                   value={equipeSelecionadaId}
                   onChange={(e) => handleTrocarEquipe(Number(e.target.value))}
                   className={styles.filterInput}
-                  style={{ minWidth: '180px' }}
                 >
                   {equipesOndeEhAdminOuDono.map((eq) => (
                     <option key={eq.id} value={eq.id}>

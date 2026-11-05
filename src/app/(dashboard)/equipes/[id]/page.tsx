@@ -17,7 +17,6 @@ import {
   ArrowUpDownIcon,
   TargetIcon,
   CalendarIcon,
-  UsersIcon,
 } from '@/components/common/Icons/Icons';
 import {
   ConsultaEquipeDTO,
@@ -329,7 +328,8 @@ export default function EquipeDetalhesPage({
               Carregando integrantes da equipe...
             </div>
           ) : (
-            <table className={styles.table}>
+            <>
+              <table className={styles.table}>
               <thead>
                 <tr>
                   <th
@@ -589,6 +589,143 @@ export default function EquipeDetalhesPage({
                 })}
               </tbody>
             </table>
+
+            <div className={styles.mobileCardsList}>
+              {membrosOrdenados.map((membro) => {
+                const nome = membro.usuario?.nome || 'Colaborador';
+                const email = membro.usuario?.email || '';
+                const telefone = membro.usuario?.telefone || '';
+                const isExpanded = expandedMemberIds.includes(membro.id);
+
+                return (
+                  <div key={membro.id} className={styles.memberMobileCard}>
+                    <div className={styles.memberCardTop}>
+                      <div className={styles.memberInfo}>
+                        {membro.usuario?.fotoPerfil?.urlCaminho ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={getAvatarUrl(membro.usuario.fotoPerfil.urlCaminho)}
+                            alt={nome}
+                            className={styles.avatar}
+                          />
+                        ) : (
+                          <div
+                            className={styles.avatar}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'var(--cortex-purple)',
+                            }}
+                          >
+                            <UserIcon size={16} />
+                          </div>
+                        )}
+                        <div className={styles.memberText}>
+                          <span className={styles.memberName}>{nome}</span>
+                          <span className={styles.memberEmail}>{email}</span>
+                        </div>
+                      </div>
+
+                      <div className={styles.memberCardTopRole}>
+                        {isOwner && membro.cargo !== 'Dono' ? (
+                          <select
+                            value={membro.cargo}
+                            className={styles.roleSelect}
+                            onChange={(e) =>
+                              handleAlterarCargo(membro.id, e.target.value as CargoEquipe)
+                            }
+                          >
+                            <option value="Admin">Admin</option>
+                            <option value="Membro">Membro</option>
+                          </select>
+                        ) : (
+                          <Badge type="cargo" value={membro.cargo} />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className={styles.memberCardMetaRow}>
+                      <span className={styles.memberMetaSince} suppressHydrationWarning>
+                        Desde {formatarData(membro.dataEntrada)}
+                      </span>
+
+                      <div className={styles.memberCardActions}>
+                        {isAdminOrOwner && (isOwner ? membro.cargo !== 'Dono' : membro.cargo === 'Membro') && (
+                          <button
+                            type="button"
+                            className={`${styles.actionBtn} ${styles.removeBtn}`}
+                            onClick={() => handleRemoverMembro(membro.id, nome)}
+                            title="Remover da equipe"
+                          >
+                            Remover
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          className={styles.memberCardToggleBtn}
+                          onClick={() => toggleMemberExpand(membro.id)}
+                          aria-expanded={isExpanded}
+                          aria-label={`${isExpanded ? 'Recolher' : 'Ver'} detalhes de ${nome}`}
+                        >
+                          <span>{isExpanded ? 'Menos detalhes' : 'Mais detalhes'}</span>
+                          <ChevronDownIcon
+                            size={14}
+                            className={`${styles.memberExpandIcon} ${
+                              isExpanded ? styles.memberExpandIconRotated : ''
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className={styles.memberMobileExpanded}>
+                        <div className={styles.memberDetailsGrid}>
+                          <div className={styles.detailItem}>
+                            <span className={styles.detailLabel}>Nome Completo</span>
+                            <span className={styles.detailValue}>{nome}</span>
+                          </div>
+
+                          <div className={styles.detailItem}>
+                            <span className={styles.detailLabel}>E-mail</span>
+                            <span className={styles.detailValue}>
+                              {email ? (
+                                <a href={`mailto:${email}`} className={styles.detailLink}>
+                                  {email}
+                                </a>
+                              ) : (
+                                <span className={styles.detailEmpty}>Não informado</span>
+                              )}
+                            </span>
+                          </div>
+
+                          <div className={styles.detailItem}>
+                            <span className={styles.detailLabel}>Telefone / Contato</span>
+                            <span className={styles.detailValue}>
+                              {telefone ? (
+                                <a href={`tel:${telefone}`} className={styles.detailLink}>
+                                  {telefone}
+                                </a>
+                              ) : (
+                                <span className={styles.detailEmpty}>Não cadastrado</span>
+                              )}
+                            </span>
+                          </div>
+
+                          <div className={styles.detailItem}>
+                            <span className={styles.detailLabel}>ID do Usuário</span>
+                            <span className={styles.detailValue}>#{membro.usuarioId}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
           )}
         </div>
 

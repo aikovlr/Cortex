@@ -72,6 +72,7 @@ export default function EquipesPage() {
             onChange={setTermoBusca}
             placeholder="Pesquisar equipe..."
             maxWidth={480}
+            className={styles.searchBarFlex}
           />
 
           <button
