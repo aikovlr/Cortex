@@ -19,6 +19,7 @@ interface TaskCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialEquipeId?: number;
 }
 
 const getNowLocalDateTime = () => {
@@ -51,6 +52,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  initialEquipeId,
 }) => {
   const { showToast } = useToast();
   const { usuario } = useAuth();
@@ -83,8 +85,12 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
     if (isOpen) {
       usuarioService.listarUsuarios().then(setUsuarios).catch(() => {});
       equipeService.listarMinhasEquipes().then(setEquipes).catch(() => {});
+      if (initialEquipeId) {
+        setTipoAtribuicao('equipe');
+        setEquipeId(initialEquipeId);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialEquipeId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -170,7 +176,13 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       setPrioridade('Media');
       setAnexos([]);
       setResponsavelId('');
-      setEquipeId('');
+      if (initialEquipeId) {
+        setTipoAtribuicao('equipe');
+        setEquipeId(initialEquipeId);
+      } else {
+        setTipoAtribuicao('individual');
+        setEquipeId('');
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -184,6 +196,10 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
 
   const handleModalClose = () => {
     setDataErro('');
+    if (initialEquipeId) {
+      setTipoAtribuicao('equipe');
+      setEquipeId(initialEquipeId);
+    }
     onClose();
   };
 

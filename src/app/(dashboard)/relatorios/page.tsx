@@ -506,7 +506,7 @@ export default function RelatoriosPage() {
     [getTarefasDaMeta]
   );
 
-  // Determina o status da meta: Concluida, Atrasada ou Pendente
+  // Determina o status da meta: Concluida, Atrasada ou Pendente (apenas data de fechamento da meta define atraso)
   const getMetaStatus = useCallback(
     (meta: ConsultaMetaDTO): 'Atrasada' | 'Pendente' | 'Concluida' => {
       if (isMetaConcluida(meta)) {
@@ -531,20 +531,9 @@ export default function RelatoriosPage() {
         }
       }
 
-      const tarefas = getTarefasDaMeta(meta);
-      const temTarefaAtrasada = tarefas.some(
-        (t) =>
-          t.status === 'Atrasada' ||
-          (t.status !== 'Concluida' && t.dataVencimento && new Date(t.dataVencimento) < agora)
-      );
-
-      if (temTarefaAtrasada) {
-        return 'Atrasada';
-      }
-
       return 'Pendente';
     },
-    [getTarefasDaMeta, isMetaConcluida]
+    [isMetaConcluida]
   );
 
   // Metas filtradas de acordo com os filtros aplicados

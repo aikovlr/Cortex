@@ -592,134 +592,117 @@ export default function EquipeDetalhesPage({
           )}
         </div>
 
-        {/* Seção de Metas da Equipe */}
-        <section className={styles.goalsSection}>
-          <div className={styles.sectionHeadingRow}>
-            <div>
-              <h3 className={styles.sectionBlockTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <TargetIcon size={20} color="var(--cortex-purple)" />
-                Metas da Equipe ({metas.length})
-              </h3>
-              <p className={styles.sectionBlockDesc}>
-                Metas atribuídas a esta equipe e seus integrantes para acompanhamento do progresso.
-              </p>
+        {/* Container: Metas da Equipe */}
+        <section className={styles.panelCard}>
+            <div className={styles.sectionHeadingRow}>
+              <div>
+                <h3 className={styles.sectionBlockTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <TargetIcon size={20} color="var(--cortex-purple)" />
+                  Metas da Equipe ({metas.length})
+                </h3>
+                <p className={styles.sectionBlockDesc}>
+                  Metas atribuídas a esta equipe e seus integrantes para acompanhamento do progresso.
+                </p>
+              </div>
             </div>
-            {isAdminOrOwner && metas.length > 0 && (
-              <button
-                type="button"
-                className={styles.assignGoalBtnSecondary}
-                onClick={() => setIsAssignGoalOpen(true)}
-              >
-                <PlusIcon size={14} /> Atribuir nova meta
-              </button>
-            )}
-          </div>
 
-          {loadingMetas ? (
-            <div className={styles.loadingBox}>Carregando metas da equipe...</div>
-          ) : metas.length === 0 ? (
-            <div className={styles.emptyGoalsCard}>
-              <TargetIcon size={32} color="var(--cortex-gray-text)" />
-              <p className={styles.emptyGoalsTitle}>Nenhuma meta atribuída à equipe ainda</p>
-              <p className={styles.emptyGoalsText}>
-                {isAdminOrOwner
-                  ? 'Como gestor da equipe, você pode criar uma nova meta ou vincular uma meta existente para que todos os membros acompanhem o progresso.'
-                  : 'Nenhuma meta foi designada para esta equipe até o momento.'}
-              </p>
-              {isAdminOrOwner && (
-                <button
-                  type="button"
-                  className={styles.assignGoalBtn}
-                  onClick={() => setIsAssignGoalOpen(true)}
-                  style={{ marginTop: '8px' }}
-                >
-                  <PlusIcon size={16} /> Atribuir meta à equipe
-                </button>
+            <div className={styles.innerContentBox}>
+              {loadingMetas ? (
+                <div className={styles.loadingBox}>Carregando metas da equipe...</div>
+              ) : metas.length === 0 ? (
+                <div className={styles.emptyContainerCard}>
+                  <TargetIcon size={32} color="var(--cortex-gray-text)" />
+                  <p className={styles.emptyCardTitle}>Nenhuma meta atribuída à equipe ainda</p>
+                  <p className={styles.emptyCardText}>
+                    {isAdminOrOwner
+                      ? 'Use o botão "Atribuir meta" no topo da página para criar e designar metas a esta equipe.'
+                      : 'Nenhuma meta foi designada para esta equipe até o momento.'}
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.goalsList}>
+                  {metas.map((meta) => {
+                    const totalTarefas =
+                      meta.tarefas && meta.tarefas.length > 0
+                        ? meta.tarefas.length
+                        : meta.tarefa
+                        ? 1
+                        : 0;
+                    const tarefasConcluidas =
+                      meta.tarefas && meta.tarefas.length > 0
+                        ? meta.tarefas.filter((t) => t.status === 'Concluida').length
+                        : meta.tarefa?.status === 'Concluida'
+                        ? 1
+                        : 0;
+                    const progresso = meta.concluida
+                      ? 100
+                      : totalTarefas > 0
+                      ? Math.round((tarefasConcluidas / totalTarefas) * 100)
+                      : 0;
+
+                    // Determina o status da meta para exibição da badge: apenas data de fechamento da própria meta define se está atrasada
+                    let status: 'Concluida' | 'Atrasada' | 'Pendente' = 'Pendente';
+                    if (meta.concluida || (totalTarefas > 0 && tarefasConcluidas === totalTarefas)) {
+                      status = 'Concluida';
+                    } else if (meta.dataFechamento) {
+                      const agora = new Date();
+                      const dataMeta = new Date(meta.dataFechamento);
+                      if (meta.dataFechamento.includes('T00:00:00') || !meta.dataFechamento.includes('T')) {
+                        const datePart = meta.dataFechamento.split('T')[0];
+                        const [year, month, day] = datePart.split('-').map(Number);
+                        if (year && month && day) {
+                          const fim = new Date(year, month - 1, day, 23, 59, 59, 999);
+                          if (fim < agora) status = 'Atrasada';
+                        } else if (dataMeta < agora) {
+                          status = 'Atrasada';
+                        }
+                      } else if (dataMeta < agora) {
+                        status = 'Atrasada';
+                      }
+                    }
+
+                    return (
+                      <div
+                        key={meta.id}
+                        className={styles.goalRow}
+                        onClick={() => router.push('/metas?tab=equipes')}
+                        role="button"
+                        tabIndex={0}
+                        title="Ver metas de equipe"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            router.push('/metas?tab=equipes');
+                          }
+                        }}
+                      >
+                        <span className={styles.goalRowTitle}>{meta.nome}</span>
+
+                        <div className={styles.goalRowRightGroup}>
+                          {meta.dataFechamento && (
+                            <span className={styles.goalRowDeadline} suppressHydrationWarning>
+                              <CalendarIcon size={12} />
+                              {formatarData(meta.dataFechamento)}
+                            </span>
+                          )}
+                          <Badge type="status" value={status} />
+                          <div className={styles.groupProgressWrapper}>
+                            <div className={styles.progressBarTrack}>
+                              <div
+                                className={styles.progressBarFill}
+                                style={{ width: `${progresso}%` }}
+                              />
+                            </div>
+                            <span className={styles.progressPercentage}>{progresso}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
-          ) : (
-            <div className={styles.goalsGrid}>
-              {metas.map((meta) => {
-                const totalTarefas =
-                  meta.tarefas && meta.tarefas.length > 0
-                    ? meta.tarefas.length
-                    : meta.tarefa
-                    ? 1
-                    : 0;
-                const tarefasConcluidas =
-                  meta.tarefas && meta.tarefas.length > 0
-                    ? meta.tarefas.filter((t) => t.status === 'Concluida').length
-                    : meta.tarefa?.status === 'Concluida'
-                    ? 1
-                    : 0;
-                const progresso = meta.concluida
-                  ? 100
-                  : totalTarefas > 0
-                  ? Math.round((tarefasConcluidas / totalTarefas) * 100)
-                  : 0;
-
-                return (
-                  <div key={meta.id} className={styles.goalCard}>
-                    <div className={styles.goalCardHeader}>
-                      <div className={styles.goalTitleGroup}>
-                        <h4
-                          className={`${styles.goalName} ${
-                            meta.concluida ? styles.goalNameCompleted : ''
-                          }`}
-                        >
-                          {meta.nome}
-                        </h4>
-                        <Badge
-                          type="status"
-                          value={meta.concluida ? 'Concluida' : 'EmProgresso'}
-                        />
-                      </div>
-                      {meta.dataFechamento && (
-                        <span className={styles.goalDeadline} suppressHydrationWarning>
-                          <CalendarIcon size={13} />
-                          Prazo: {formatarData(meta.dataFechamento)}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className={styles.goalProgressSection}>
-                      <div className={styles.progressRow}>
-                        <span className={styles.progressLabel}>
-                          Progresso ({tarefasConcluidas}/{totalTarefas} tarefas)
-                        </span>
-                        <span className={styles.progressValue}>{progresso}%</span>
-                      </div>
-                      <div className={styles.progressTrack}>
-                        <div
-                          className={styles.progressFill}
-                          style={{ width: `${progresso}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className={styles.goalFooter}>
-                      <span className={styles.assignedToInfo}>
-                        {meta.usuarioId &&
-                        meta.usuarioId !== membros.find((m) => m.cargo === 'Dono')?.usuarioId &&
-                        meta.usuario?.nome ? (
-                          <>
-                            <UserIcon size={14} />
-                            Responsável: {meta.usuario.nome}
-                          </>
-                        ) : (
-                          <>
-                            <UsersIcon size={14} />
-                            Atribuída a toda a equipe
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+          </section>
 
         {/* Seção de Tickets de Reporte da Equipe (RF008) */}
         {isAdminOrOwner && tickets.length > 0 && (

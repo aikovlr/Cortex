@@ -13,9 +13,12 @@ import {
   ChevronUpIcon,
   ArrowUpDownIcon,
   UsersIcon,
+  UserIcon,
+  PlusIcon,
 } from '@/components/common/Icons/Icons';
 import { GoalCreateModal } from '@/components/goals/GoalCreateModal/GoalCreateModal';
 import { GoalEditModal } from '@/components/goals/GoalEditModal/GoalEditModal';
+import { AssignTeamGoalModal } from '@/components/teams/AssignTeamGoalModal/AssignTeamGoalModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
@@ -28,6 +31,7 @@ export default function MetasPage() {
   const { showToast } = useToast();
 
   const [metas, setMetas] = useState<ConsultaMetaDTO[]>([]);
+  const [activeTab, setActiveTab] = useState<'pessoais' | 'equipes'>('pessoais');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [criterioOrdenacao, setCriterioOrdenacao] = useState<CriterioOrdenacao>('status');
@@ -38,6 +42,7 @@ export default function MetasPage() {
   const [collapsedGoalIds, setCollapsedGoalIds] = useState<number[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAssignTeamGoalOpen, setIsAssignTeamGoalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingMeta, setEditingMeta] = useState<ConsultaMetaDTO | null>(null);
 
@@ -47,8 +52,17 @@ export default function MetasPage() {
     );
   };
 
-  // Carrega preferências de ordenação salvas no localStorage
+  // Carrega preferências de ordenação salvas no localStorage e query param de aba
   useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('tab') === 'equipes') {
+          setActiveTab('equipes');
+        }
+      }
+    } catch {}
+
     try {
       const savedCriterio = localStorage.getItem('cortex_metas_criterio') as CriterioOrdenacao | null;
       if (
@@ -270,7 +284,7 @@ export default function MetasPage() {
     return tarefas.length > 0 && tarefas.every((t) => t.status === 'Concluida');
   }, [getTarefasDaMeta]);
 
-  // Determina o status da meta: Concluida, Atrasada ou Pendente
+  // Determina o status da meta: Concluida, Atrasada ou Pendente (apenas data de fechamento da meta define atraso)
   const getMetaStatus = useCallback(
     (meta: ConsultaMetaDTO): 'Atrasada' | 'Pendente' | 'Concluida' => {
       if (isMetaConcluida(meta)) {
@@ -295,28 +309,28 @@ export default function MetasPage() {
         }
       }
 
-      const tarefas = getTarefasDaMeta(meta);
-      const temTarefaAtrasada = tarefas.some(
-        (t) =>
-          t.status === 'Atrasada' ||
-          (t.status !== 'Concluida' && t.dataVencimento && new Date(t.dataVencimento) < agora)
-      );
-
-      if (temTarefaAtrasada) {
-        return 'Atrasada';
-      }
-
       return 'Pendente';
     },
-    [getTarefasDaMeta, isMetaConcluida]
+    [isMetaConcluida]
+  );
+
+  const metasPessoais = useMemo(
+    () => metas.filter((m) => !m.equipes || m.equipes.length === 0),
+    [metas]
+  );
+
+  const metasEquipes = useMemo(
+    () => metas.filter((m) => m.equipes && m.equipes.length > 0),
+    [metas]
   );
 
   // Filtragem por busca e ordenação
   const metasFiltradas = useMemo(() => {
-    let filtradas = metas;
+    const baseTab = activeTab === 'pessoais' ? metasPessoais : metasEquipes;
+    let filtradas = baseTab;
     if (searchTerm.trim()) {
       const termo = searchTerm.toLowerCase();
-      filtradas = metas.filter((m) => {
+      filtradas = baseTab.filter((m) => {
         const matchNome = m.nome.toLowerCase().includes(termo);
         const tarefas = getTarefasDaMeta(m);
         const matchTarefa = tarefas.some((t) => t.titulo.toLowerCase().includes(termo));
@@ -387,7 +401,9 @@ export default function MetasPage() {
       return a.id - b.id;
     });
   }, [
-    metas,
+    activeTab,
+    metasPessoais,
+    metasEquipes,
     searchTerm,
     criterioOrdenacao,
     direcaoOrdenacao,
@@ -523,10 +539,41 @@ export default function MetasPage() {
     return direcaoOrdenacao === 'asc' ? 'Crescente' : 'Decrescente';
   }, [criterioOrdenacao, direcaoOrdenacao]);
 
+  const handleTabChange = (tab: 'pessoais' | 'equipes') => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
   return (
     <>
       <Header titulo="Metas" />
       <main className={styles.container}>
+        {/* Abas: Minhas Metas vs Metas de Equipe */}
+        <div className={styles.tabsHeader}>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${activeTab === 'pessoais' ? styles.tabBtnActive : ''}`}
+            onClick={() => handleTabChange('pessoais')}
+          >
+            <UserIcon size={16} />
+            <span>Minhas Metas</span>
+            <span className={styles.tabBadge}>{metasPessoais.length}</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${activeTab === 'equipes' ? styles.tabBtnActive : ''}`}
+            onClick={() => handleTabChange('equipes')}
+          >
+            <UsersIcon size={16} />
+            <span>Metas de Equipe</span>
+            <span className={styles.tabBadge}>{metasEquipes.length}</span>
+          </button>
+        </div>
+
         {/* Barra de Ações Superior Padronizada com Filtro e Ordenação */}
         <div className={styles.topBar}>
           <div className={styles.filtersWrapper}>
@@ -579,14 +626,17 @@ export default function MetasPage() {
 
           <button
             type="button"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              if (activeTab === 'pessoais') {
+                setIsModalOpen(true);
+              } else {
+                setIsAssignTeamGoalOpen(true);
+              }
+            }}
             className={styles.createBtn}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Criar Meta
+            <PlusIcon size={18} />
+            {activeTab === 'pessoais' ? 'Criar Meta' : 'Criar Meta de Equipe'}
           </button>
         </div>
 
@@ -602,20 +652,35 @@ export default function MetasPage() {
               <path d="m9 12 2 2 4-4" />
             </svg>
             <h3 className={styles.emptyTitle}>
-              {searchTerm ? 'Nenhuma meta encontrada' : 'Nenhuma meta cadastrada'}
+              {searchTerm
+                ? activeTab === 'pessoais'
+                  ? 'Nenhuma meta pessoal encontrada'
+                  : 'Nenhuma meta de equipe encontrada'
+                : activeTab === 'pessoais'
+                ? 'Nenhuma meta pessoal cadastrada'
+                : 'Nenhuma meta de equipe cadastrada'}
             </h3>
             <p className={styles.emptyText}>
               {searchTerm
                 ? 'Tente buscar com outros termos.'
-                : 'Crie metas e vincule uma ou mais tarefas para acompanhar seu progresso e atingir objetivos estratégicos.'}
+                : activeTab === 'pessoais'
+                ? 'Crie metas e vincule uma ou mais tarefas para acompanhar seu progresso e atingir objetivos estratégicos.'
+                : 'Crie metas colaborativas atribuídas às suas equipes para gerenciar objetivos coletivos.'}
             </p>
             <button
               type="button"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                if (activeTab === 'pessoais') {
+                  setIsModalOpen(true);
+                } else {
+                  setIsAssignTeamGoalOpen(true);
+                }
+              }}
               className={styles.createBtn}
               style={{ marginTop: '12px' }}
             >
-              Criar Minha Primeira Meta
+              <PlusIcon size={16} />
+              {activeTab === 'pessoais' ? 'Criar Minha Primeira Meta' : 'Criar Primeira Meta de Equipe'}
             </button>
           </div>
         ) : (
@@ -846,6 +911,13 @@ export default function MetasPage() {
       <GoalCreateModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSuccess={carregarMetas}
+      />
+
+      {/* Modal de Atribuição de Meta à Equipe */}
+      <AssignTeamGoalModal
+        isOpen={isAssignTeamGoalOpen}
+        onClose={() => setIsAssignTeamGoalOpen(false)}
         onSuccess={carregarMetas}
       />
 

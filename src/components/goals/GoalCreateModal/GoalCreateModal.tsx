@@ -6,8 +6,7 @@ import { Input } from '@/components/common/Input/Input';
 import { Button } from '@/components/common/Button/Button';
 import { metaService } from '@/services/metaService';
 import { tarefaService } from '@/services/tarefaService';
-import { equipeService } from '@/services/equipeService';
-import { ConsultaTarefaDTO, ConsultaEquipeDTO } from '@/types/api';
+import { ConsultaTarefaDTO } from '@/types/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './GoalCreateModal.module.css';
@@ -35,8 +34,6 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
     tarefaIdPredefinida ? [tarefaIdPredefinida] : []
   );
   const [dataFechamento, setDataFechamento] = useState('');
-  const [equipes, setEquipes] = useState<ConsultaEquipeDTO[]>([]);
-  const [selectedEquipeId, setSelectedEquipeId] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
 
   const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>(tarefasDisponiveis || []);
@@ -56,14 +53,6 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
     let isMounted = true;
 
     async function carregar() {
-      // Carregar equipes do usuário para permitir atribuição
-      equipeService
-        .listarMinhasEquipes()
-        .then((eqs) => {
-          if (isMounted) setEquipes(eqs);
-        })
-        .catch(() => {});
-
       if (tarefasDisponiveis && tarefasDisponiveis.length > 0) {
         if (isMounted) {
           setTarefas(tarefasDisponiveis);
@@ -147,13 +136,11 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
         nome: nome.trim(),
         tarefaIds: selectedTaskIds,
         dataFechamento: dataFechamento ? new Date(dataFechamento).toISOString() : undefined,
-        equipeId: selectedEquipeId ? Number(selectedEquipeId) : undefined,
       });
 
       showToast('Meta criada com sucesso!', 'success');
       setNome('');
       setDataFechamento('');
-      setSelectedEquipeId('');
       setSelectedTaskIds([]);
       onSuccess();
       onClose();
@@ -252,28 +239,6 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
             Toda meta deve obrigatoriamente estar associada a pelo menos uma tarefa existente. Você pode selecionar múltiplas tarefas.
           </span>
         </div>
-
-        {equipes.length > 0 && (
-          <div className={styles.field}>
-            <label className={styles.label}>Atribuir à Equipe (opcional)</label>
-            <select
-              className={styles.select}
-              value={selectedEquipeId}
-              onChange={(e) => setSelectedEquipeId(e.target.value)}
-              disabled={submitting}
-            >
-              <option value="">Nenhuma (Meta individual)</option>
-              {equipes.map((eq) => (
-                <option key={eq.id} value={eq.id}>
-                  {eq.nome}
-                </option>
-              ))}
-            </select>
-            <span className={styles.helpText}>
-              Selecione uma equipe para que todos os membros vejam e acompanhem esta meta.
-            </span>
-          </div>
-        )}
 
         <div className={styles.field}>
           <label className={styles.label}>Data Limite (opcional)</label>

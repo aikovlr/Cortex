@@ -1,46 +1,52 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '@/components/common/Modal/Modal';
 import { Input } from '@/components/common/Input/Input';
 import { Button } from '@/components/common/Button/Button';
-import { Badge } from '@/components/common/Badge/Badge';
 import { metaService } from '@/services/metaService';
 import { tarefaService } from '@/services/tarefaService';
-import { ConsultaMetaDTO, ConsultaTarefaDTO, ConsultaMembroEquipeDTO } from '@/types/api';
+import { equipeService } from '@/services/equipeService';
+import {
+  ConsultaTarefaDTO,
+  ConsultaMembroEquipeDTO,
+  ConsultaEquipeDTO,
+} from '@/types/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './AssignTeamGoalModal.module.css';
 
 interface AssignTeamGoalModalProps {
-  equipeId: number;
-  equipeNome: string;
-  membros: ConsultaMembroEquipeDTO[];
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  equipeId?: number;
+  equipeNome?: string;
+  membros?: ConsultaMembroEquipeDTO[];
 }
 
 export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
-  equipeId,
-  equipeNome,
-  membros,
   isOpen,
   onClose,
   onSuccess,
+  equipeId,
+  equipeNome,
+  membros,
 }) => {
+  const { usuario } = useAuth();
   const { showToast } = useToast();
 
-  const [mode, setMode] = useState<'link' | 'create'>('link');
+  const [equipes, setEquipes] = useState<ConsultaEquipeDTO[]>([]);
+  const [loadingEquipes, setLoadingEquipes] = useState(false);
+  const [selectedEquipeId, setSelectedEquipeId] = useState<number | ''>(equipeId || '');
 
-  // Modo: Vincular Meta Existente
-  const [metasDisponiveis, setMetasDisponiveis] = useState<ConsultaMetaDTO[]>([]);
-  const [selectedMetaId, setSelectedMetaId] = useState<number | ''>('');
-  const [loadingMetas, setLoadingMetas] = useState(false);
+  const [membrosEquipe, setMembrosEquipe] = useState<ConsultaMembroEquipeDTO[]>(membros || []);
+  const [loadingMembros, setLoadingMembros] = useState(false);
 
-  // Modo: Criar Nova Meta de Equipe
   const [nome, setNome] = useState('');
   const [selectedTaskIds, setSelectedTaskIds] = useState<number[]>([]);
-  const [selectedMembroId, setSelectedMembroId] = useState<number | ''>('');
+  const [atribuicaoModo, setAtribuicaoModo] = useState<'equipe' | 'membros'>('equipe');
+  const [selectedMembroIds, setSelectedMembroIds] = useState<number[]>([]);
   const [dataFechamento, setDataFechamento] = useState('');
   const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>([]);
   const [loadingTarefas, setLoadingTarefas] = useState(false);
@@ -52,63 +58,110 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
   const maxDateString = maxDate.toISOString().split('T')[0];
   const minDateString = new Date().toISOString().split('T')[0];
 
+  // Filtra equipes onde o usuário tem cargo igual ou superior a Admin (Dono ou Admin)
+  const equipesGerenciaveis = useMemo(() => {
+    if (!usuario) return [];
+    return equipes.filter((eq) =>
+      eq.membros?.some(
+        (m) => m.usuarioId === usuario.id && (m.cargo === 'Dono' || m.cargo === 'Admin')
+      )
+    );
+  }, [equipes, usuario]);
+
+  // Carregar equipes caso equipeId não seja informado via props
   useEffect(() => {
     if (!isOpen) return;
 
     let isMounted = true;
 
-    async function carregarDados() {
-      // 1. Carrega metas do usuário para verificar as que ainda não estão vinculadas à equipe
-      try {
-        setLoadingMetas(true);
-        const todasMetas = await metaService.listar();
-        if (isMounted) {
-          // Filtra apenas metas que ainda não foram vinculadas a esta equipe
-          const disponiveis = todasMetas.filter(
-            (m) => !m.equipes?.some((eq) => eq.id === equipeId)
+    if (equipeId) {
+      setSelectedEquipeId(equipeId);
+      if (membros && membros.length > 0) {
+        setMembrosEquipe(membros);
+      }
+    } else {
+      setLoadingEquipes(true);
+      equipeService
+        .listarMinhasEquipes()
+        .then((eqs) => {
+          if (!isMounted) return;
+          setEquipes(eqs);
+          const gerenciaveis = eqs.filter((eq) =>
+            eq.membros?.some(
+              (m) => m.usuarioId === usuario?.id && (m.cargo === 'Dono' || m.cargo === 'Admin')
+            )
           );
-          setMetasDisponiveis(disponiveis);
-          if (disponiveis.length > 0) {
-            setSelectedMetaId(disponiveis[0].id);
+          if (gerenciaveis.length > 0) {
+            setSelectedEquipeId(gerenciaveis[0].id);
           } else {
-            setSelectedMetaId('');
-            // Se não houver metas existentes para vincular, muda para a aba de criação
-            setMode('create');
+            setSelectedEquipeId('');
           }
-        }
-      } catch {
-        // Silencia falha
-      } finally {
-        if (isMounted) {
-          setLoadingMetas(false);
-        }
-      }
-
-      // 2. Carrega tarefas disponíveis
-      try {
-        setLoadingTarefas(true);
-        const resTarefas = await tarefaService.listarTarefas();
-        if (isMounted) {
-          setTarefas(resTarefas);
-          if (resTarefas.length > 0 && selectedTaskIds.length === 0) {
-            setSelectedTaskIds([resTarefas[0].id]);
-          }
-        }
-      } catch {
-        // Silencia falha
-      } finally {
-        if (isMounted) {
-          setLoadingTarefas(false);
-        }
-      }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (isMounted) setLoadingEquipes(false);
+        });
     }
-
-    carregarDados();
 
     return () => {
       isMounted = false;
     };
-  }, [isOpen, equipeId]);
+  }, [isOpen, equipeId, membros, usuario?.id]);
+
+  // Carregar membros da equipe selecionada quando selectedEquipeId mudar
+  useEffect(() => {
+    if (!isOpen || !selectedEquipeId) return;
+
+    if (equipeId && selectedEquipeId === equipeId && membros && membros.length > 0) {
+      setMembrosEquipe(membros);
+      return;
+    }
+
+    let isMounted = true;
+    setLoadingMembros(true);
+    equipeService
+      .listarMembros(Number(selectedEquipeId))
+      .then((mems) => {
+        if (isMounted) setMembrosEquipe(mems);
+      })
+      .catch(() => {
+        if (isMounted) setMembrosEquipe([]);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingMembros(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, selectedEquipeId, equipeId, membros]);
+
+  // Carregar tarefas disponíveis
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    setLoadingTarefas(true);
+
+    tarefaService
+      .listarTarefas()
+      .then((res) => {
+        if (isMounted) {
+          setTarefas(res);
+          if (res.length > 0 && selectedTaskIds.length === 0) {
+            setSelectedTaskIds([res[0].id]);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setLoadingTarefas(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
 
   const toggleTask = (id: number) => {
     setSelectedTaskIds((prev) =>
@@ -116,7 +169,7 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
     );
   };
 
-  const toggleSelectAll = () => {
+  const toggleSelectAllTasks = () => {
     if (selectedTaskIds.length === tarefas.length) {
       setSelectedTaskIds([]);
     } else {
@@ -124,79 +177,110 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
     }
   };
 
+  const toggleMember = (usuarioId: number) => {
+    setSelectedMembroIds((prev) =>
+      prev.includes(usuarioId)
+        ? prev.filter((id) => id !== usuarioId)
+        : [...prev, usuarioId]
+    );
+  };
+
+  const toggleSelectAllMembers = () => {
+    if (selectedMembroIds.length === membrosEquipe.length) {
+      setSelectedMembroIds([]);
+    } else {
+      setSelectedMembroIds(membrosEquipe.map((m) => m.usuarioId));
+    }
+  };
+
+  const currentEquipeNome = useMemo(() => {
+    if (equipeNome) return equipeNome;
+    const encontrada = equipes.find((e) => e.id === selectedEquipeId);
+    return encontrada?.nome || '';
+  }, [equipeNome, equipes, selectedEquipeId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (mode === 'link') {
-      if (!selectedMetaId) {
-        showToast('Por favor, selecione uma meta para vincular.', 'error');
+    const targetEquipeId = selectedEquipeId || equipeId;
+    if (!targetEquipeId) {
+      showToast('Por favor, selecione uma equipe de destino.', 'error');
+      return;
+    }
+
+    if (!nome.trim()) {
+      showToast('Informe o nome da meta.', 'error');
+      return;
+    }
+
+    if (selectedTaskIds.length === 0) {
+      showToast('Selecione pelo menos uma tarefa para vincular à meta.', 'error');
+      return;
+    }
+
+    if (atribuicaoModo === 'membros' && selectedMembroIds.length === 0) {
+      showToast('Selecione pelo menos um membro responsável ou opte por atribuir a toda a equipe.', 'error');
+      return;
+    }
+
+    if (dataFechamento) {
+      const selected = new Date(dataFechamento);
+      const limit = new Date();
+      limit.setFullYear(limit.getFullYear() + 1);
+
+      if (selected > limit) {
+        showToast('A data limite da meta não pode exceder 12 meses.', 'error');
         return;
       }
+    }
 
-      try {
-        setSubmitting(true);
-        await metaService.atribuirEquipe(Number(selectedMetaId), equipeId);
-        showToast(`Meta atribuída à equipe "${equipeNome}" com sucesso!`, 'success');
-        onSuccess();
-        onClose();
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          showToast(err.message, 'error');
-        } else {
-          showToast('Falha ao atribuir meta à equipe.', 'error');
-        }
-      } finally {
-        setSubmitting(false);
-      }
-    } else {
-      // Criar nova meta diretamente para a equipe
-      if (!nome.trim()) {
-        showToast('Informe o nome da meta.', 'error');
-        return;
-      }
+    try {
+      setSubmitting(true);
 
-      if (selectedTaskIds.length === 0) {
-        showToast('Selecione pelo menos uma tarefa para vincular à meta.', 'error');
-        return;
-      }
-
-      if (dataFechamento) {
-        const selected = new Date(dataFechamento);
-        const limit = new Date();
-        limit.setFullYear(limit.getFullYear() + 1);
-
-        if (selected > limit) {
-          showToast('A data limite da meta não pode exceder 12 meses.', 'error');
-          return;
-        }
-      }
-
-      try {
-        setSubmitting(true);
+      if (atribuicaoModo === 'equipe' || selectedMembroIds.length === 0) {
         await metaService.criar({
           nome: nome.trim(),
           tarefaIds: selectedTaskIds,
           dataFechamento: dataFechamento ? new Date(dataFechamento).toISOString() : undefined,
-          equipeId,
-          usuarioId: selectedMembroId ? Number(selectedMembroId) : undefined,
+          equipeId: Number(targetEquipeId),
         });
-
-        showToast(`Nova meta criada e atribuída à equipe "${equipeNome}"!`, 'success');
-        setNome('');
-        setSelectedTaskIds([]);
-        setDataFechamento('');
-        setSelectedMembroId('');
-        onSuccess();
-        onClose();
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          showToast(err.message, 'error');
-        } else {
-          showToast('Falha ao criar meta de equipe.', 'error');
-        }
-      } finally {
-        setSubmitting(false);
+      } else {
+        // Atribui individualmente aos membros selecionados vinculando à equipe
+        await Promise.all(
+          selectedMembroIds.map((uId) =>
+            metaService.criar({
+              nome: nome.trim(),
+              tarefaIds: selectedTaskIds,
+              dataFechamento: dataFechamento ? new Date(dataFechamento).toISOString() : undefined,
+              equipeId: Number(targetEquipeId),
+              usuarioId: uId,
+            })
+          )
+        );
       }
+
+      showToast(
+        currentEquipeNome
+          ? `Meta criada e atribuída com sucesso na equipe "${currentEquipeNome}"!`
+          : 'Meta de equipe criada e atribuída com sucesso!',
+        'success'
+      );
+
+      setNome('');
+      setSelectedTaskIds([]);
+      setDataFechamento('');
+      setSelectedMembroIds([]);
+      setAtribuicaoModo('equipe');
+      onSuccess();
+      onClose();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao criar e atribuir meta à equipe.', 'error');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -204,7 +288,7 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Atribuir Meta à Equipe: ${equipeNome}`}
+      title={currentEquipeNome ? `Atribuir Meta à Equipe: ${currentEquipeNome}` : 'Atribuir Meta à Equipe'}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={submitting}>
@@ -215,172 +299,213 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
             onClick={handleSubmit}
             disabled={
               submitting ||
-              (mode === 'link' && !selectedMetaId) ||
-              (mode === 'create' && (!nome.trim() || selectedTaskIds.length === 0))
+              !selectedEquipeId ||
+              !nome.trim() ||
+              selectedTaskIds.length === 0 ||
+              (atribuicaoModo === 'membros' && selectedMembroIds.length === 0) ||
+              (!equipeId && equipesGerenciaveis.length === 0)
             }
           >
-            {submitting ? 'Salvando...' : mode === 'link' ? 'Atribuir à Equipe' : 'Criar e Atribuir'}
+            {submitting ? 'Salvando...' : 'Criar e Atribuir à Equipe'}
           </Button>
         </>
       }
     >
-      <div className={styles.tabs}>
-        <button
-          type="button"
-          className={`${styles.tabBtn} ${mode === 'link' ? styles.tabBtnActive : ''}`}
-          onClick={() => setMode('link')}
-        >
-          Vincular Meta Existente
-        </button>
-        <button
-          type="button"
-          className={`${styles.tabBtn} ${mode === 'create' ? styles.tabBtnActive : ''}`}
-          onClick={() => setMode('create')}
-        >
-          Criar Nova Meta de Equipe
-        </button>
-      </div>
-
       <form onSubmit={handleSubmit} className={styles.form}>
-        {mode === 'link' ? (
-          <>
-            <div className={styles.field}>
-              <label htmlFor="select-meta-link" className={styles.label}>
-                Selecione a Meta <span className={styles.required}>*</span>
-              </label>
-
-              {loadingMetas ? (
-                <div className={styles.emptyListNotice}>Carregando suas metas...</div>
-              ) : metasDisponiveis.length === 0 ? (
-                <div className={styles.emptyListNotice}>
-                  Todas as suas metas já estão vinculadas a esta equipe ou você ainda não possui metas.
-                  <br />
-                  <button
-                    type="button"
-                    className={styles.toggleAllBtn}
-                    onClick={() => setMode('create')}
-                    style={{ marginTop: '8px' }}
-                  >
-                    Criar uma nova meta para esta equipe →
-                  </button>
-                </div>
-              ) : (
-                <select
-                  id="select-meta-link"
-                  className={styles.select}
-                  value={selectedMetaId}
-                  onChange={(e) => setSelectedMetaId(e.target.value ? Number(e.target.value) : '')}
-                  required
-                >
-                  {metasDisponiveis.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.nome} {m.dataFechamento ? `(Prazo: ${new Date(m.dataFechamento).toLocaleDateString('pt-BR')})` : ''}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            <div className={styles.noticeBox}>
-              <p>
-                Ao atribuir esta meta à equipe <strong>{equipeNome}</strong>, ela será compartilhada com todos os integrantes da equipe e passará a constar no painel de Metas de cada membro.
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <Input
-              label="Nome da Meta da Equipe *"
-              placeholder="Ex: Entregar sprint de integração"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-              autoFocus
-            />
-
-            {/* Atribuição opcional a membro específico */}
-            <div className={styles.field}>
-              <label htmlFor="select-membro-resp" className={styles.label}>
-                Atribuir Responsável (Opcional)
-              </label>
+        {/* Seletor de Equipe caso aberta fora do contexto de uma equipe específica */}
+        {!equipeId && (
+          <div className={styles.field}>
+            <label htmlFor="select-equipe-destino" className={styles.label}>
+              Equipe de Destino <span className={styles.required}>*</span>
+            </label>
+            {loadingEquipes ? (
+              <div className={styles.emptyListNotice}>Carregando suas equipes...</div>
+            ) : equipesGerenciaveis.length === 0 ? (
+              <div className={styles.emptyListNotice}>
+                Você não possui cargo de Administrador ou Dono em nenhuma equipe para atribuir metas.
+              </div>
+            ) : (
               <select
-                id="select-membro-resp"
+                id="select-equipe-destino"
                 className={styles.select}
-                value={selectedMembroId}
-                onChange={(e) => setSelectedMembroId(e.target.value ? Number(e.target.value) : '')}
+                value={selectedEquipeId}
+                onChange={(e) => setSelectedEquipeId(e.target.value ? Number(e.target.value) : '')}
+                required
               >
-                <option value="">Toda a Equipe (Todos os Integrantes)</option>
-                {membros.map((m) => (
-                  <option key={m.id} value={m.usuarioId}>
-                    {m.usuario?.nome || 'Membro'} ({m.cargo})
+                {equipesGerenciaveis.map((eq) => (
+                  <option key={eq.id} value={eq.id}>
+                    {eq.nome}
                   </option>
                 ))}
               </select>
-              <span className={styles.helperText}>
-                A meta será atribuída a toda a equipe ou ao integrante selecionado, ficando visível no painel de Metas de todos os membros da equipe.
-              </span>
-            </div>
+            )}
+          </div>
+        )}
 
-            {/* Seleção de Tarefas Vinculadas */}
-            <div className={styles.field}>
-              <div className={styles.tasksHeader}>
-                <label className={styles.label}>
-                  Tarefas Vinculadas ({selectedTaskIds.length} selecionada{selectedTaskIds.length !== 1 ? 's' : ''}) <span className={styles.required}>*</span>
-                </label>
-                {tarefas.length > 1 && (
+        {/* Nome da Meta */}
+        <Input
+          label="Nome da Meta da Equipe *"
+          placeholder="Ex: Entregar sprint de integração"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          required
+          autoFocus
+        />
+
+        {/* Atribuição de Responsabilidade: Toda a Equipe ou Membros Específicos */}
+        <div className={styles.field}>
+          <label className={styles.label}>Atribuir a</label>
+          <div className={styles.radioGroup}>
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="atribuicaoModo"
+                value="equipe"
+                className={styles.radioInput}
+                checked={atribuicaoModo === 'equipe'}
+                onChange={() => {
+                  setAtribuicaoModo('equipe');
+                  setSelectedMembroIds([]);
+                }}
+              />
+              <span>Toda a equipe ({membrosEquipe.length} integrantes)</span>
+            </label>
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="atribuicaoModo"
+                value="membros"
+                className={styles.radioInput}
+                checked={atribuicaoModo === 'membros'}
+                onChange={() => setAtribuicaoModo('membros')}
+              />
+              <span>Membros específicos</span>
+            </label>
+          </div>
+
+          {atribuicaoModo === 'membros' && (
+            <div style={{ marginTop: '8px' }}>
+              <div className={styles.selectionHeader}>
+                <span className={styles.helpText}>
+                  Selecione um ou mais integrantes ({selectedMembroIds.length} selecionado{selectedMembroIds.length !== 1 ? 's' : ''}):
+                </span>
+                {membrosEquipe.length > 1 && (
                   <button
                     type="button"
                     className={styles.toggleAllBtn}
-                    onClick={toggleSelectAll}
+                    onClick={toggleSelectAllMembers}
                   >
-                    {selectedTaskIds.length === tarefas.length ? 'Desmarcar todas' : 'Selecionar todas'}
+                    {selectedMembroIds.length === membrosEquipe.length ? 'Desmarcar todos' : 'Selecionar todos'}
                   </button>
                 )}
               </div>
 
-              {loadingTarefas ? (
-                <div className={styles.emptyListNotice}>Carregando tarefas...</div>
-              ) : tarefas.length === 0 ? (
-                <div className={styles.emptyListNotice}>
-                  Nenhuma tarefa encontrada. Crie ao menos uma tarefa antes de gerar a meta.
-                </div>
+              {loadingMembros ? (
+                <div className={styles.emptyListNotice}>Carregando membros da equipe...</div>
+              ) : membrosEquipe.length === 0 ? (
+                <div className={styles.emptyListNotice}>Nenhum membro encontrado na equipe.</div>
               ) : (
-                <div className={styles.tasksList}>
-                  {tarefas.map((t) => {
-                    const isSelected = selectedTaskIds.includes(t.id);
+                <div className={styles.listContainer}>
+                  {membrosEquipe.map((m) => {
+                    const isSelected = selectedMembroIds.includes(m.usuarioId);
                     return (
                       <div
-                        key={t.id}
-                        className={`${styles.taskItem} ${isSelected ? styles.taskItemActive : ''}`}
-                        onClick={() => toggleTask(t.id)}
+                        key={m.id}
+                        className={`${styles.listItem} ${isSelected ? styles.listItemSelected : ''}`}
+                        onClick={() => toggleMember(m.usuarioId)}
                       >
                         <input
                           type="checkbox"
                           className={styles.checkbox}
                           checked={isSelected}
                           onChange={() => {}}
-                          aria-label={`Selecionar tarefa ${t.titulo}`}
+                          aria-label={`Selecionar ${m.usuario?.nome || 'Membro'}`}
                         />
-                        <span className={styles.taskTitle}>{t.titulo}</span>
-                        {t.status && <Badge type="status" value={t.status} />}
+                        <div className={styles.itemInfo}>
+                          <span className={styles.itemTitle}>{m.usuario?.nome || 'Membro'}</span>
+                          <span className={styles.itemBadge}>{m.cargo}</span>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
               )}
             </div>
+          )}
+          <span className={styles.helpText}>
+            {atribuicaoModo === 'equipe'
+              ? 'A meta será compartilhada coletivamente com todos os integrantes da equipe.'
+              : 'A meta será criada e vinculada a cada integrante selecionado dentro do contexto da equipe.'}
+          </span>
+        </div>
 
-            {/* Data Limite */}
-            <Input
-              type="date"
-              label="Data Limite / Prazo (Opcional)"
-              value={dataFechamento}
-              onChange={(e) => setDataFechamento(e.target.value)}
-              min={minDateString}
-              max={maxDateString}
-            />
-          </>
-        )}
+        {/* Seleção de Tarefas Vinculadas */}
+        <div className={styles.field}>
+          <div className={styles.selectionHeader}>
+            <label className={styles.label}>
+              Tarefas Vinculadas ({selectedTaskIds.length} selecionada{selectedTaskIds.length !== 1 ? 's' : ''}) <span className={styles.required}>*</span>
+            </label>
+            {tarefas.length > 1 && (
+              <button
+                type="button"
+                className={styles.toggleAllBtn}
+                onClick={toggleSelectAllTasks}
+              >
+                {selectedTaskIds.length === tarefas.length ? 'Desmarcar todas' : 'Selecionar todas'}
+              </button>
+            )}
+          </div>
+
+          {loadingTarefas ? (
+            <div className={styles.emptyListNotice}>Carregando tarefas...</div>
+          ) : tarefas.length === 0 ? (
+            <div className={styles.emptyListNotice}>
+              Nenhuma tarefa encontrada. Crie ao menos uma tarefa antes de gerar a meta.
+            </div>
+          ) : (
+            <div className={styles.listContainer}>
+              {tarefas.map((t) => {
+                const isSelected = selectedTaskIds.includes(t.id);
+                return (
+                  <div
+                    key={t.id}
+                    className={`${styles.listItem} ${isSelected ? styles.listItemSelected : ''}`}
+                    onClick={() => toggleTask(t.id)}
+                  >
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={isSelected}
+                      onChange={() => {}}
+                      aria-label={`Selecionar tarefa ${t.titulo}`}
+                    />
+                    <div className={styles.itemInfo}>
+                      <span className={styles.itemTitle}>{t.titulo}</span>
+                      {t.status && <span className={styles.itemBadge}>{t.status}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Data Limite */}
+        <div className={styles.field}>
+          <label className={styles.label}>Data Limite / Prazo (Opcional)</label>
+          <input
+            type="date"
+            className={styles.dateInput}
+            value={dataFechamento}
+            min={minDateString}
+            max={maxDateString}
+            onChange={(e) => setDataFechamento(e.target.value)}
+            disabled={submitting}
+          />
+          <span className={styles.helpText}>
+            A data limite de conclusão não pode exceder 12 meses a partir de hoje.
+          </span>
+        </div>
       </form>
     </Modal>
   );
