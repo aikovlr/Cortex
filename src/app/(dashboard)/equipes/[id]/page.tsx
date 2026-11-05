@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/app/Components/Header/header';
 import { Badge } from '@/components/common/Badge/Badge';
 import { AddMemberModal } from '@/components/teams/AddMemberModal/AddMemberModal';
+import { AssignTeamGoalModal } from '@/components/teams/AssignTeamGoalModal/AssignTeamGoalModal';
 import {
   TrashIcon,
   UserIcon,
@@ -14,15 +15,20 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   ArrowUpDownIcon,
+  TargetIcon,
+  CalendarIcon,
+  UsersIcon,
 } from '@/components/common/Icons/Icons';
 import {
   ConsultaEquipeDTO,
   ConsultaMembroEquipeDTO,
   ConsultaTicketReporteDTO,
+  ConsultaMetaDTO,
   CargoEquipe,
 } from '@/types/api';
 import { equipeService } from '@/services/equipeService';
 import { ticketService } from '@/services/ticketService';
+import { metaService } from '@/services/metaService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
@@ -51,11 +57,21 @@ export default function EquipeDetalhesPage({
   const [equipe, setEquipe] = useState<ConsultaEquipeDTO | null>(null);
   const [membros, setMembros] = useState<ConsultaMembroEquipeDTO[]>([]);
   const [tickets, setTickets] = useState<ConsultaTicketReporteDTO[]>([]);
+  const [metas, setMetas] = useState<ConsultaMetaDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMetas, setLoadingMetas] = useState(true);
 
-  // Modal adicionar membro
+  // Modais
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [isAssignGoalOpen, setIsAssignGoalOpen] = useState(false);
   const [deletingTeam, setDeletingTeam] = useState(false);
+  const [expandedMemberIds, setExpandedMemberIds] = useState<number[]>([]);
+
+  const toggleMemberExpand = (membroId: number) => {
+    setExpandedMemberIds((prev) =>
+      prev.includes(membroId) ? prev.filter((id) => id !== membroId) : [...prev, membroId]
+    );
+  };
 
   // Permissões do usuário atual nesta equipe
   const meuMembro = membros.find((m) => m.usuarioId === usuario?.id);
@@ -117,21 +133,25 @@ export default function EquipeDetalhesPage({
     if (!equipeId) return;
 
     setLoading(true);
+    setLoadingMetas(true);
     Promise.all([
       equipeService.obterPorId(equipeId),
       equipeService.listarMembros(equipeId),
       ticketService.listarTicketsPorEquipe(equipeId).catch(() => []),
+      metaService.listarPorEquipe(equipeId).catch(() => []),
     ])
-      .then(([eq, mem, tick]) => {
+      .then(([eq, mem, tick, mets]) => {
         setEquipe(eq);
         setMembros(mem);
         setTickets(tick);
+        setMetas(mets);
       })
       .catch((err) => {
         showToast(err.message || 'Erro ao carregar equipe', 'error');
       })
       .finally(() => {
         setLoading(false);
+        setLoadingMetas(false);
       });
   }, [equipeId, showToast]);
 
@@ -139,6 +159,7 @@ export default function EquipeDetalhesPage({
     let isMounted = true;
     if (!equipeId || isNaN(equipeId)) {
       setLoading(false);
+      setLoadingMetas(false);
       return;
     }
 
@@ -146,19 +167,23 @@ export default function EquipeDetalhesPage({
       equipeService.obterPorId(equipeId),
       equipeService.listarMembros(equipeId),
       ticketService.listarTicketsPorEquipe(equipeId).catch(() => []),
+      metaService.listarPorEquipe(equipeId).catch(() => []),
     ])
-      .then(([eq, mem, tick]) => {
+      .then(([eq, mem, tick, mets]) => {
         if (isMounted) {
           setEquipe(eq);
           setMembros(mem);
           setTickets(tick);
+          setMetas(mets);
           setLoading(false);
+          setLoadingMetas(false);
         }
       })
       .catch((err) => {
         if (isMounted) {
           showToast(err.message || 'Erro ao carregar equipe', 'error');
           setLoading(false);
+          setLoadingMetas(false);
         }
       });
 
@@ -277,13 +302,22 @@ export default function EquipeDetalhesPage({
             )}
 
             {isAdminOrOwner && (
-              <button
-                type="button"
-                className={styles.addMemberBtn}
-                onClick={() => setIsAddMemberOpen(true)}
-              >
-                <PlusIcon size={16} /> Adicionar membro
-              </button>
+              <>
+                <button
+                  type="button"
+                  className={styles.assignGoalBtn}
+                  onClick={() => setIsAssignGoalOpen(true)}
+                >
+                  <PlusIcon size={16} /> Atribuir meta
+                </button>
+                <button
+                  type="button"
+                  className={styles.addMemberBtn}
+                  onClick={() => setIsAddMemberOpen(true)}
+                >
+                  <PlusIcon size={16} /> Adicionar membro
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -390,72 +424,302 @@ export default function EquipeDetalhesPage({
                 {membrosOrdenados.map((membro) => {
                   const nome = membro.usuario?.nome || 'Colaborador';
                   const email = membro.usuario?.email || '';
+                  const telefone = membro.usuario?.telefone || '';
+                  const isExpanded = expandedMemberIds.includes(membro.id);
 
                   return (
-                    <tr key={membro.id} className={styles.tr}>
-                      <td className={styles.td}>
-                        <div className={styles.memberInfo}>
-                          {membro.usuario?.fotoPerfil?.urlCaminho ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={getAvatarUrl(membro.usuario.fotoPerfil.urlCaminho)}
-                              alt={nome}
-                              className={styles.avatar}
-                            />
-                          ) : (
-                            <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cortex-purple)' }}>
-                              <UserIcon size={16} />
-                            </div>
-                          )}
-                          <div className={styles.memberText}>
-                            <span className={styles.memberName}>{nome}</span>
-                            <span className={styles.memberEmail}>{email}</span>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className={styles.td} suppressHydrationWarning>
-                        {formatarData(membro.dataEntrada)}
-                      </td>
-
-                      <td className={styles.td}>
-                        {isOwner && membro.cargo !== 'Dono' ? (
-                          <select
-                            value={membro.cargo}
-                            className={styles.roleSelect}
-                            onChange={(e) =>
-                              handleAlterarCargo(membro.id, e.target.value as CargoEquipe)
-                            }
-                          >
-                            <option value="Admin">Admin</option>
-                            <option value="Membro">Membro</option>
-                          </select>
-                        ) : (
-                          <Badge type="cargo" value={membro.cargo} />
-                        )}
-                      </td>
-
-                      {isAdminOrOwner && (
-                        <td className={styles.td} style={{ textAlign: 'right' }}>
-                          {(isOwner ? membro.cargo !== 'Dono' : membro.cargo === 'Membro') && (
+                    <React.Fragment key={membro.id}>
+                      <tr
+                        className={`${styles.tr} ${styles.trClickable} ${isExpanded ? styles.trExpanded : ''}`}
+                        onClick={() => toggleMemberExpand(membro.id)}
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            const tagName = (e.target as HTMLElement).tagName;
+                            if (tagName === 'SELECT' || tagName === 'BUTTON' || tagName === 'OPTION') return;
+                            e.preventDefault();
+                            toggleMemberExpand(membro.id);
+                          }
+                        }}
+                      >
+                        <td className={styles.td}>
+                          <div className={styles.memberCellWrapper}>
                             <button
                               type="button"
-                              className={`${styles.actionBtn} ${styles.removeBtn}`}
-                              onClick={() => handleRemoverMembro(membro.id, nome)}
-                              title="Remover da equipe"
+                              className={styles.memberExpandBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleMemberExpand(membro.id);
+                              }}
+                              title={isExpanded ? 'Recolher detalhes' : 'Ver mais informações do integrante'}
+                              aria-expanded={isExpanded}
+                              aria-label={`${isExpanded ? 'Recolher' : 'Expandir'} informações de ${nome}`}
                             >
-                              Remover
+                              <ChevronDownIcon
+                                size={16}
+                                className={`${styles.memberExpandIcon} ${isExpanded ? styles.memberExpandIconRotated : ''}`}
+                              />
                             </button>
+
+                            <div className={styles.memberInfo}>
+                              {membro.usuario?.fotoPerfil?.urlCaminho ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={getAvatarUrl(membro.usuario.fotoPerfil.urlCaminho)}
+                                  alt={nome}
+                                  className={styles.avatar}
+                                />
+                              ) : (
+                                <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cortex-purple)' }}>
+                                  <UserIcon size={16} />
+                                </div>
+                              )}
+                              <div className={styles.memberText}>
+                                <span className={styles.memberName}>{nome}</span>
+                                <span className={styles.memberEmail}>{email}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className={styles.td} suppressHydrationWarning>
+                          {formatarData(membro.dataEntrada)}
+                        </td>
+
+                        <td className={styles.td}>
+                          {isOwner && membro.cargo !== 'Dono' ? (
+                            <select
+                              value={membro.cargo}
+                              className={styles.roleSelect}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) =>
+                                handleAlterarCargo(membro.id, e.target.value as CargoEquipe)
+                              }
+                            >
+                              <option value="Admin">Admin</option>
+                              <option value="Membro">Membro</option>
+                            </select>
+                          ) : (
+                            <Badge type="cargo" value={membro.cargo} />
                           )}
                         </td>
+
+                        {isAdminOrOwner && (
+                          <td className={styles.td} style={{ textAlign: 'right' }}>
+                            {(isOwner ? membro.cargo !== 'Dono' : membro.cargo === 'Membro') && (
+                              <button
+                                type="button"
+                                className={`${styles.actionBtn} ${styles.removeBtn}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoverMembro(membro.id, nome);
+                                }}
+                                title="Remover da equipe"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+
+                      {isExpanded && (
+                        <tr className={styles.memberDetailsRow}>
+                          <td colSpan={isAdminOrOwner ? 4 : 3} className={styles.memberDetailsTd}>
+                            <div className={styles.memberDetailsCard}>
+                              <div className={styles.memberDetailsGrid}>
+                                <div className={styles.detailItem}>
+                                  <span className={styles.detailLabel}>Nome Completo</span>
+                                  <span className={styles.detailValue}>{nome}</span>
+                                </div>
+
+                                <div className={styles.detailItem}>
+                                  <span className={styles.detailLabel}>E-mail</span>
+                                  <span className={styles.detailValue}>
+                                    {email ? (
+                                      <a href={`mailto:${email}`} className={styles.detailLink}>
+                                        {email}
+                                      </a>
+                                    ) : (
+                                      <span className={styles.detailEmpty}>Não informado</span>
+                                    )}
+                                  </span>
+                                </div>
+
+                                <div className={styles.detailItem}>
+                                  <span className={styles.detailLabel}>Telefone / Contato</span>
+                                  <span className={styles.detailValue}>
+                                    {telefone ? (
+                                      <a href={`tel:${telefone}`} className={styles.detailLink}>
+                                        {telefone}
+                                      </a>
+                                    ) : (
+                                      <span className={styles.detailEmpty}>Não cadastrado</span>
+                                    )}
+                                  </span>
+                                </div>
+
+                                <div className={styles.detailItem}>
+                                  <span className={styles.detailLabel}>Cargo na Equipe</span>
+                                  <span className={styles.detailValue}>
+                                    <Badge type="cargo" value={membro.cargo} />
+                                  </span>
+                                </div>
+
+                                <div className={styles.detailItem}>
+                                  <span className={styles.detailLabel}>Integrante Desde</span>
+                                  <span className={styles.detailValue} suppressHydrationWarning>
+                                    {formatarData(membro.dataEntrada)}
+                                  </span>
+                                </div>
+
+                                <div className={styles.detailItem}>
+                                  <span className={styles.detailLabel}>ID do Usuário</span>
+                                  <span className={styles.detailValue}>#{membro.usuarioId}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
                       )}
-                    </tr>
+                    </React.Fragment>
                   );
                 })}
               </tbody>
             </table>
           )}
         </div>
+
+        {/* Seção de Metas da Equipe */}
+        <section className={styles.goalsSection}>
+          <div className={styles.sectionHeadingRow}>
+            <div>
+              <h3 className={styles.sectionBlockTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <TargetIcon size={20} color="var(--cortex-purple)" />
+                Metas da Equipe ({metas.length})
+              </h3>
+              <p className={styles.sectionBlockDesc}>
+                Metas atribuídas a esta equipe e seus integrantes para acompanhamento do progresso.
+              </p>
+            </div>
+            {isAdminOrOwner && metas.length > 0 && (
+              <button
+                type="button"
+                className={styles.assignGoalBtnSecondary}
+                onClick={() => setIsAssignGoalOpen(true)}
+              >
+                <PlusIcon size={14} /> Atribuir nova meta
+              </button>
+            )}
+          </div>
+
+          {loadingMetas ? (
+            <div className={styles.loadingBox}>Carregando metas da equipe...</div>
+          ) : metas.length === 0 ? (
+            <div className={styles.emptyGoalsCard}>
+              <TargetIcon size={32} color="var(--cortex-gray-text)" />
+              <p className={styles.emptyGoalsTitle}>Nenhuma meta atribuída à equipe ainda</p>
+              <p className={styles.emptyGoalsText}>
+                {isAdminOrOwner
+                  ? 'Como gestor da equipe, você pode criar uma nova meta ou vincular uma meta existente para que todos os membros acompanhem o progresso.'
+                  : 'Nenhuma meta foi designada para esta equipe até o momento.'}
+              </p>
+              {isAdminOrOwner && (
+                <button
+                  type="button"
+                  className={styles.assignGoalBtn}
+                  onClick={() => setIsAssignGoalOpen(true)}
+                  style={{ marginTop: '8px' }}
+                >
+                  <PlusIcon size={16} /> Atribuir meta à equipe
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className={styles.goalsGrid}>
+              {metas.map((meta) => {
+                const totalTarefas =
+                  meta.tarefas && meta.tarefas.length > 0
+                    ? meta.tarefas.length
+                    : meta.tarefa
+                    ? 1
+                    : 0;
+                const tarefasConcluidas =
+                  meta.tarefas && meta.tarefas.length > 0
+                    ? meta.tarefas.filter((t) => t.status === 'Concluida').length
+                    : meta.tarefa?.status === 'Concluida'
+                    ? 1
+                    : 0;
+                const progresso = meta.concluida
+                  ? 100
+                  : totalTarefas > 0
+                  ? Math.round((tarefasConcluidas / totalTarefas) * 100)
+                  : 0;
+
+                return (
+                  <div key={meta.id} className={styles.goalCard}>
+                    <div className={styles.goalCardHeader}>
+                      <div className={styles.goalTitleGroup}>
+                        <h4
+                          className={`${styles.goalName} ${
+                            meta.concluida ? styles.goalNameCompleted : ''
+                          }`}
+                        >
+                          {meta.nome}
+                        </h4>
+                        <Badge
+                          type="status"
+                          value={meta.concluida ? 'Concluida' : 'EmProgresso'}
+                        />
+                      </div>
+                      {meta.dataFechamento && (
+                        <span className={styles.goalDeadline} suppressHydrationWarning>
+                          <CalendarIcon size={13} />
+                          Prazo: {formatarData(meta.dataFechamento)}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.goalProgressSection}>
+                      <div className={styles.progressRow}>
+                        <span className={styles.progressLabel}>
+                          Progresso ({tarefasConcluidas}/{totalTarefas} tarefas)
+                        </span>
+                        <span className={styles.progressValue}>{progresso}%</span>
+                      </div>
+                      <div className={styles.progressTrack}>
+                        <div
+                          className={styles.progressFill}
+                          style={{ width: `${progresso}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.goalFooter}>
+                      <span className={styles.assignedToInfo}>
+                        {meta.usuarioId &&
+                        meta.usuarioId !== membros.find((m) => m.cargo === 'Dono')?.usuarioId &&
+                        meta.usuario?.nome ? (
+                          <>
+                            <UserIcon size={14} />
+                            Responsável: {meta.usuario.nome}
+                          </>
+                        ) : (
+                          <>
+                            <UsersIcon size={14} />
+                            Atribuída a toda a equipe
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         {/* Seção de Tickets de Reporte da Equipe (RF008) */}
         {isAdminOrOwner && tickets.length > 0 && (
@@ -494,6 +758,16 @@ export default function EquipeDetalhesPage({
         equipeId={equipeId}
         isOpen={isAddMemberOpen}
         onClose={() => setIsAddMemberOpen(false)}
+        onSuccess={recarregar}
+      />
+
+      {/* Modal Atribuir Meta da Equipe */}
+      <AssignTeamGoalModal
+        equipeId={equipeId}
+        equipeNome={equipe?.nome || 'Equipe'}
+        membros={membros}
+        isOpen={isAssignGoalOpen}
+        onClose={() => setIsAssignGoalOpen(false)}
         onSuccess={recarregar}
       />
     </>

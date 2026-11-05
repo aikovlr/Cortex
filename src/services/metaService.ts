@@ -73,4 +73,23 @@ export const metaService = {
       method: 'DELETE',
     });
   },
+
+  /**
+   * Atribui uma meta existente a uma equipe (Apenas Dono/Admin da equipe).
+   */
+  async atribuirEquipe(id: number, equipeId: number): Promise<ConsultaMetaDTO> {
+    return apiFetch<ConsultaMetaDTO>(`/api/metas/${id}/equipe`, {
+      method: 'POST',
+      body: JSON.stringify({ equipeId }),
+    });
+  },
+
+  /**
+   * Lista todas as metas atribuídas a uma equipe específica.
+   */
+  async listarPorEquipe(equipeId: number): Promise<ConsultaMetaDTO[]> {
+    return apiFetch<ConsultaMetaDTO[]>(`/api/equipes/${equipeId}/metas`, {
+      method: 'GET',
+    });
+  },
 };

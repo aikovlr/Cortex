@@ -141,6 +141,7 @@ export interface ConsultaMetaDTO {
   tarefa?: { id: number; titulo: string; status?: string } | null;
   tarefas?: ConsultaTarefaDTO[];
   usuario?: { id: number; nome: string } | null;
+  equipes?: ConsultaEquipeDTO[];
 }
 
 export interface CriarMetaDTO {
@@ -148,6 +149,12 @@ export interface CriarMetaDTO {
   dataFechamento?: string;
   tarefaId?: number;
   tarefaIds?: number[];
+  usuarioId?: number;
+  equipeId?: number;
+}
+
+export interface AtribuirEquipeMetaDTO {
+  equipeId: number;
 }
 
 export interface AtualizarMetaDTO {

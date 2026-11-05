@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Header from '@/app/Components/Header/header';
 import { metaService } from '@/services/metaService';
+import { equipeService } from '@/services/equipeService';
 import { ConsultaMetaDTO, ConsultaTarefaDTO } from '@/types/api';
 import { Badge } from '@/components/common/Badge/Badge';
 import { SearchBar } from '@/components/common/SearchBar/SearchBar';
@@ -11,9 +12,11 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   ArrowUpDownIcon,
+  UsersIcon,
 } from '@/components/common/Icons/Icons';
 import { GoalCreateModal } from '@/components/goals/GoalCreateModal/GoalCreateModal';
 import { GoalEditModal } from '@/components/goals/GoalEditModal/GoalEditModal';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
 
@@ -21,6 +24,7 @@ export type CriterioOrdenacao = 'status' | 'prazo' | 'nome' | 'progresso' | 'rec
 export type DirecaoOrdenacao = 'asc' | 'desc';
 
 export default function MetasPage() {
+  const { usuario } = useAuth();
   const { showToast } = useToast();
 
   const [metas, setMetas] = useState<ConsultaMetaDTO[]>([]);
@@ -31,10 +35,17 @@ export default function MetasPage() {
   const [customOrderIds, setCustomOrderIds] = useState<number[]>([]);
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dragOverId, setDragOverId] = useState<number | null>(null);
+  const [collapsedGoalIds, setCollapsedGoalIds] = useState<number[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingMeta, setEditingMeta] = useState<ConsultaMetaDTO | null>(null);
+
+  const toggleGoalCollapse = (id: number) => {
+    setCollapsedGoalIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   // Carrega preferências de ordenação salvas no localStorage
   useEffect(() => {
@@ -67,8 +78,33 @@ export default function MetasPage() {
   const carregarMetas = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await metaService.listar();
-      setMetas(data);
+      const [metasPessoais, equipes] = await Promise.all([
+        metaService.listar().catch(() => []),
+        equipeService.listarMinhasEquipes().catch(() => []),
+      ]);
+
+      const metasEquipesList = await Promise.all(
+        equipes.map((eq) => metaService.listarPorEquipe(eq.id).catch(() => []))
+      );
+
+      const mapMetas = new Map<number, ConsultaMetaDTO>();
+      for (const m of metasPessoais) {
+        mapMetas.set(m.id, m);
+      }
+      for (const lista of metasEquipesList) {
+        for (const m of lista) {
+          if (!mapMetas.has(m.id)) {
+            mapMetas.set(m.id, m);
+          } else {
+            const existente = mapMetas.get(m.id)!;
+            if ((!existente.equipes || existente.equipes.length === 0) && m.equipes) {
+              existente.equipes = m.equipes;
+            }
+          }
+        }
+      }
+
+      setMetas(Array.from(mapMetas.values()));
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -86,9 +122,33 @@ export default function MetasPage() {
     async function inicializar() {
       try {
         setLoading(true);
-        const data = await metaService.listar();
+        const [metasPessoais, equipes] = await Promise.all([
+          metaService.listar().catch(() => []),
+          equipeService.listarMinhasEquipes().catch(() => []),
+        ]);
+
+        const metasEquipesList = await Promise.all(
+          equipes.map((eq) => metaService.listarPorEquipe(eq.id).catch(() => []))
+        );
+
         if (isMounted) {
-          setMetas(data);
+          const mapMetas = new Map<number, ConsultaMetaDTO>();
+          for (const m of metasPessoais) {
+            mapMetas.set(m.id, m);
+          }
+          for (const lista of metasEquipesList) {
+            for (const m of lista) {
+              if (!mapMetas.has(m.id)) {
+                mapMetas.set(m.id, m);
+              } else {
+                const existente = mapMetas.get(m.id)!;
+                if ((!existente.equipes || existente.equipes.length === 0) && m.equipes) {
+                  existente.equipes = m.equipes;
+                }
+              }
+            }
+          }
+          setMetas(Array.from(mapMetas.values()));
         }
       } catch (err: unknown) {
         if (isMounted) {
@@ -147,8 +207,14 @@ export default function MetasPage() {
     });
   };
 
-  // Exclusão de meta
+  // Exclusão de meta (Apenas o criador da meta pode excluir)
   const handleDeleteMeta = async (id: number) => {
+    const meta = metas.find((m) => m.id === id);
+    if (meta && usuario?.id && meta.usuarioId !== usuario.id && meta.usuario?.id !== usuario.id) {
+      showToast('Apenas o criador da meta possui permissão para excluí-la.', 'error');
+      return;
+    }
+
     if (!confirm('Deseja realmente excluir esta meta?')) return;
 
     try {
@@ -173,8 +239,12 @@ export default function MetasPage() {
     }
   };
 
-  // Edição de meta
+  // Edição de meta (Apenas o criador da meta pode editar)
   const handleEditMeta = (meta: ConsultaMetaDTO) => {
+    if (usuario?.id && meta.usuarioId !== usuario.id && meta.usuario?.id !== usuario.id) {
+      showToast('Apenas o criador da meta possui permissão para editá-la.', 'error');
+      return;
+    }
     setEditingMeta(meta);
     setIsEditModalOpen(true);
   };
@@ -557,6 +627,10 @@ export default function MetasPage() {
               const concluida = status === 'Concluida';
               const isDraggingThis = draggedId === meta.id;
               const isDragOverThis = dragOverId === meta.id;
+              const isCollapsed = collapsedGoalIds.includes(meta.id);
+              const ehCriadorDaMeta = Boolean(
+                usuario?.id && (meta.usuarioId === usuario.id || meta.usuario?.id === usuario.id)
+              );
 
               return (
                 <div
@@ -571,12 +645,26 @@ export default function MetasPage() {
                     isDragOverThis ? styles.cardDragOver : ''
                   }`}
                 >
-                  <div className={styles.groupHeader}>
+                  <div
+                    className={`${styles.groupHeader} ${isCollapsed ? styles.groupHeaderCollapsed : ''}`}
+                    onClick={() => toggleGoalCollapse(meta.id)}
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={!isCollapsed}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleGoalCollapse(meta.id);
+                      }
+                    }}
+                  >
                     <div className={styles.groupTitleWrapper}>
                       <span
                         className={styles.dragHandle}
                         title="Arraste para reordenar"
                         aria-label="Arraste para reordenar"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                           <circle cx="8" cy="6" r="2" />
@@ -595,6 +683,15 @@ export default function MetasPage() {
                         type="status"
                         value={status}
                       />
+                      {meta.equipes && meta.equipes.length > 0 && (
+                        <span
+                          className={styles.teamBadge}
+                          title={`Equipe: ${meta.equipes.map((e) => e.nome).join(', ')}`}
+                        >
+                          <UsersIcon size={12} />
+                          {meta.equipes.map((e) => e.nome).join(', ')}
+                        </span>
+                      )}
                       {meta.dataFechamento && (
                         <span className={styles.dateLimit} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }} suppressHydrationWarning>
                           <CalendarIcon size={13} /> Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}
@@ -618,7 +715,10 @@ export default function MetasPage() {
                         <div className={styles.reorderActions}>
                           <button
                             type="button"
-                            onClick={() => moverMeta(meta.id, 'up')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moverMeta(meta.id, 'up');
+                            }}
                             disabled={index === 0}
                             className={styles.reorderBtn}
                             title="Mover meta para cima"
@@ -628,7 +728,10 @@ export default function MetasPage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => moverMeta(meta.id, 'down')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moverMeta(meta.id, 'down');
+                            }}
                             disabled={index === metasFiltradas.length - 1}
                             className={styles.reorderBtn}
                             title="Mover meta para baixo"
@@ -638,70 +741,100 @@ export default function MetasPage() {
                           </button>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleEditMeta(meta)}
-                          className={styles.editBtn}
-                          title="Editar meta"
-                          aria-label="Editar meta"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteMeta(meta.id)}
-                          className={styles.deleteBtn}
-                          title="Excluir meta"
-                          aria-label="Excluir meta"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.goalsList}>
-                    <div style={{ padding: '8px 16px 4px', fontSize: '12px', fontWeight: 600, color: 'var(--cortex-gray-text)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Tarefas Vinculadas ({tarefas.length})
-                    </div>
-
-                    {tarefas.length === 0 ? (
-                      <div style={{ padding: '12px 16px', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
-                        Nenhuma tarefa vinculada a esta meta.
-                      </div>
-                    ) : (
-                      tarefas.map((tarefa) => (
-                        <div key={tarefa.id} className={styles.goalItem}>
-                          <div className={styles.goalLeft}>
-                            <Badge type="status" value={tarefa.status} />
-                            <span
-                              className={`${styles.goalName} ${
-                                tarefa.status === 'Concluida' ? styles.goalNameCompleted : ''
-                              }`}
+                        {ehCriadorDaMeta && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditMeta(meta);
+                              }}
+                              className={styles.editBtn}
+                              title="Editar meta"
+                              aria-label="Editar meta"
                             >
-                              {tarefa.titulo}
-                            </span>
-                          </div>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </button>
 
-                          <div className={styles.goalRight}>
-                            <Badge type="prioridade" value={tarefa.prioridade} />
-                            {tarefa.dataVencimento && (
-                              <span className={styles.dateLimit} suppressHydrationWarning>
-                                Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteMeta(meta.id);
+                              }}
+                              className={styles.deleteBtn}
+                              title="Excluir meta"
+                              aria-label="Excluir meta"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleGoalCollapse(meta.id);
+                          }}
+                          className={styles.collapseToggleBtn}
+                          title={isCollapsed ? 'Expandir tarefas da meta' : 'Recolher tarefas da meta'}
+                          aria-label={isCollapsed ? `Expandir meta ${meta.nome}` : `Recolher meta ${meta.nome}`}
+                          aria-expanded={!isCollapsed}
+                        >
+                          <ChevronDownIcon
+                            size={14}
+                            className={`${styles.collapseIcon} ${!isCollapsed ? styles.collapseIconRotated : ''}`}
+                          />
+                          <span>{isCollapsed ? 'Expandir' : 'Recolher'}</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
+
+                  {!isCollapsed && (
+                    <div className={styles.goalsList}>
+                      <div style={{ padding: '8px 16px 4px', fontSize: '12px', fontWeight: 600, color: 'var(--cortex-gray-text)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Tarefas Vinculadas ({tarefas.length})
+                      </div>
+
+                      {tarefas.length === 0 ? (
+                        <div style={{ padding: '12px 16px', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
+                          Nenhuma tarefa vinculada a esta meta.
+                        </div>
+                      ) : (
+                        tarefas.map((tarefa) => (
+                          <div key={tarefa.id} className={styles.goalItem}>
+                            <div className={styles.goalLeft}>
+                              <Badge type="status" value={tarefa.status} />
+                              <span
+                                className={`${styles.goalName} ${
+                                  tarefa.status === 'Concluida' ? styles.goalNameCompleted : ''
+                                }`}
+                              >
+                                {tarefa.titulo}
+                              </span>
+                            </div>
+
+                            <div className={styles.goalRight}>
+                              <Badge type="prioridade" value={tarefa.prioridade} />
+                              {tarefa.dataVencimento && (
+                                <span className={styles.dateLimit} suppressHydrationWarning>
+                                  Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

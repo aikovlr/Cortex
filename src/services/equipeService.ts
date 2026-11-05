@@ -6,6 +6,7 @@ import { apiFetch } from './api';
 import {
   ConsultaEquipeDTO,
   ConsultaMembroEquipeDTO,
+  ConsultaMetaDTO,
   CriarEquipeDTO,
   CargoEquipe,
 } from '@/types/api';
@@ -101,6 +102,15 @@ export const equipeService = {
    */
   async listarMembros(equipeId: number): Promise<ConsultaMembroEquipeDTO[]> {
     return apiFetch<ConsultaMembroEquipeDTO[]>(`/api/equipe/${equipeId}/membros`, {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Lista as metas atribuídas à equipe
+   */
+  async listarMetas(equipeId: number): Promise<ConsultaMetaDTO[]> {
+    return apiFetch<ConsultaMetaDTO[]>(`/api/equipes/${equipeId}/metas`, {
       method: 'GET',
     });
   },

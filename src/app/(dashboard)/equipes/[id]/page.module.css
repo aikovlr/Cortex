@@ -179,6 +179,10 @@
   transition: background-color 0.15s ease;
 }
 
+.trClickable {
+  cursor: pointer;
+}
+
 .tr:hover {
   background-color: var(--bg-surface-hover);
 }
@@ -194,6 +198,107 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.memberCellWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.memberExpandBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-gray-text);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.memberExpandBtn:hover {
+  color: var(--cortex-purple);
+  background-color: rgba(123, 79, 201, 0.1);
+}
+
+.memberExpandIcon {
+  transition: transform 0.2s ease;
+}
+
+.memberExpandIconRotated {
+  transform: rotate(180deg);
+  color: var(--cortex-purple);
+}
+
+.trExpanded {
+  background-color: rgba(123, 79, 201, 0.04);
+}
+
+.memberDetailsRow {
+  background-color: var(--bg-surface-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.memberDetailsTd {
+  padding: 0 20px 18px 52px;
+}
+
+.memberDetailsCard {
+  padding: 16px 20px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.memberDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px 24px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cortex-gray-text);
+}
+
+.detailValue {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  word-break: break-all;
+}
+
+.detailLink {
+  color: var(--cortex-purple);
+  text-decoration: none;
+  transition: text-decoration 0.2s ease;
+}
+
+.detailLink:hover {
+  text-decoration: underline;
+}
+
+.detailEmpty {
+  color: var(--cortex-gray-text);
+  font-style: italic;
+  font-size: 12.5px;
 }
 
 .avatar {
@@ -324,3 +429,225 @@
 .resolveTicketBtn:hover {
   opacity: 0.9;
 }
+
+/* ============================================================
+   Seção de Metas da Equipe
+   ============================================================ */
+.assignGoalBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: var(--cortex-purple);
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(123, 79, 201, 0.3);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.assignGoalBtn:hover {
+  background-color: var(--cortex-purple-hover, #6a3fb8);
+  transform: translateY(-1px);
+}
+
+.assignGoalBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background-color: rgba(123, 79, 201, 0.1);
+  color: var(--cortex-purple);
+  border: 1px solid rgba(123, 79, 201, 0.25);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.assignGoalBtnSecondary:hover {
+  background-color: var(--cortex-purple);
+  color: #ffffff;
+}
+
+.goalsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.sectionHeadingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sectionBlockTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.sectionBlockDesc {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
+  margin: 4px 0 0 0;
+}
+
+.loadingBox {
+  padding: 32px;
+  text-align: center;
+  color: var(--cortex-gray-text);
+  font-size: 13px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 12px;
+}
+
+.emptyGoalsCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 24px;
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-main);
+  border-radius: 12px;
+  gap: 6px;
+}
+
+.emptyGoalsTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.emptyGoalsText {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
+  max-width: 480px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.goalsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.goalCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.goalCard:hover {
+  border-color: rgba(123, 79, 201, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.goalCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goalTitleGroup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goalName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.goalNameCompleted {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.goalDeadline {
+  font-size: 12px;
+  color: var(--cortex-gray-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.goalProgressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.progressLabel {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.progressValue {
+  color: var(--cortex-purple);
+  font-weight: 700;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--bg-surface-secondary);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--cortex-purple);
+  transition: width 0.3s ease;
+}
+
+.goalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-main);
+  font-size: 12px;
+}
+
+.assignedToInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cortex-gray-text);
+}
+
