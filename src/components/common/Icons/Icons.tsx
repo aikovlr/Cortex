@@ -537,5 +537,26 @@ export function ArrowUpDownIcon({ size = 14, color = 'currentColor', strokeWidth
   );
 }
 
+export function TargetIcon({ size = 18, color = 'currentColor', strokeWidth = 2, ...props }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+
 
 

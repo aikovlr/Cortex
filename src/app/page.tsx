@@ -1,48 +1,61 @@
-'use client';
+import React from 'react';
+import type { Metadata } from 'next';
+import Navbar from '@/components/landing/Navbar';
+import Hero from '@/components/landing/Hero';
+import About from '@/components/landing/About';
+import Features from '@/components/landing/Features';
+import HowItWorks from '@/components/landing/HowItWorks';
+import Gamification from '@/components/landing/Gamification';
+import Audience from '@/components/landing/Audience';
+import AccessibilitySection from '@/components/landing/AccessibilitySection';
+import FinalCta from '@/components/landing/FinalCta';
+import Footer from '@/components/landing/Footer';
+import { AUTH_ROUTE } from '@/components/landing/constants';
+import styles from '@/components/landing/landing.module.css';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { useAuth } from '@/contexts/AuthContext';
+// Rota centralizada conforme requisito da Seção 4 do prompt
+export { AUTH_ROUTE };
 
-export default function Home() {
-  const { usuario, loading } = useAuth();
-  const router = useRouter();
+export const metadata: Metadata = {
+  title: 'Cortex — Gerenciador de Tarefas e Equipes | 100% Gratuito',
+  description:
+    'O Cortex é um sistema web moderno e gratuito para organizar tarefas pessoais e colaborativas, promovendo comunicação ágil, gamificação e foco em resultados.',
+};
 
-  useEffect(() => {
-    if (!loading) {
-      if (usuario) {
-        router.replace('/minhas-tarefas');
-      } else {
-        router.replace('/login');
-      }
-    }
-  }, [usuario, loading, router]);
-
+export default function HomePage() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        width: '100vw',
-        backgroundColor: '#12192C',
-        gap: '16px',
-      }}
-    >
-      <Image
-        src="/logo.png"
-        alt="Cortex"
-        width={100}
-        height={100}
-        priority
-        style={{ filter: 'drop-shadow(0 4px 16px rgba(123, 79, 201, 0.4))' }}
-      />
-      <p style={{ color: '#898899', fontSize: '14px', letterSpacing: '0.1em' }}>
-        CARREGANDO CORTEX...
-      </p>
+    <div className={styles.landingRoot}>
+      {/* 1. Cabeçalho (Navbar Fixa) */}
+      <Navbar />
+
+      <main id="conteudo-principal">
+        {/* 2. Hero Section */}
+        <Hero />
+
+        {/* 3. Sobre o Cortex */}
+        <About />
+
+        {/* 4. Recursos */}
+        <Features />
+
+        {/* 5. Como Funciona */}
+        <HowItWorks />
+
+        {/* 6. Gamificação e Metas */}
+        <Gamification />
+
+        {/* 7. Benefícios / Para Quem É */}
+        <Audience />
+
+        {/* 8. Acessibilidade */}
+        <AccessibilitySection />
+
+        {/* 9. Chamada Final (CTA) */}
+        <FinalCta />
+      </main>
+
+      {/* 10. Rodapé */}
+      <Footer />
     </div>
   );
 }

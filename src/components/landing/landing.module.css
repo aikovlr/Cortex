@@ -1,0 +1,1676 @@
+/* ============================================================
+   Cortex Landing Page Styles
+   - Seções intercaladas entre o Azul Cortex (#12192C / --cortex-dark-blue)
+     e a superfície temática (Branco/Cinza no Claro, Escuro no Escuro).
+   - Header e Footer SEMPRE em Azul Cortex (#12192C).
+   - Texto "Cortex" da marca SEMPRE BRANCO (#FFFFFF, sem gradiente).
+   - Utiliza ESTRITAMENTE as variáveis de globals.css:
+     --cortex-dark-blue (#12192C), --cortex-dark-card (#18223B),
+     --cortex-dark-input (#101626), --cortex-white (#FFFFFF),
+     --cortex-bg-light (#E5E5E5), --cortex-border (rgba(255,255,255,0.12)),
+     --cortex-purple (#7B4FC9), --cortex-purple-hover (#6a3fb8),
+     --bg-surface, --bg-surface-secondary, --text-primary, --text-secondary,
+     --border-main, --shadow-card, --badge-...
+   ============================================================ */
+
+.landingRoot {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--cortex-dark-blue);
+  color: var(--cortex-white);
+  font-family: var(--font-poppins), sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.landingContainer {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   1. NAVBAR (Fixa 76px - Sempre Azul Cortex)
+   ============================================================ */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 76px;
+  background-color: var(--cortex-dark-blue);
+  border-bottom: 1px solid var(--cortex-border);
+  z-index: 100;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.navbarScrolled {
+  background-color: var(--cortex-dark-blue);
+  border-bottom: 1px solid var(--cortex-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.navbarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.brandLogo {
+  height: 52px;
+  max-height: 56px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.brandLogoFooter {
+  height: 36px;
+  max-height: 40px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.brand:hover .brandLogo,
+.brand:hover .brandLogoFooter {
+  transform: scale(1.05);
+}
+
+/* Texto Cortex: Sempre Branco, sem gradiente */
+.brandText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--cortex-white);
+  line-height: 1;
+  display: inline-block;
+  transition: opacity 0.2s ease;
+}
+
+.brand:hover .brandText {
+  opacity: 0.9;
+}
+
+.navLinksDesktop {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  color: var(--cortex-bg-light);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  position: relative;
+  padding: 6px 0;
+}
+
+.navLink:hover {
+  color: var(--cortex-white);
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--cortex-purple);
+  transition: width 0.2s ease;
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mobileMenuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--cortex-border);
+  border-radius: 8px;
+  color: var(--cortex-white);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.mobileMenuBtn:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Mobile Drawer - Sempre Azul Cortex */
+.mobileMenuDrawer {
+  display: none;
+  position: fixed;
+  top: 76px;
+  left: 0;
+  right: 0;
+  background-color: var(--cortex-dark-blue);
+  border-bottom: 1px solid var(--cortex-border);
+  padding: 24px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 99;
+}
+
+.mobileMenuDrawerOpen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobileNavLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mobileNavLink {
+  color: var(--cortex-bg-light);
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 8px 0;
+  display: block;
+}
+
+.mobileNavLink:hover {
+  color: var(--cortex-white);
+}
+
+/* ============================================================
+   BOTÕES GLOBAIS DA LANDING PAGE
+   ============================================================ */
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 24px;
+  background-color: var(--cortex-purple);
+  color: var(--cortex-white);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.btnPrimary:hover {
+  background-color: var(--cortex-purple-hover);
+  transform: translateY(-1px);
+}
+
+.btnPrimary:active {
+  transform: scale(0.98);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 24px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--cortex-white);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.btnSecondary:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.btnSecondary:active {
+  transform: scale(0.98);
+}
+
+.btnNav {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 0.875rem;
+}
+
+/* ============================================================
+   2. HERO SECTION (Seção 1 - Azul Cortex)
+   ============================================================ */
+.heroSection {
+  padding-top: 150px;
+  padding-bottom: 80px;
+  background-color: var(--cortex-dark-blue);
+  color: var(--cortex-white);
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 56px;
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--cortex-border);
+  color: var(--cortex-white);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.heroBadgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--cortex-purple);
+}
+
+.heroTitle {
+  font-size: 3rem;
+  line-height: 1.18;
+  font-weight: 700;
+  color: var(--cortex-white);
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.heroTitleHighlight {
+  color: var(--cortex-purple);
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--cortex-bg-light);
+  font-weight: 400;
+  margin: 0;
+  max-width: 580px;
+}
+
+.heroCtaGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.heroGuarantee {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--cortex-bg-light);
+  font-weight: 400;
+}
+
+/* ============================================================
+   ILUSTRAÇÃO HERO (Cards em Azul Card #18223B)
+   ============================================================ */
+.heroIllustration {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.illustrationCanvas {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+}
+
+.heroTaskCardPrimary {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+  animation: floatPrimary 6s ease-in-out infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+@keyframes floatPrimary {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.heroCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heroCardBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badgePriority {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: var(--badge-alta-bg);
+  color: var(--badge-alta-text);
+  border: 1px solid var(--cortex-border);
+}
+
+.badgeStatus {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: var(--badge-pendente-bg);
+  color: var(--badge-pendente-text);
+  border: 1px solid var(--cortex-border);
+}
+
+.scoreBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: var(--badge-concluida-bg);
+  color: var(--badge-concluida-text);
+  border: 1px solid var(--cortex-border);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.heroCardTitle {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--cortex-white);
+  margin: 0;
+}
+
+.heroCardMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.8125rem;
+  color: var(--cortex-bg-light);
+}
+
+.heroCardMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Card Secundário Flutuante */
+.heroTaskCardSecondary {
+  position: absolute;
+  bottom: -28px;
+  right: -20px;
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: floatSecondary 7s ease-in-out infinite;
+  z-index: 2;
+  transition: background-color 0.2s ease;
+}
+
+@keyframes floatSecondary {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(10px) rotate(1deg);
+  }
+}
+
+.iconCircleSuccess {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--badge-concluida-bg);
+  color: var(--badge-concluida-text);
+  border: 1px solid var(--cortex-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floatingCardContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.floatingCardTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--cortex-white);
+}
+
+.floatingCardSubtitle {
+  font-size: 0.75rem;
+  color: var(--cortex-bg-light);
+}
+
+/* Card Terciário Flutuante */
+.heroTaskCardTertiary {
+  position: absolute;
+  top: -24px;
+  left: -24px;
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: floatTertiary 8s ease-in-out infinite;
+  z-index: 2;
+  transition: background-color 0.2s ease;
+}
+
+@keyframes floatTertiary {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.avatarGroup {
+  display: flex;
+  align-items: center;
+}
+
+.avatarCircle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--cortex-purple);
+  border: 2px solid var(--cortex-dark-card);
+  color: var(--cortex-white);
+  font-size: 0.625rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -6px;
+}
+
+.avatarCircle:first-child {
+  margin-left: 0;
+  background-color: var(--cortex-purple-hover);
+}
+
+/* ============================================================
+   ESTILOS COMPARTILHADOS DE SEÇÃO
+   Alternância: Azul (#12192C) <-> Superfície Temática (Claro/Escuro)
+   ============================================================ */
+.section {
+  padding: 96px 0;
+  position: relative;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Seções Azuis (#12192C): Hero, Recursos, Gamificação, Acessibilidade, CTA */
+.sectionDark,
+.sectionDeepDark {
+  background-color: var(--cortex-dark-blue);
+  color: var(--cortex-white);
+  border-top: 1px solid var(--cortex-border);
+  border-bottom: 1px solid var(--cortex-border);
+}
+
+/* Seções Intercaladas Temáticas: Sobre, Como Funciona, Para Quem É */
+.sectionLight {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-main);
+  border-bottom: 1px solid var(--border-main);
+}
+
+.sectionLightAlt {
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-main);
+  border-bottom: 1px solid var(--border-main);
+}
+
+/* Cabeçalhos de Seções Azuis */
+.sectionHeader {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 56px auto;
+}
+
+.sectionEyebrow {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cortex-purple);
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cortex-white);
+  letter-spacing: -0.02em;
+  margin: 0 0 16px 0;
+}
+
+.sectionSubtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--cortex-bg-light);
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Cabeçalhos de Seções Intercaladas Temáticas */
+.sectionEyebrowLight {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cortex-purple);
+  margin-bottom: 12px;
+}
+
+.sectionTitleLight {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin: 0 0 16px 0;
+}
+
+.sectionSubtitleLight {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin: 0;
+}
+
+/* ============================================================
+   3. SOBRE O CORTEX (Seção 2 - Superfície Temática)
+   ============================================================ */
+.aboutCardLight {
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-main);
+  border-radius: 20px;
+  padding: 48px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.aboutLeadTextLight {
+  font-size: 1.25rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin: 0;
+}
+
+.aboutGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.aboutItemLight {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.aboutItemLight:hover {
+  transform: translateY(-2px);
+}
+
+.aboutItemIconLight {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-main);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aboutItemTitleLight {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.aboutItemTextLight {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin: 0;
+}
+
+/* ============================================================
+   4. RECURSOS (Seção 3 - Azul Cortex)
+   ============================================================ */
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.featureCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.featureCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--cortex-purple);
+}
+
+.featureIconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.featureCard:hover .featureIconWrapper {
+  background-color: var(--cortex-purple);
+  color: var(--cortex-white);
+}
+
+.featureTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--cortex-white);
+  margin: 0;
+}
+
+.featureDescription {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--cortex-bg-light);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ============================================================
+   5. COMO FUNCIONA (Seção 4 - Superfície Temática)
+   ============================================================ */
+.stepsWrapper {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.stepsConnectorLineLight {
+  position: absolute;
+  top: 36px;
+  left: 48px;
+  right: 48px;
+  height: 2px;
+  background-color: var(--border-main);
+  z-index: 0;
+}
+
+.stepsConnectorLineActive {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background-color: var(--cortex-purple);
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stepsConnectorLineActive.drawn {
+  width: 100%;
+}
+
+.stepCardLight {
+  position: relative;
+  z-index: 1;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 20px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stepCardLight:hover {
+  transform: translateY(-3px);
+  border-color: var(--cortex-purple);
+}
+
+.stepNumberCircleLight {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--bg-surface-secondary);
+  border: 2px solid var(--cortex-purple);
+  color: var(--cortex-purple);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepTitleLight {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.stepDescriptionLight {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin: 0;
+}
+
+/* ============================================================
+   6. GAMIFICAÇÃO E AVALIAÇÃO DE NOTAS (Seção 5 - Azul Cortex)
+   ============================================================ */
+.gamificationGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 48px;
+}
+
+.gamificationContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gamificationPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--cortex-border);
+  color: var(--cortex-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.gamificationInteractiveCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.gamificationScoreRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--cortex-border);
+}
+
+.scoreBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.scoreLabel {
+  font-size: 0.8125rem;
+  color: var(--cortex-bg-light);
+  font-weight: 400;
+}
+
+.scoreValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cortex-white);
+  letter-spacing: -0.02em;
+}
+
+.badgeLevel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--cortex-border);
+  border-radius: 9999px;
+  color: var(--cortex-white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.goalItemList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.goalItem {
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.goalItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.goalItemTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--cortex-white);
+}
+
+.goalItemPoints {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--cortex-purple);
+}
+
+.goalTrack {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.goalFill {
+  height: 100%;
+  border-radius: 9999px;
+  background-color: var(--cortex-purple);
+  transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   7. BENEFÍCIOS / PARA QUEM É (Seção 6 - Superfície Temática)
+   ============================================================ */
+.audienceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.audienceCardLight {
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-main);
+  border-radius: 20px;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.audienceCardLight:hover {
+  transform: translateY(-3px);
+  border-color: var(--cortex-purple);
+}
+
+.audienceIconCircleLight {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.audienceTitleLight {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.audienceSubtitleLight {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin: 0;
+}
+
+.audienceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+}
+
+.audienceListItemLight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.audienceListIconLight {
+  color: var(--cortex-purple);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   8. ACESSIBILIDADE (Seção 7 - Azul Cortex)
+   ============================================================ */
+.accessibilityBox {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 20px;
+  padding: 44px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 48px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.accessibilityFeaturesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.accessibilityFeatureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.accessibilityIconCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.accessibilityFeatureTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cortex-white);
+  margin: 0 0 4px 0;
+}
+
+.accessibilityFeatureDesc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--cortex-bg-light);
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Controles interativos ao vivo */
+.accessibilityPreviewBox {
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.previewHeader {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--cortex-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.previewControlsRow {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.controlGroup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.controlLabel {
+  font-size: 0.875rem;
+  color: var(--cortex-white);
+  font-weight: 500;
+}
+
+.controlButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.controlBtn {
+  height: 34px;
+  padding: 0 12px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--cortex-border);
+  border-radius: 8px;
+  color: var(--cortex-white);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.controlBtn:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.controlBtnActive {
+  background-color: var(--cortex-purple);
+  border-color: var(--cortex-purple);
+  color: var(--cortex-white);
+}
+
+/* ============================================================
+   9. CTA FINAL (Seção 8 - Azul Cortex)
+   ============================================================ */
+.ctaSection {
+  padding: 96px 0;
+  background-color: var(--cortex-dark-blue);
+  color: var(--cortex-white);
+  position: relative;
+  transition: background-color 0.2s ease;
+  border-top: 1px solid var(--cortex-border);
+}
+
+.ctaCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 20px;
+  padding: 64px 32px;
+  text-align: center;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.ctaTitle {
+  font-size: 2.375rem;
+  font-weight: 700;
+  color: var(--cortex-white);
+  margin: 0;
+  letter-spacing: -0.02em;
+  max-width: 760px;
+  line-height: 1.25;
+}
+
+.ctaSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--cortex-bg-light);
+  margin: 0;
+  max-width: 600px;
+  font-weight: 400;
+}
+
+.ctaBadgeFree {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--cortex-border);
+  color: var(--cortex-white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* ============================================================
+   10. RODAPÉ (Sempre Azul Cortex)
+   ============================================================ */
+.footer {
+  border-top: 1px solid var(--cortex-border);
+  background-color: var(--cortex-dark-blue);
+  color: var(--cortex-bg-light);
+  padding: 48px 0 32px 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.footerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--cortex-border);
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.footerLink {
+  color: var(--cortex-bg-light);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+  color: var(--cortex-white);
+}
+
+.footerBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 24px;
+  font-size: 0.8125rem;
+  color: var(--cortex-bg-light);
+}
+
+.footerNoticeFree {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cortex-white);
+  font-weight: 500;
+}
+
+/* ============================================================
+   11. ADAPTAÇÃO AO MODO ALTO CONTRASTE (WCAG AAA)
+   Segue o padrão oficial do projeto presente no globals.css:
+   - Em superfícies claras: textos em preto (#000000), links sublinhados, bordas de 1.5px
+   - Em containers azuis e modo escuro: textos em branco (#ffffff), links sublinhados, bordas reforçadas
+   ============================================================ */
+
+/* Alto Contraste em Seções e Containers Azuis (Navbar, Hero, Recursos, Gamificação, CTA, Footer) */
+:global(html.high-contrast) .navbar,
+:global(html[data-high-contrast="true"]) .navbar,
+:global(html.high-contrast) .footer,
+:global(html[data-high-contrast="true"]) .footer,
+:global(html.high-contrast) .heroSection,
+:global(html[data-high-contrast="true"]) .heroSection,
+:global(html.high-contrast) .sectionDark,
+:global(html[data-high-contrast="true"]) .sectionDark,
+:global(html.high-contrast) .sectionDeepDark,
+:global(html[data-high-contrast="true"]) .sectionDeepDark,
+:global(html.high-contrast) .ctaSection,
+:global(html[data-high-contrast="true"]) .ctaSection {
+  background-color: var(--cortex-dark-blue) !important;
+  color: #ffffff !important;
+}
+
+/* Todos os textos, títulos, subtítulos, labels e links nas seções azuis (100% visíveis em alto contraste) */
+:global(html.high-contrast) .navbar :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em),
+:global(html[data-high-contrast="true"]) .navbar :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em),
+:global(html.high-contrast) .footer :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em),
+:global(html[data-high-contrast="true"]) .footer :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em),
+:global(html.high-contrast) .heroSection :is(h1, h2, h3, h4, h5, h6, p, span:not([class*="badgePriority"]):not([class*="badgeStatus"]):not([class*="scoreBadge"]), label, a, button, strong, em),
+:global(html[data-high-contrast="true"]) .heroSection :is(h1, h2, h3, h4, h5, h6, p, span:not([class*="badgePriority"]):not([class*="badgeStatus"]):not([class*="scoreBadge"]), label, a, button, strong, em),
+:global(html.high-contrast) .sectionDark :is(h1, h2, h3, h4, h5, h6, p, span:not([class*="badgePriority"]):not([class*="badgeStatus"]):not([class*="scoreBadge"]), label, a, button, strong, em),
+:global(html[data-high-contrast="true"]) .sectionDark :is(h1, h2, h3, h4, h5, h6, p, span:not([class*="badgePriority"]):not([class*="badgeStatus"]):not([class*="scoreBadge"]), label, a, button, strong, em),
+:global(html.high-contrast) .sectionDeepDark :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em),
+:global(html[data-high-contrast="true"]) .sectionDeepDark :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em),
+:global(html.high-contrast) .ctaSection :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em),
+:global(html[data-high-contrast="true"]) .ctaSection :is(h1, h2, h3, h4, h5, h6, p, span, label, a, button, strong, em) {
+  color: #ffffff !important;
+  outline: none !important;
+  text-shadow: none !important;
+}
+
+/* Ícones SVG em seções azuis adotam branco */
+:global(html.high-contrast) .navbar svg,
+:global(html[data-high-contrast="true"]) .navbar svg,
+:global(html.high-contrast) .footer svg,
+:global(html[data-high-contrast="true"]) .footer svg,
+:global(html.high-contrast) .heroSection svg,
+:global(html[data-high-contrast="true"]) .heroSection svg,
+:global(html.high-contrast) .sectionDark svg,
+:global(html[data-high-contrast="true"]) .sectionDark svg,
+:global(html.high-contrast) .sectionDeepDark svg,
+:global(html[data-high-contrast="true"]) .sectionDeepDark svg,
+:global(html.high-contrast) .ctaSection svg,
+:global(html[data-high-contrast="true"]) .ctaSection svg {
+  color: #ffffff !important;
+}
+
+:global(html.high-contrast) .navLink,
+:global(html[data-high-contrast="true"]) .navLink,
+:global(html.high-contrast) .footerLink,
+:global(html[data-high-contrast="true"]) .footerLink {
+  color: #ffffff !important;
+  text-decoration: underline !important;
+}
+
+/* Cards e superfícies escuras dentro das seções azuis com bordas reforçadas */
+:global(html.high-contrast) .featureCard,
+:global(html[data-high-contrast="true"]) .featureCard,
+:global(html.high-contrast) .heroTaskCardPrimary,
+:global(html[data-high-contrast="true"]) .heroTaskCardPrimary,
+:global(html.high-contrast) .heroTaskCardSecondary,
+:global(html[data-high-contrast="true"]) .heroTaskCardSecondary,
+:global(html.high-contrast) .heroTaskCardTertiary,
+:global(html[data-high-contrast="true"]) .heroTaskCardTertiary,
+:global(html.high-contrast) .gamificationInteractiveCard,
+:global(html[data-high-contrast="true"]) .gamificationInteractiveCard,
+:global(html.high-contrast) .pillarCard,
+:global(html[data-high-contrast="true"]) .pillarCard,
+:global(html.high-contrast) .accessibilityBox,
+:global(html[data-high-contrast="true"]) .accessibilityBox,
+:global(html.high-contrast) .accessibilityPreviewBox,
+:global(html[data-high-contrast="true"]) .accessibilityPreviewBox,
+:global(html.high-contrast) .ctaCard,
+:global(html[data-high-contrast="true"]) .ctaCard {
+  border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+  background-color: var(--cortex-dark-card) !important;
+}
+
+/* Textos dentro de cards em seções azuis */
+:global(html.high-contrast) .featureCard :is(h1, h2, h3, h4, p, span, label),
+:global(html[data-high-contrast="true"]) .featureCard :is(h1, h2, h3, h4, p, span, label),
+:global(html.high-contrast) .pillarCard :is(h1, h2, h3, h4, p, span, label),
+:global(html[data-high-contrast="true"]) .pillarCard :is(h1, h2, h3, h4, p, span, label),
+:global(html.high-contrast) .gamificationInteractiveCard :is(h1, h2, h3, h4, p, span:not([class*="badge"]), label),
+:global(html[data-high-contrast="true"]) .gamificationInteractiveCard :is(h1, h2, h3, h4, p, span:not([class*="badge"]), label),
+:global(html.high-contrast) .accessibilityBox :is(h1, h2, h3, h4, p, span, label),
+:global(html[data-high-contrast="true"]) .accessibilityBox :is(h1, h2, h3, h4, p, span, label),
+:global(html.high-contrast) .accessibilityPreviewBox :is(h1, h2, h3, h4, p, span, label),
+:global(html[data-high-contrast="true"]) .accessibilityPreviewBox :is(h1, h2, h3, h4, p, span, label),
+:global(html.high-contrast) .ctaCard :is(h1, h2, h3, h4, p, span, label),
+:global(html[data-high-contrast="true"]) .ctaCard :is(h1, h2, h3, h4, p, span, label) {
+  color: #ffffff !important;
+}
+
+/* Botões na hero e caixas interativas */
+:global(html.high-contrast) .btnSecondary,
+:global(html[data-high-contrast="true"]) .btnSecondary {
+  border: 1.5px solid #ffffff !important;
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+:global(html.high-contrast) .controlBtn,
+:global(html[data-high-contrast="true"]) .controlBtn {
+  border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+  color: #ffffff !important;
+}
+
+:global(html.high-contrast) .controlBtnActive,
+:global(html[data-high-contrast="true"]) .controlBtnActive {
+  background-color: var(--cortex-purple) !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+:global(html.high-contrast) .heroBadge,
+:global(html[data-high-contrast="true"]) .heroBadge,
+:global(html.high-contrast) .ctaBadgeFree,
+:global(html[data-high-contrast="true"]) .ctaBadgeFree {
+  border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+  color: #ffffff !important;
+}
+
+:global(html.high-contrast) .brandText,
+:global(html[data-high-contrast="true"]) .brandText {
+  color: #ffffff !important;
+}
+
+/* Alto Contraste em Seções Intercaladas Temáticas no Modo Claro */
+:global(html.high-contrast:not(.dark):not([data-theme="dark"])) .sectionLight,
+:global(html[data-high-contrast="true"]:not(.dark):not([data-theme="dark"])) .sectionLight,
+:global(html.high-contrast:not(.dark):not([data-theme="dark"])) .sectionLightAlt,
+:global(html[data-high-contrast="true"]:not(.dark):not([data-theme="dark"])) .sectionLightAlt {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+:global(html.high-contrast:not(.dark):not([data-theme="dark"])) .aboutItemLight,
+:global(html.high-contrast:not(.dark):not([data-theme="dark"])) .aboutCardLight,
+:global(html.high-contrast:not(.dark):not([data-theme="dark"])) .stepCardLight,
+:global(html.high-contrast:not(.dark):not([data-theme="dark"])) .audienceCardLight {
+  border: 1.5px solid #000000 !important;
+  background-color: #ffffff !important;
+}
+
+/* Alto Contraste em Seções Intercaladas Temáticas no Modo Escuro */
+:global(html.high-contrast:is(.dark, [data-theme="dark"])) .aboutItemLight,
+:global(html.high-contrast:is(.dark, [data-theme="dark"])) .aboutCardLight,
+:global(html.high-contrast:is(.dark, [data-theme="dark"])) .stepCardLight,
+:global(html.high-contrast:is(.dark, [data-theme="dark"])) .audienceCardLight {
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  background-color: var(--bg-surface) !important;
+}
+
+/* ============================================================
+   12. RESPONSIVIDADE (375px, 768px, 1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .heroGrid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    text-align: center;
+  }
+
+  .heroContent {
+    align-items: center;
+  }
+
+  .heroSubtitle {
+    max-width: 600px;
+  }
+
+  .heroCtaGroup {
+    justify-content: center;
+  }
+
+  .featuresGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stepsWrapper {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+
+  .stepsConnectorLineLight {
+    display: none;
+  }
+
+  .gamificationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .audienceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .accessibilityBox {
+    grid-template-columns: 1fr;
+    padding: 32px;
+  }
+
+  .aboutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .navLinksDesktop {
+    display: none;
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+  }
+
+  .heroSection {
+    padding-top: 110px;
+    padding-bottom: 60px;
+  }
+
+  .heroTitle {
+    font-size: 2.125rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stepsWrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .ctaTitle {
+    font-size: 1.75rem;
+  }
+
+  .footerInner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footerBottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 375px) {
+  .heroTitle {
+    font-size: 1.75rem;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+  }
+
+  .heroCtaGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .heroTaskCardSecondary {
+    position: static;
+    margin-top: 16px;
+  }
+
+  .heroTaskCardTertiary {
+    position: static;
+    margin-bottom: 16px;
+  }
+}
+
+/* ============================================================
+   13. ACESSIBILIDADE: PREFERS-REDUCED-MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .landingRoot,
+  .landingRoot *,
+  .landingRoot *::before,
+  .landingRoot *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .heroTaskCardPrimary,
+  .heroTaskCardSecondary,
+  .heroTaskCardTertiary,
+  .stepsConnectorLineActive,
+  .goalFill {
+    animation: none !important;
+  }
+}
