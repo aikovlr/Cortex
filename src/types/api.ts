@@ -198,6 +198,9 @@ export interface PreferenciaNotificacaoDTO {
   ativoVencimento: boolean;
   ativoConclusaoMeta: boolean;
   ativoTicket: boolean;
+  ativoSugestao?: boolean;
+  ativoEquipe?: boolean;
+  ativoGeral?: boolean;
   tema?: 'light' | 'dark';
   altoContraste?: boolean;
   tamanhoFonte?: number;
@@ -210,6 +213,9 @@ export interface ConfigurarPreferenciaDTO {
   ativoVencimento: boolean;
   ativoConclusaoMeta: boolean;
   ativoTicket: boolean;
+  ativoSugestao?: boolean;
+  ativoEquipe?: boolean;
+  ativoGeral?: boolean;
   tema?: 'light' | 'dark';
   altoContraste?: boolean;
   tamanhoFonte?: number;

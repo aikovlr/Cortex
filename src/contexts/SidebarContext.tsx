@@ -9,6 +9,7 @@ interface SidebarContextType {
   setIsCollapsed: (collapsed: boolean) => void;
   setIsMobileOpen: (open: boolean) => void;
   closeMobile: () => void;
+  openMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -55,6 +56,10 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const openMobile = () => {
+    setIsMobileOpen(true);
+  };
+
   const closeMobile = () => {
     setIsMobileOpen(false);
   };
@@ -68,6 +73,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         setIsCollapsed,
         setIsMobileOpen,
         closeMobile,
+        openMobile,
       }}
     >
       {children}
@@ -85,6 +91,7 @@ export function useSidebar() {
       setIsCollapsed: () => {},
       setIsMobileOpen: () => {},
       closeMobile: () => {},
+      openMobile: () => {},
     };
   }
   return context;

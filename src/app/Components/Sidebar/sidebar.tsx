@@ -8,61 +8,65 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import styles from './sidebar.module.css';
 
-export default function Sidebar() {
-  const pathname = usePathname();
-  const { usuario, logout } = useAuth();
-  const { isCollapsed, isMobileOpen, closeMobile } = useSidebar();
-  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+const Sidebar = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
+  (props, ref) => {
+    const pathname = usePathname();
+    const { usuario, logout } = useAuth();
+    const { isCollapsed, isMobileOpen, closeMobile } = useSidebar();
+    const [failedUrl, setFailedUrl] = useState<string | null>(null);
 
-  const getAvatarUrl = (url?: string | null) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
-    return url.startsWith('/') ? url : `/${url}`;
-  };
+    const getAvatarUrl = (url?: string | null) => {
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
+      return url.startsWith('/') ? url : `/${url}`;
+    };
 
-  const fotoUrl = getAvatarUrl(usuario?.fotoPerfil?.urlCaminho);
+    const fotoUrl = getAvatarUrl(usuario?.fotoPerfil?.urlCaminho);
 
-  const menuItems = [
-    {
-      label: 'Minhas tarefas',
-      href: '/minhas-tarefas',
-      icon: '/clipboard-text.svg',
-    },
-    {
-      label: 'Tarefas atribuídas',
-      href: '/tarefas-atribuidas',
-      icon: '/clipboard-data.svg',
-    },
-    {
-      label: 'Equipes',
-      href: '/equipes',
-      icon: '/users.svg',
-    },
-    {
-      label: 'Metas',
-      href: '/metas',
-      icon: '/target.svg',
-    },
-    {
-      label: 'Relatórios',
-      href: '/relatorios',
-      icon: '/chart-bar.svg',
-    },
-    {
-      label: 'Configurações',
-      href: '/configuracoes',
-      icon: '/adjustments-horizontal.svg',
-    },
-  ];
+    const menuItems = [
+      {
+        label: 'Minhas tarefas',
+        href: '/minhas-tarefas',
+        icon: '/clipboard-text.svg',
+      },
+      {
+        label: 'Tarefas atribuídas',
+        href: '/tarefas-atribuidas',
+        icon: '/clipboard-data.svg',
+      },
+      {
+        label: 'Equipes',
+        href: '/equipes',
+        icon: '/users.svg',
+      },
+      {
+        label: 'Metas',
+        href: '/metas',
+        icon: '/target.svg',
+      },
+      {
+        label: 'Relatórios',
+        href: '/relatorios',
+        icon: '/chart-bar.svg',
+      },
+      {
+        label: 'Configurações',
+        href: '/configuracoes',
+        icon: '/adjustments-horizontal.svg',
+      },
+    ];
 
-  return (
-    <aside
-      className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''} ${
-        isMobileOpen ? styles.mobileOpen : ''
-      }`}
-      aria-label="Barra lateral principal de navegação"
-      aria-hidden={isCollapsed}
-    >
+    return (
+      <aside
+        ref={ref}
+        id="cortex-sidebar"
+        className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''} ${
+          isMobileOpen ? styles.mobileOpen : ''
+        } ${props.className || ''}`}
+        aria-label="Barra lateral principal de navegação"
+        aria-hidden={isCollapsed}
+        {...props}
+      >
       <div className={styles.logo}>
         <Image
           src="/logo.png"
@@ -157,4 +161,8 @@ export default function Sidebar() {
       </div>
     </aside>
   );
-}
+});
+
+Sidebar.displayName = 'Sidebar';
+
+export default Sidebar;

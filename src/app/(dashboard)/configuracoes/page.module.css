@@ -260,29 +260,51 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 0;
+  padding: 13px 8px;
+  margin: 0 -8px;
   border-bottom: 1px solid var(--border-main);
+  border-radius: 8px;
+  gap: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .toggleRow:last-child {
   border-bottom: none;
 }
 
+.toggleRow:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.toggleRowDisabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .toggleLabel {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .toggleTitle {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  line-height: 1.35;
 }
 
 .toggleDesc {
   font-size: 12px;
   color: var(--cortex-gray-text);
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .switch {
@@ -290,6 +312,9 @@
   display: inline-block;
   width: 44px;
   height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .switch input {
@@ -364,6 +389,151 @@ input:checked + .slider:before {
   font-weight: 700;
 }
 
+/* Estilos para Notificações separadas por Canal */
+.channelCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.25s ease;
+}
+
+.channelCardInactive {
+  opacity: 0.85;
+  border-color: var(--border-main);
+}
+
+.channelHeaderWrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border-main);
+  padding-bottom: 16px;
+}
+
+.channelHeaderLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.channelIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(123, 79, 201, 0.1);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(123, 79, 201, 0.2);
+}
+
+.channelHeaderTitles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.channelTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.channelSubtitle {
+  font-size: 13px;
+  color: var(--cortex-gray-text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.channelDestino {
+  font-size: 12px;
+  margin-top: 3px;
+  font-weight: 500;
+  color: var(--cortex-purple);
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.channelHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.channelNotice {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.channelNotice svg {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.channelNoticeWarning {
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: #ca8a04;
+}
+
+.channelNoticeInfo {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.channelNoticeDisabled {
+  background: var(--bg-surface-hover);
+  border: 1px dashed var(--border-main);
+  color: var(--cortex-gray-text);
+}
+
+.channelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: opacity 0.25s ease;
+}
+
+.channelBodyDisabled {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+.antecedenciaField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 340px;
+  width: 100%;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 16px 14px;
@@ -396,14 +566,147 @@ input:checked + .slider:before {
     gap: 6px;
   }
 
-  .card {
+  .tabContent {
+    gap: 16px;
+  }
+
+  .card,
+  .channelCard {
     padding: 16px;
     border-radius: 14px;
     gap: 16px;
   }
 
+  .channelHeaderWrapper {
+    gap: 12px;
+    padding-bottom: 14px;
+  }
+
+  .channelHeaderLeft {
+    gap: 10px;
+  }
+
+  .channelIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .channelIcon svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .channelTitle {
+    font-size: 15px;
+  }
+
+  .channelSubtitle {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .channelNotice {
+    padding: 10px 12px;
+    font-size: 12px;
+    gap: 8px;
+    border-radius: 8px;
+  }
+
+  .channelNotice svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .antecedenciaField {
+    max-width: 100%;
+  }
+
+  .toggleRow {
+    padding: 11px 6px;
+    margin: 0 -6px;
+    gap: 12px;
+  }
+
+  .toggleTitle {
+    font-size: 13.5px;
+  }
+
+  .toggleDesc {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
   .fontSizeGrid {
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 12px 10px;
+    gap: 12px;
+  }
+
+  .tabContent {
+    gap: 12px;
+  }
+
+  .card,
+  .channelCard {
+    padding: 14px 12px;
+    border-radius: 12px;
+    gap: 12px;
+  }
+
+  .cardTitle {
+    font-size: 15px;
+  }
+
+  .cardSubtitle {
+    font-size: 12px;
+  }
+
+  .channelHeaderWrapper {
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+
+  .channelHeaderLeft {
+    gap: 8px;
+  }
+
+  .channelIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+
+  .channelIcon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .channelTitle {
+    font-size: 14px;
+  }
+
+  .channelSubtitle {
+    font-size: 11.5px;
+  }
+
+  .toggleRow {
+    padding: 10px 4px;
+    margin: 0 -4px;
+    gap: 10px;
+  }
+
+  .toggleTitle {
+    font-size: 13px;
+  }
+
+  .toggleDesc {
+    font-size: 11px;
   }
 }
 

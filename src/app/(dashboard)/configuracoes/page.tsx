@@ -16,6 +16,56 @@ import styles from './page.module.css';
 
 type ConfigTab = 'account' | 'accessibility' | 'notifications';
 
+interface CanalPreferenciaState {
+  ativo: boolean;
+  antecedenciaHoras: number;
+  ativoNovaAtribuicao: boolean;
+  ativoVencimento: boolean;
+  ativoConclusaoMeta: boolean;
+  ativoTicket: boolean;
+  ativoSugestao: boolean;
+  ativoEquipe: boolean;
+  ativoGeral: boolean;
+}
+
+const TIPOS_NOTIFICACAO_CONFIG = [
+  {
+    campo: 'ativoNovaAtribuicao' as const,
+    titulo: 'Nova Atribuição de Tarefa',
+    descricao: 'Alertas quando você for designado para uma nova tarefa ou quando houver atualizações na tarefa',
+  },
+  {
+    campo: 'ativoVencimento' as const,
+    titulo: 'Tarefas Próximas ao Vencimento',
+    descricao: 'Alertas com a antecedência configurada antes da data limite da tarefa',
+  },
+  {
+    campo: 'ativoConclusaoMeta' as const,
+    titulo: 'Conclusão e Progresso de Metas',
+    descricao: 'Notificações quando metas e tarefas vinculadas forem finalizadas ou atualizadas',
+  },
+  {
+    campo: 'ativoTicket' as const,
+    titulo: 'Tickets de Suporte e Problemas',
+    descricao: 'Avisos quando tickets de suporte forem abertos, respondidos ou atualizados',
+  },
+  {
+    campo: 'ativoSugestao' as const,
+    titulo: 'Sugestões em Tarefas',
+    descricao: 'Alertas sobre novas sugestões enviadas, aprovadas ou rejeitadas nas tarefas',
+  },
+  {
+    campo: 'ativoEquipe' as const,
+    titulo: 'Atividades e Convites de Equipe',
+    descricao: 'Notificações quando você for adicionado a equipes ou houver mudanças de cargo e membros',
+  },
+  {
+    campo: 'ativoGeral' as const,
+    titulo: 'Comunicados Gerais do Sistema',
+    descricao: 'Avisos globais da plataforma, comunicados administrativos e informativos do sistema',
+  },
+];
+
 export default function ConfiguracoesPage() {
   const { usuario, recarregarPerfil, logout } = useAuth();
   const { fontSize, setFontSize, highContrast, setHighContrast, theme, setTheme } = useAccessibility();
@@ -62,21 +112,46 @@ export default function ConfiguracoesPage() {
   const [confirmarNovaSenha, setConfirmarNovaSenha] = useState('');
   const [savingSenha, setSavingSenha] = useState(false);
 
-  // Estados de Notificações
-  const [canaisSelecionados, setCanaisSelecionados] = useState<CanalNotificacao[]>([
-    CanalNotificacao.Email,
-    CanalNotificacao.Push,
-  ]);
-  const [antecedenciaHoras, setAntecedenciaHoras] = useState(24);
-  const [ativoNovaAtribuicao, setAtivoNovaAtribuicao] = useState(true);
-  const [ativoVencimento, setAtivoVencimento] = useState(true);
-  const [ativoConclusaoMeta, setAtivoConclusaoMeta] = useState(true);
-  const [ativoTicket, setAtivoTicket] = useState(true);
-  const [savingNotificacoes, setSavingNotificacoes] = useState(false);
+  // Estados de Notificações por Canal
+  const [canaisConfig, setCanaisConfig] = useState<Record<CanalNotificacao, CanalPreferenciaState>>({
+    [CanalNotificacao.Email]: {
+      ativo: true,
+      antecedenciaHoras: 24,
+      ativoNovaAtribuicao: true,
+      ativoVencimento: true,
+      ativoConclusaoMeta: true,
+      ativoTicket: true,
+      ativoSugestao: true,
+      ativoEquipe: true,
+      ativoGeral: true,
+    },
+    [CanalNotificacao.Push]: {
+      ativo: true,
+      antecedenciaHoras: 24,
+      ativoNovaAtribuicao: true,
+      ativoVencimento: true,
+      ativoConclusaoMeta: true,
+      ativoTicket: true,
+      ativoSugestao: true,
+      ativoEquipe: true,
+      ativoGeral: true,
+    },
+    [CanalNotificacao.Sms]: {
+      ativo: false,
+      antecedenciaHoras: 24,
+      ativoNovaAtribuicao: false,
+      ativoVencimento: false,
+      ativoConclusaoMeta: false,
+      ativoTicket: false,
+      ativoSugestao: false,
+      ativoEquipe: false,
+      ativoGeral: false,
+    },
+  });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Carrega preferências de notificações do usuário
+  // Carrega preferências de notificações do usuário para cada canal
   useEffect(() => {
     let isMounted = true;
     notificacaoService
@@ -84,29 +159,35 @@ export default function ConfiguracoesPage() {
       .then((prefs: PreferenciaNotificacaoDTO[]) => {
         if (!isMounted || !prefs || prefs.length === 0) return;
 
-        // Identifica quais canais têm pelo menos uma notificação ativa
-        const canaisAtivos = prefs
-          .filter(
-            (p) =>
-              p.ativoNovaAtribuicao ||
-              p.ativoVencimento ||
-              p.ativoConclusaoMeta ||
-              p.ativoTicket
-          )
-          .map((p) => p.canal);
+        setCanaisConfig((prev) => {
+          const next = { ...prev };
+          prefs.forEach((p) => {
+            const canal = p.canal as CanalNotificacao;
+            if (next[canal]) {
+              const temAlgumaAtiva =
+                p.ativoNovaAtribuicao ||
+                p.ativoVencimento ||
+                p.ativoConclusaoMeta ||
+                p.ativoTicket ||
+                Boolean(p.ativoSugestao) ||
+                Boolean(p.ativoEquipe) ||
+                Boolean(p.ativoGeral);
 
-        setCanaisSelecionados(canaisAtivos);
-
-        // Pega os parâmetros do primeiro canal ativo ou default
-        const prefAtual =
-          prefs.find((p) => canaisAtivos.includes(p.canal)) || prefs[0];
-        if (prefAtual) {
-          setAntecedenciaHoras(prefAtual.antecedenciaHoras);
-          setAtivoNovaAtribuicao(prefAtual.ativoNovaAtribuicao);
-          setAtivoVencimento(prefAtual.ativoVencimento);
-          setAtivoConclusaoMeta(prefAtual.ativoConclusaoMeta);
-          setAtivoTicket(prefAtual.ativoTicket);
-        }
+              next[canal] = {
+                ativo: temAlgumaAtiva,
+                antecedenciaHoras: p.antecedenciaHoras || 24,
+                ativoNovaAtribuicao: p.ativoNovaAtribuicao,
+                ativoVencimento: p.ativoVencimento,
+                ativoConclusaoMeta: p.ativoConclusaoMeta,
+                ativoTicket: p.ativoTicket,
+                ativoSugestao: p.ativoSugestao ?? true,
+                ativoEquipe: p.ativoEquipe ?? true,
+                ativoGeral: p.ativoGeral ?? true,
+              };
+            }
+          });
+          return next;
+        });
       })
       .catch(() => {});
 
@@ -115,10 +196,141 @@ export default function ConfiguracoesPage() {
     };
   }, []);
 
-  const handleToggleCanal = (canal: CanalNotificacao) => {
-    setCanaisSelecionados((prev) =>
-      prev.includes(canal) ? prev.filter((c) => c !== canal) : [...prev, canal]
-    );
+  // Salva preferências no backend automaticamente
+  const salvarCanalAsync = async (canal: CanalNotificacao, configParaSalvar: CanalPreferenciaState) => {
+    try {
+      await notificacaoService.configurarPreferencias({
+        canal,
+        antecedenciaHoras: configParaSalvar.antecedenciaHoras,
+        ativoNovaAtribuicao: configParaSalvar.ativo ? configParaSalvar.ativoNovaAtribuicao : false,
+        ativoVencimento: configParaSalvar.ativo ? configParaSalvar.ativoVencimento : false,
+        ativoConclusaoMeta: configParaSalvar.ativo ? configParaSalvar.ativoConclusaoMeta : false,
+        ativoTicket: configParaSalvar.ativo ? configParaSalvar.ativoTicket : false,
+        ativoSugestao: configParaSalvar.ativo ? configParaSalvar.ativoSugestao : false,
+        ativoEquipe: configParaSalvar.ativo ? configParaSalvar.ativoEquipe : false,
+        ativoGeral: configParaSalvar.ativo ? configParaSalvar.ativoGeral : false,
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao salvar preferências de notificação.', 'error');
+      }
+    }
+  };
+
+  // Ativar ou desativar o canal mestre (com salvamento automático)
+  const handleToggleCanalAtivo = (canal: CanalNotificacao, checked: boolean) => {
+    if (canal === CanalNotificacao.Email && checked && usuario?.emailVerificado === false) {
+      showToast(
+        'Seu e-mail precisa estar verificado para ativar as notificações por e-mail.',
+        'error'
+      );
+      return;
+    }
+
+    const atual = canaisConfig[canal];
+    let novoConfig: CanalPreferenciaState;
+
+    if (checked) {
+      const todasDesligadas =
+        !atual.ativoNovaAtribuicao &&
+        !atual.ativoVencimento &&
+        !atual.ativoConclusaoMeta &&
+        !atual.ativoTicket &&
+        !atual.ativoSugestao &&
+        !atual.ativoEquipe &&
+        !atual.ativoGeral;
+
+      novoConfig = {
+        ...atual,
+        ativo: true,
+        ativoNovaAtribuicao: todasDesligadas ? true : atual.ativoNovaAtribuicao,
+        ativoVencimento: todasDesligadas ? true : atual.ativoVencimento,
+        ativoConclusaoMeta: todasDesligadas ? true : atual.ativoConclusaoMeta,
+        ativoTicket: todasDesligadas ? true : atual.ativoTicket,
+        ativoSugestao: todasDesligadas ? true : atual.ativoSugestao,
+        ativoEquipe: todasDesligadas ? true : atual.ativoEquipe,
+        ativoGeral: todasDesligadas ? true : atual.ativoGeral,
+      };
+    } else {
+      novoConfig = {
+        ...atual,
+        ativo: false,
+      };
+    }
+
+    setCanaisConfig((prev) => ({
+      ...prev,
+      [canal]: novoConfig,
+    }));
+
+    salvarCanalAsync(canal, novoConfig);
+  };
+
+  // Alterar campo de evento específico de um canal (com salvamento automático)
+  const handleToggleCanalCampo = (
+    canal: CanalNotificacao,
+    campo:
+      | 'ativoNovaAtribuicao'
+      | 'ativoVencimento'
+      | 'ativoConclusaoMeta'
+      | 'ativoTicket'
+      | 'ativoSugestao'
+      | 'ativoEquipe'
+      | 'ativoGeral',
+    checked: boolean
+  ) => {
+    if (canal === CanalNotificacao.Email && checked && usuario?.emailVerificado === false) {
+      showToast(
+        'Seu e-mail precisa estar verificado para ativar notificações por e-mail.',
+        'error'
+      );
+      return;
+    }
+
+    const atual = canaisConfig[canal];
+    const novoConfig: CanalPreferenciaState = {
+      ...atual,
+      [campo]: checked,
+    };
+
+    if (checked && !atual.ativo) {
+      novoConfig.ativo = true;
+    }
+
+    const algumAtivo =
+      novoConfig.ativoNovaAtribuicao ||
+      novoConfig.ativoVencimento ||
+      novoConfig.ativoConclusaoMeta ||
+      novoConfig.ativoTicket ||
+      novoConfig.ativoSugestao ||
+      novoConfig.ativoEquipe ||
+      novoConfig.ativoGeral;
+
+    novoConfig.ativo = algumAtivo;
+
+    setCanaisConfig((prev) => ({
+      ...prev,
+      [canal]: novoConfig,
+    }));
+
+    salvarCanalAsync(canal, novoConfig);
+  };
+
+  // Alterar antecedência de um canal (com salvamento automático)
+  const handleChangeAntecedencia = (canal: CanalNotificacao, horas: number) => {
+    const novoConfig: CanalPreferenciaState = {
+      ...canaisConfig[canal],
+      antecedenciaHoras: horas,
+    };
+
+    setCanaisConfig((prev) => ({
+      ...prev,
+      [canal]: novoConfig,
+    }));
+
+    salvarCanalAsync(canal, novoConfig);
   };
 
   const handleSelectFontSize = (size: FontSize) => {
@@ -283,59 +495,6 @@ export default function ConfiguracoesPage() {
     }
   };
 
-  // Salvar Preferências de Notificações para todos os métodos selecionados
-  const handleSalvarNotificacoes = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setSavingNotificacoes(true);
-
-      const todosCanais = [
-        CanalNotificacao.Email,
-        CanalNotificacao.Push,
-        CanalNotificacao.Sms,
-      ];
-
-      // Salva preferências para todos os canais: os selecionados ficam ativos com os parâmetros definidos,
-      // e os não selecionados têm suas notificações desativadas
-      await Promise.all(
-        todosCanais.map((canal) => {
-          const isAtivo = canaisSelecionados.includes(canal);
-          return notificacaoService.configurarPreferencias({
-            canal,
-            antecedenciaHoras,
-            ativoNovaAtribuicao: isAtivo ? ativoNovaAtribuicao : false,
-            ativoVencimento: isAtivo ? ativoVencimento : false,
-            ativoConclusaoMeta: isAtivo ? ativoConclusaoMeta : false,
-            ativoTicket: isAtivo ? ativoTicket : false,
-          });
-        })
-      );
-
-      if (canaisSelecionados.length === 0) {
-        showToast('Preferências salvas! Notificações desativadas para todos os canais.', 'info');
-      } else {
-        const nomesCanais = canaisSelecionados
-          .map((c) =>
-            c === CanalNotificacao.Email
-              ? 'E-mail'
-              : c === CanalNotificacao.Push
-              ? 'Push Notification'
-              : 'SMS'
-          )
-          .join(', ');
-
-        showToast(`Preferências salvas com sucesso para: ${nomesCanais}!`, 'success');
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao salvar preferências de notificação.', 'error');
-      }
-    } finally {
-      setSavingNotificacoes(false);
-    }
-  };
 
   return (
     <>
@@ -769,153 +928,187 @@ export default function ConfiguracoesPage() {
       {/* CONTEÚDO DA ABA 3: NOTIFICAÇÕES */}
       {activeTab === 'notifications' && (
         <div className={styles.tabContent}>
+          {/* Cabeçalho explicativo */}
           <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h2 className={styles.cardTitle}>Canais de Notificação</h2>
+            <div className={styles.cardHeader} style={{ borderBottom: 'none', paddingBottom: 0 }}>
+              <h2 className={styles.cardTitle}>Preferências de Notificação</h2>
               <p className={styles.cardSubtitle}>
-                Escolha os canais e configure suas preferências (você pode selecionar múltiplos canais simultaneamente)
+                Gerencie individualmente as preferências para cada meio de canal (E-mail, Push Notification e SMS).
+                Você pode ativar ou desativar cada canal por completo ou personalizar os eventos desejados.
               </p>
             </div>
-
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => handleToggleCanal(CanalNotificacao.Email)}
-                className={`${styles.uploadBtn} ${
-                  canaisSelecionados.includes(CanalNotificacao.Email)
-                    ? styles.fontSizeOptionActive
-                    : ''
-                }`}
-              >
-                E-mail {canaisSelecionados.includes(CanalNotificacao.Email) ? '✓' : ''}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleToggleCanal(CanalNotificacao.Sms)}
-                className={`${styles.uploadBtn} ${
-                  canaisSelecionados.includes(CanalNotificacao.Sms)
-                    ? styles.fontSizeOptionActive
-                    : ''
-                }`}
-              >
-                SMS {canaisSelecionados.includes(CanalNotificacao.Sms) ? '✓' : ''}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleToggleCanal(CanalNotificacao.Push)}
-                className={`${styles.uploadBtn} ${
-                  canaisSelecionados.includes(CanalNotificacao.Push)
-                    ? styles.fontSizeOptionActive
-                    : ''
-                }`}
-              >
-                Push Notification {canaisSelecionados.includes(CanalNotificacao.Push) ? '✓' : ''}
-              </button>
-            </div>
-
-            <form onSubmit={handleSalvarNotificacoes} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div className={styles.field} style={{ maxWidth: '320px' }}>
-                <label className={styles.label}>Antecedência de Notificação de Vencimento</label>
-                <select
-                  value={antecedenciaHoras}
-                  onChange={(e) => setAntecedenciaHoras(Number(e.target.value))}
-                  className={styles.input}
-                >
-                  <option value={1}>1 hora antes</option>
-                  <option value={6}>6 horas antes</option>
-                  <option value={12}>12 horas antes</option>
-                  <option value={24}>24 horas antes (1 dia)</option>
-                  <option value={48}>48 horas antes (2 dias)</option>
-                  <option value={72}>72 horas antes (3 dias)</option>
-                  <option value={168}>168 horas antes (7 dias - Máximo)</option>
-                </select>
-                <span style={{ fontSize: '11px', color: 'var(--cortex-gray-text)' }}>
-                  Antecedência mínima de 1 hora e máxima de 7 dias (168h).
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', marginTop: '12px' }}>
-                <div className={styles.toggleRow}>
-                  <div className={styles.toggleLabel}>
-                    <span className={styles.toggleTitle}>Nova Atribuição de Tarefa</span>
-                    <span className={styles.toggleDesc}>Receba alertas quando você for designado para uma nova tarefa</span>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={ativoNovaAtribuicao}
-                      onChange={(e) => setAtivoNovaAtribuicao(e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-
-                <div className={styles.toggleRow}>
-                  <div className={styles.toggleLabel}>
-                    <span className={styles.toggleTitle}>Tarefas Próximas ao Vencimento</span>
-                    <span className={styles.toggleDesc}>Alertas com antecedência configurada antes da data limite</span>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={ativoVencimento}
-                      onChange={(e) => setAtivoVencimento(e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-
-                <div className={styles.toggleRow}>
-                  <div className={styles.toggleLabel}>
-                    <span className={styles.toggleTitle}>Conclusão de Metas</span>
-                    <span className={styles.toggleDesc}>Notificações quando metas e tarefas vinculadas forem finalizadas</span>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={ativoConclusaoMeta}
-                      onChange={(e) => setAtivoConclusaoMeta(e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-
-                <div className={styles.toggleRow}>
-                  <div className={styles.toggleLabel}>
-                    <span className={styles.toggleTitle}>Tickets de Reporte de Problemas</span>
-                    <span className={styles.toggleDesc}>Avisos quando tickets forem abertos ou respondidos</span>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={ativoTicket}
-                      onChange={(e) => setAtivoTicket(e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={savingNotificacoes}
-                style={{
-                  alignSelf: 'flex-start',
-                  backgroundColor: 'var(--cortex-purple)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  marginTop: '12px',
-                }}
-              >
-                {savingNotificacoes ? 'Salvando...' : 'Salvar Preferências'}
-              </button>
-            </form>
           </div>
+
+          {/* Cards individuais por Canal */}
+          {[
+            {
+              id: CanalNotificacao.Email,
+              nome: 'E-mail',
+              subtitulo: 'Receba resumos, lembretes e avisos importantes na sua caixa de entrada cadastrada.',
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              ),
+              destino: usuario?.email ? `Endereço: ${usuario.email}` : undefined,
+              aviso:
+                usuario?.emailVerificado === false
+                  ? {
+                      tipo: 'warning' as const,
+                      texto:
+                        'Seu endereço de e-mail ainda não foi verificado. De acordo com as políticas do Cortex, verifique seu e-mail para ativar notificações neste canal.',
+                    }
+                  : undefined,
+            },
+            {
+              id: CanalNotificacao.Push,
+              nome: 'Push Notification',
+              subtitulo: 'Alertas instantâneos em tempo real no navegador ou dispositivo enquanto utiliza o Cortex.',
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              ),
+              destino: 'Navegador Web / Dispositivo Conectado',
+              aviso: undefined,
+            },
+            {
+              id: CanalNotificacao.Sms,
+              nome: 'SMS',
+              subtitulo: 'Mensagens de texto via celular para notificações urgentes e prazos críticos.',
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              ),
+              destino: usuario?.telefone ? `Celular: ${usuario.telefone}` : undefined,
+              aviso: !usuario?.telefone
+                ? {
+                    tipo: 'info' as const,
+                    texto:
+                      'Nenhum telefone celular cadastrado no perfil. Acesse a aba "Minha Conta" para informar seu telefone e habilitar o recebimento de SMS.',
+                  }
+                : undefined,
+            },
+          ].map((info) => {
+            const conf = canaisConfig[info.id];
+
+            return (
+              <div
+                key={info.id}
+                className={`${styles.channelCard} ${!conf.ativo ? styles.channelCardInactive : ''}`}
+              >
+                {/* Header do Canal com switch geral */}
+                <div className={styles.channelHeaderWrapper}>
+                  <div className={styles.channelHeaderLeft}>
+                    <div className={styles.channelIcon}>{info.icon}</div>
+                    <div className={styles.channelHeaderTitles}>
+                      <div className={styles.channelTitle}>{info.nome}</div>
+                      <div className={styles.channelSubtitle}>
+                        <span>{info.subtitulo}</span>
+                        {info.destino && (
+                          <div className={styles.channelDestino}>
+                            {info.destino}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.channelHeaderRight}>
+                    <label className={styles.switch} title={`Ativar ou desativar canal ${info.nome}`}>
+                      <input
+                        type="checkbox"
+                        checked={conf.ativo}
+                        onChange={(e) => handleToggleCanalAtivo(info.id, e.target.checked)}
+                        aria-label={`Ativar ou desativar canal ${info.nome}`}
+                      />
+                      <span className={styles.slider}></span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Banner de Aviso específico */}
+                {info.aviso && (
+                  <div
+                    className={`${styles.channelNotice} ${
+                      info.aviso.tipo === 'warning' ? styles.channelNoticeWarning : styles.channelNoticeInfo
+                    }`}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>{info.aviso.texto}</span>
+                  </div>
+                )}
+
+                {/* Aviso quando o canal estiver desativado */}
+                {!conf.ativo && (
+                  <div className={`${styles.channelNotice} ${styles.channelNoticeDisabled}`}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                    </svg>
+                    <span>Canal desativado. Ative a chave acima para configurar e receber notificações por {info.nome}.</span>
+                  </div>
+                )}
+
+                {/* Opções e Eventos do Canal */}
+                <div className={`${styles.channelBody} ${!conf.ativo ? styles.channelBodyDisabled : ''}`}>
+                  <div className={styles.antecedenciaField}>
+                    <label className={styles.label}>Antecedência de Notificação de Vencimento</label>
+                    <select
+                      value={conf.antecedenciaHoras}
+                      onChange={(e) => handleChangeAntecedencia(info.id, Number(e.target.value))}
+                      className={styles.input}
+                      disabled={!conf.ativo}
+                    >
+                      <option value={1}>1 hora antes</option>
+                      <option value={6}>6 horas antes</option>
+                      <option value={12}>12 horas antes</option>
+                      <option value={24}>24 horas antes (1 dia)</option>
+                      <option value={48}>48 horas antes (2 dias)</option>
+                      <option value={72}>72 horas antes (3 dias)</option>
+                      <option value={168}>168 horas antes (7 dias - Máximo)</option>
+                    </select>
+                    <span style={{ fontSize: '11px', color: 'var(--cortex-gray-text)' }}>
+                      Antecedência para alertas de prazos (de 1h até 168h).
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {TIPOS_NOTIFICACAO_CONFIG.map((tipo) => (
+                      <label
+                        key={tipo.campo}
+                        className={`${styles.toggleRow} ${!conf.ativo ? styles.toggleRowDisabled : ''}`}
+                      >
+                        <div className={styles.toggleLabel}>
+                          <span className={styles.toggleTitle}>{tipo.titulo}</span>
+                          <span className={styles.toggleDesc}>{tipo.descricao}</span>
+                        </div>
+                        <span className={styles.switch}>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(conf[tipo.campo])}
+                            onChange={(e) =>
+                              handleToggleCanalCampo(info.id, tipo.campo, e.target.checked)
+                            }
+                            disabled={!conf.ativo}
+                            aria-label={tipo.titulo}
+                          />
+                          <span className={styles.slider}></span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
       </main>
