@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { ProblemDetailsError } from '@/services/api';
 import { CameraIcon, CheckIcon, XIcon } from '@/components/common/Icons/Icons';
+import { PhoneInput } from '@/components/ui/PhoneInput/PhoneInput';
+import { buildFullPhone, isValidEmail } from '@/utils/phoneAndEmail';
 import styles from './registro.module.css';
 
 export default function RegistroPage() {
@@ -14,7 +16,8 @@ export default function RegistroPage() {
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
-  const [telefone, setTelefone] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState('+55');
+  const [phoneLocal, setPhoneLocal] = useState('');
   const [senha, setSenha] = useState('');
   const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
@@ -42,6 +45,11 @@ export default function RegistroPage() {
     e.preventDefault();
     setErrorMessage(null);
 
+    if (!isValidEmail(email)) {
+      setErrorMessage('Por favor, informe um endereço de e-mail válido com domínio completo (ex: nome@empresa.com).');
+      return;
+    }
+
     if (!isPasswordValid) {
       setErrorMessage('A senha não cumpre todos os requisitos de segurança da política de senhas.');
       return;
@@ -50,11 +58,13 @@ export default function RegistroPage() {
     try {
       setLoading(true);
 
+      const fullPhone = buildFullPhone(phoneCountry, phoneLocal);
+
       const formData = new FormData();
       formData.append('Nome', nome);
-      formData.append('Email', email);
+      formData.append('Email', email.trim());
       formData.append('Senha', senha);
-      if (telefone) formData.append('Telefone', telefone);
+      if (fullPhone) formData.append('Telefone', fullPhone);
       if (fotoPerfil) formData.append('FotoPerfil', fotoPerfil);
 
       await authService.registrar(formData);
@@ -152,13 +162,13 @@ export default function RegistroPage() {
             <label htmlFor="telefone" className={styles.label}>
               Telefone
             </label>
-            <input
+            <PhoneInput
               id="telefone"
-              type="tel"
-              placeholder="(11) 98765-4321"
-              value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
-              className={styles.input}
+              variant="auth"
+              countryCode={phoneCountry}
+              localNumber={phoneLocal}
+              onCountryChange={setPhoneCountry}
+              onNumberChange={setPhoneLocal}
             />
           </div>
 

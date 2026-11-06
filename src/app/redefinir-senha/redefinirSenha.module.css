@@ -1,0 +1,209 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 32px 20px;
+  background-color: var(--bg-primary, #12192C);
+  color: var(--text-primary, #FFFFFF);
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--card-bg, #18223B);
+  border: 1px solid var(--border-color, #23304E);
+  border-radius: 12px;
+  padding: 36px 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.logoWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.headerTitle {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 12px 0 6px 0;
+  color: var(--text-primary, #FFFFFF);
+}
+
+.headerSubtitle {
+  font-size: 14px;
+  color: var(--text-muted, #8E9BAE);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary, #CBD5E1);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  background-color: var(--cortex-dark-input, #101626);
+  border: 1px solid var(--cortex-border, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+  color: var(--cortex-white, #FFFFFF);
+  font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--cortex-purple, #7B4FC9);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow, rgba(123, 79, 201, 0.25));
+}
+
+.codeInput {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  text-align: center;
+}
+
+.togglePasswordBtn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #A78BFA;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.togglePasswordBtn:hover {
+  color: #C4B5FD;
+}
+
+/* Checklist de Critérios da Senha (RN02) */
+.criteriaList {
+  background-color: #0F172A;
+  border: 1px solid #23304E;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.criteriaTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.criterionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+.valid {
+  color: #4ADE80;
+}
+
+.invalid {
+  color: #94A3B8;
+}
+
+.criterionIcon {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 13px;
+  background-color: #7B4FC9;
+  border: none;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  margin-top: 10px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #6839B7;
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.errorBanner {
+  background-color: rgba(239, 68, 68, 0.15);
+  border: 1px solid #EF4444;
+  color: #FECACA;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color, #23304E);
+  font-size: 13px;
+  color: var(--text-muted, #8E9BAE);
+}
+
+.link {
+  color: #A78BFA;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.link:hover {
+  color: #C4B5FD;
+  text-decoration: underline;
+}
+

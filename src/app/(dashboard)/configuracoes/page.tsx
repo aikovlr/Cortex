@@ -10,6 +10,8 @@ import { authService } from '@/services/authService';
 import { notificacaoService } from '@/services/notificacaoService';
 import { CanalNotificacao, PreferenciaNotificacaoDTO } from '@/types/api';
 import { useToast } from '@/contexts/ToastContext';
+import { PhoneInput } from '@/components/ui/PhoneInput/PhoneInput';
+import { parseStoredPhone, buildFullPhone } from '@/utils/phoneAndEmail';
 import styles from './page.module.css';
 
 type ConfigTab = 'account' | 'accessibility' | 'notifications';
@@ -23,7 +25,8 @@ export default function ConfiguracoesPage() {
 
   // Estados da Aba Minha Conta
   const [nome, setNome] = useState(usuario?.nome || '');
-  const [telefone, setTelefone] = useState(usuario?.telefone || '');
+  const [phoneCountry, setPhoneCountry] = useState('+55');
+  const [phoneLocal, setPhoneLocal] = useState('');
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(usuario?.fotoPerfil?.urlCaminho || null);
   const [fotoError, setFotoError] = useState(false);
@@ -40,7 +43,9 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     if (usuario) {
       setNome(usuario.nome);
-      setTelefone(usuario.telefone || '');
+      const parsed = parseStoredPhone(usuario.telefone);
+      setPhoneCountry(parsed.countryCode);
+      setPhoneLocal(parsed.localNumber);
       if (usuario.fotoPerfil?.urlCaminho) {
         setFotoPreview(usuario.fotoPerfil.urlCaminho);
         setFotoError(false);
@@ -196,9 +201,11 @@ export default function ConfiguracoesPage() {
 
     try {
       setSavingPerfil(true);
+      const fullPhone = buildFullPhone(phoneCountry, phoneLocal);
+
       const formData = new FormData();
       formData.append('Nome', nome.trim());
-      if (telefone) formData.append('Telefone', telefone.trim());
+      if (fullPhone) formData.append('Telefone', fullPhone);
       if (fotoFile) formData.append('FotoPerfil', fotoFile);
 
       const usuarioAtualizado = await usuarioService.atualizarPerfil(formData);
@@ -458,32 +465,24 @@ export default function ConfiguracoesPage() {
 
                 <div className={styles.field}>
                   <label className={styles.label}>Telefone</label>
-                  <input
-                    type="tel"
-                    placeholder="(XX) XXXXX-XXXX"
-                    value={telefone}
-                    onChange={(e) => setTelefone(e.target.value)}
-                    className={styles.input}
+                  <PhoneInput
+                    id="telefone-config"
+                    variant="dashboard"
+                    countryCode={phoneCountry}
+                    localNumber={phoneLocal}
+                    onCountryChange={setPhoneCountry}
+                    onNumberChange={setPhoneLocal}
                   />
                 </div>
 
                 <div className={styles.field}>
                   <label className={styles.label}>E-mail</label>
-                  <div className={styles.emailStatus}>
-                    <input
-                      type="email"
-                      value={usuario?.email || ''}
-                      disabled
-                      className={styles.input}
-                    />
-                    <span
-                      className={`${styles.statusBadge} ${
-                        usuario?.emailVerificado ? styles.verified : styles.unverified
-                      }`}
-                    >
-                      {usuario?.emailVerificado ? 'Verificado' : 'Não verificado'}
-                    </span>
-                  </div>
+                  <input
+                    type="email"
+                    value={usuario?.email || ''}
+                    disabled
+                    className={styles.input}
+                  />
                 </div>
               </div>
 
@@ -813,27 +812,6 @@ export default function ConfiguracoesPage() {
                 Push Notification {canaisSelecionados.includes(CanalNotificacao.Push) ? '✓' : ''}
               </button>
             </div>
-
-            {canaisSelecionados.includes(CanalNotificacao.Email) && !usuario?.emailVerificado && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: 'rgba(234, 179, 8, 0.12)',
-                  border: '1px solid rgba(234, 179, 8, 0.3)',
-                  color: '#b45309',
-                  fontSize: '13px',
-                }}
-              >
-                <span>⚠️</span>
-                <span>
-                  <strong>Atenção:</strong> Seu e-mail ainda não está verificado. Confirme seu e-mail para receber notificações por esse método.
-                </span>
-              </div>
-            )}
 
             <form onSubmit={handleSalvarNotificacoes} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div className={styles.field} style={{ maxWidth: '320px' }}>

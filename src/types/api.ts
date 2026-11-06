@@ -276,3 +276,17 @@ export interface RelatorioEquipeDTO {
   desempenhoMembros: DesempenhoMembroDTO[];
 }
 
+export interface SolicitarRedefinicaoSenhaDTO {
+  email: string;
+}
+
+export interface RedefinirSenhaDTO {
+  email: string;
+  codigo: string;
+  novaSenha: string;
+}
+
+export interface MensagemRespostaDTO {
+  message: string;
+}
+

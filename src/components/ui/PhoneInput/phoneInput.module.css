@@ -1,0 +1,135 @@
+/* ============================================================
+   Componente PhoneInput: Estilos e Variantes (Auth Modal vs Dashboard)
+   ============================================================ */
+
+.phoneContainer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+/* ============================================================
+   VARIANTE 1: AUTH MODAL (Tela de Registro / Criar Conta)
+   Perfeitamente integrado ao card escuro do Cortex (#12192C)
+   Bordas com 10px de raio, idêntico aos inputs do registro
+   ============================================================ */
+.authContainer {
+  gap: 10px;
+}
+
+.authSelect {
+  height: 44px;
+  background-color: var(--cortex-dark-input, #101626);
+  border: 1px solid var(--cortex-border, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  color: var(--cortex-white, #FFFFFF);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 12px;
+  outline: none;
+  cursor: pointer;
+  min-width: 115px;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.authSelect option {
+  background-color: #12192C;
+  color: #FFFFFF;
+}
+
+.authSelect:focus {
+  border-color: var(--cortex-purple, #7B4FC9);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow, rgba(123, 79, 201, 0.35));
+}
+
+.authInput {
+  flex: 1;
+  width: 100%;
+  height: 44px;
+  background-color: var(--cortex-dark-input, #101626);
+  border: 1px solid var(--cortex-border, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  color: var(--cortex-white, #FFFFFF);
+  font-size: 14px;
+  padding: 0 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.authInput:focus {
+  border-color: var(--cortex-purple, #7B4FC9);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow, rgba(123, 79, 201, 0.35));
+}
+
+.authInput::placeholder {
+  color: rgba(148, 163, 184, 0.6);
+}
+
+/* ============================================================
+   VARIANTE 2: DASHBOARD (Página de Configurações do Perfil)
+   Adapta-se ao tema semântico (Light / Dark) com borda de 8px
+   e sombra suave no padrão do dashboard
+   ============================================================ */
+.dashboardContainer {
+  gap: 8px;
+}
+
+.dashboardSelect {
+  height: 44px;
+  background-color: var(--bg-input, #FFFFFF);
+  border: 1px solid var(--border-input, rgba(0, 0, 0, 0.12));
+  border-radius: 8px;
+  color: var(--text-primary, #12192C);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 12px;
+  outline: none;
+  cursor: pointer;
+  min-width: 120px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-input, 0 2px 6px rgba(0, 0, 0, 0.03));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+.dashboardSelect option {
+  background-color: var(--bg-surface, #FFFFFF);
+  color: var(--text-primary, #12192C);
+}
+
+.dashboardSelect:focus {
+  border-color: var(--cortex-purple, #7B4FC9);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow, rgba(123, 79, 201, 0.25));
+}
+
+.dashboardInput {
+  flex: 1;
+  width: 100%;
+  height: 44px;
+  background-color: var(--bg-input, #FFFFFF);
+  border: 1px solid var(--border-input, rgba(0, 0, 0, 0.12));
+  border-radius: 8px;
+  color: var(--text-primary, #12192C);
+  font-size: 14px;
+  padding: 0 14px;
+  outline: none;
+  box-shadow: var(--shadow-input, 0 2px 6px rgba(0, 0, 0, 0.03));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+.dashboardInput:focus {
+  border-color: var(--cortex-purple, #7B4FC9);
+  box-shadow: 0 0 0 3px var(--cortex-purple-glow, rgba(123, 79, 201, 0.25));
+}
+
+.dashboardInput::placeholder {
+  color: var(--text-muted, #6e6d80);
+}
+
+.dashboardSelect:disabled,
+.dashboardInput:disabled {
+  background-color: var(--bg-input-disabled, #f8fafc);
+  opacity: 0.7;
+  cursor: not-allowed;
+}

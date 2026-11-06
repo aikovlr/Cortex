@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/authService';
 import { ProblemDetailsError } from '@/services/api';
+import { isValidEmail } from '@/utils/phoneAndEmail';
 import styles from './login.module.css';
 
 function LoginForm() {
@@ -37,7 +38,7 @@ function LoginForm() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const hasRequestedInitialCode = useRef(false);
 
-  // Se entrou em modo verify vindo do registro, dispara a solicitação para imprimir o código no console
+  // Se entrou em modo verify vindo do registro, dispara a solicitação por email
   useEffect(() => {
     if (verifyParam && emailParam && !hasRequestedInitialCode.current) {
       hasRequestedInitialCode.current = true;
@@ -65,6 +66,11 @@ function LoginForm() {
       return;
     }
 
+    if (!isValidEmail(email)) {
+      setErrorMessage('Por favor, informe um endereço de e-mail válido com domínio completo (ex: nome@empresa.com).');
+      return;
+    }
+
     try {
       setLoading(true);
       await login({ email, senha });
@@ -78,26 +84,7 @@ function LoginForm() {
             err.detail?.toLowerCase().includes('verificado'));
 
         if (isNotVerified) {
-          // Exibe o código no console para ambiente de desenvolvimento
-          const devCode = err.data?.codigoDev as string | undefined;
-          if (devCode) {
-            console.log(
-              `%c[DEV - CORTEX]%c Código de verificação para %c${email}%c:\n` +
-              `%c ${devCode} %c\n` +
-              `Tempo limite de expiração: 15 minutos (gerado automaticamente no login).`,
-              'background: #7B4FC9; color: #fff; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
-              'color: inherit;',
-              'color: #9B6EE9; font-weight: bold;',
-              'color: inherit;',
-              'background: #18223B; color: #4ADE80; font-size: 20px; font-weight: bold; letter-spacing: 4px; padding: 4px 10px; border: 1px dashed #4ADE80; border-radius: 4px; margin: 4px 0;',
-              'color: #8E9BAE;'
-            );
-          } else {
-            // Se não veio no erro, solicita o envio agora para garantir que apareça no console
-            authService.solicitarVerificacaoEmail(email).catch(() => {});
-          }
-
-          // Substitui o modal de login pelo modal próprio de verificação
+          // Substitui a visualização de login pela tela de verificação de código
           setViewMode('verify');
           setVerifyError(null);
           setVerifySuccess(null);
@@ -321,6 +308,12 @@ function LoginForm() {
                   {showPassword ? 'Ocultar' : 'Exibir'}
                 </button>
               </div>
+            </div>
+
+            <div className={styles.forgotPasswordWrapper}>
+              <Link href="/esqueci-senha" className={styles.forgotPasswordLink}>
+                Esqueci minha senha
+              </Link>
             </div>
 
             <button

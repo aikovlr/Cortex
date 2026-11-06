@@ -8,6 +8,8 @@ import {
   DadosLoginDTO,
   LoginResponseDTO,
   AlterarSenhaDTO,
+  RedefinirSenhaDTO,
+  MensagemRespostaDTO,
 } from '@/types/api';
 
 export const authService = {
@@ -52,11 +54,11 @@ export const authService = {
   /**
    * Solicita envio de código de verificação para o e-mail.
    */
-  async solicitarVerificacaoEmail(email?: string): Promise<{ message: string; codigoDev?: string; expiraEmMinutos?: number }> {
-    let result: { message: string; codigoDev?: string; expiraEmMinutos?: number };
+  async solicitarVerificacaoEmail(email?: string): Promise<{ message: string; expiraEmMinutos?: number }> {
+    let result: { message: string; expiraEmMinutos?: number };
 
     if (email) {
-      result = await apiFetch<{ message: string; codigoDev?: string; expiraEmMinutos?: number }>(
+      result = await apiFetch<{ message: string; expiraEmMinutos?: number }>(
         '/api/auth/solicitar-verificacao-email',
         {
           method: 'POST',
@@ -64,25 +66,11 @@ export const authService = {
         }
       );
     } else {
-      result = await apiFetch<{ message: string; codigoDev?: string; expiraEmMinutos?: number }>(
+      result = await apiFetch<{ message: string; expiraEmMinutos?: number }>(
         '/api/usuario/solicitar-verificacao-email',
         {
           method: 'POST',
         }
-      );
-    }
-
-    if (result.codigoDev) {
-      console.log(
-        `%c[DEV - CORTEX]%c Código de verificação para %c${email || 'usuário atual'}%c:\n` +
-        `%c ${result.codigoDev} %c\n` +
-        `Tempo limite de expiração: ${result.expiraEmMinutos || 15} minutos.`,
-        'background: #7B4FC9; color: #fff; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
-        'color: inherit;',
-        'color: #a78bfa; font-weight: bold;',
-        'color: inherit;',
-        'background: #18223B; color: #2ecc71; font-size: 20px; font-weight: bold; letter-spacing: 4px; padding: 4px 10px; border: 1px dashed #2ecc71; border-radius: 4px; margin: 4px 0;',
-        'color: #8E9BAE;'
       );
     }
 
@@ -111,6 +99,26 @@ export const authService = {
    */
   async alterarSenha(dto: AlterarSenhaDTO): Promise<void> {
     return apiFetch<void>('/api/auth/alterar-senha', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  },
+
+  /**
+   * Solicita envio de código para recuperação de senha (RF001).
+   */
+  async solicitarRedefinicaoSenha(email: string): Promise<MensagemRespostaDTO> {
+    return apiFetch<MensagemRespostaDTO>('/api/auth/esqueci-senha', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  /**
+   * Redefine a senha com código de 6 dígitos recebido por e-mail (RF001).
+   */
+  async redefinirSenha(dto: RedefinirSenhaDTO): Promise<MensagemRespostaDTO> {
+    return apiFetch<MensagemRespostaDTO>('/api/auth/redefinir-senha', {
       method: 'POST',
       body: JSON.stringify(dto),
     });
