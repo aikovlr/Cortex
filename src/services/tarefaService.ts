@@ -19,6 +19,7 @@ export interface FiltroTarefasDTO {
   dataInicio?: string;
   dataFim?: string;
   termoBusca?: string;
+  aba?: string;
 }
 
 export const tarefaService = {
@@ -35,6 +36,7 @@ export const tarefaService = {
     if (filtros.dataInicio) params.append('dataInicio', filtros.dataInicio);
     if (filtros.dataFim) params.append('dataFim', filtros.dataFim);
     if (filtros.termoBusca) params.append('termoBusca', filtros.termoBusca);
+    if (filtros.aba) params.append('aba', filtros.aba);
 
     const qs = params.toString();
     const endpoint = `/api/tarefa${qs ? `?${qs}` : ''}`;

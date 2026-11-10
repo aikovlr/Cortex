@@ -54,14 +54,22 @@ export default function MetasPage() {
 
   // Carrega preferências de ordenação salvas no localStorage e query param de aba
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('tab') === 'equipes') {
-          setActiveTab('equipes');
+    const sincronizarAba = () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const tabParam = (params.get('aba') || params.get('tab') || '').toLowerCase().trim();
+          if (tabParam === 'equipes') {
+            setActiveTab('equipes');
+          } else if (tabParam === 'pessoais') {
+            setActiveTab('pessoais');
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    };
+
+    sincronizarAba();
+    window.addEventListener('popstate', sincronizarAba);
 
     try {
       const savedCriterio = localStorage.getItem('cortex_metas_criterio') as CriterioOrdenacao | null;
@@ -543,8 +551,9 @@ export default function MetasPage() {
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
-      url.searchParams.set('tab', tab);
-      window.history.replaceState({}, '', url.toString());
+      url.searchParams.set('aba', tab);
+      url.searchParams.delete('tab');
+      window.history.pushState({}, '', url.toString());
     }
   };
 

@@ -44,6 +44,46 @@ export default function MinhasTarefasPage() {
   const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [abaAtiva, setAbaAtiva] = useState<'pendentes' | 'concluidas'>('pendentes');
+
+  // Sincronização da aba com o parâmetro da URL (?aba=tarefas-concluidas / ?aba=tarefas-pendentes)
+  const obterAbaDaUrl = (): 'pendentes' | 'concluidas' | null => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const abaParam = (params.get('aba') || params.get('tab') || '').toLowerCase().trim();
+    if (abaParam === 'tarefas-concluidas' || abaParam === 'concluidas' || abaParam === 'concluida') {
+      return 'concluidas';
+    }
+    if (abaParam === 'tarefas-pendentes' || abaParam === 'pendentes' || abaParam === 'pendente') {
+      return 'pendentes';
+    }
+    return null;
+  };
+
+  const trocarAba = (novaAba: 'pendentes' | 'concluidas') => {
+    setAbaAtiva(novaAba);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const slugAba = novaAba === 'concluidas' ? 'tarefas-concluidas' : 'tarefas-pendentes';
+      url.searchParams.set('aba', slugAba);
+      url.searchParams.delete('tab');
+      window.history.pushState({}, '', url.toString());
+    }
+  };
+
+  useEffect(() => {
+    const sincronizarAba = () => {
+      const abaUrl = obterAbaDaUrl();
+      if (abaUrl) {
+        setAbaAtiva(abaUrl);
+      }
+    };
+
+    sincronizarAba();
+    window.addEventListener('popstate', sincronizarAba);
+    return () => {
+      window.removeEventListener('popstate', sincronizarAba);
+    };
+  }, []);
   const [termoBusca, setTermoBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [filtroPrioridade, setFiltroPrioridade] = useState<string>('todas');
@@ -337,14 +377,14 @@ export default function MinhasTarefasPage() {
         <div className={styles.tabsHeader}>
           <button
             type="button"
-            onClick={() => setAbaAtiva('pendentes')}
+            onClick={() => trocarAba('pendentes')}
             className={`${styles.tabBtn} ${abaAtiva === 'pendentes' ? styles.tabBtnActive : ''}`}
           >
             Tarefas Pendentes e Atrasadas ({totalPendentesEAtrasadas})
           </button>
           <button
             type="button"
-            onClick={() => setAbaAtiva('concluidas')}
+            onClick={() => trocarAba('concluidas')}
             className={`${styles.tabBtn} ${abaAtiva === 'concluidas' ? styles.tabBtnActive : ''}`}
           >
             Tarefas Concluídas ({totalConcluidas})

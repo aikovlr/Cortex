@@ -30,6 +30,31 @@ export default function RelatoriosPage() {
   const [view, setView] = useState<ReportView>('personal');
   const [loading, setLoading] = useState(true);
 
+  const obterAbaDaUrl = (): ReportView | null => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const abaParam = (params.get('aba') || params.get('tab') || '').toLowerCase().trim();
+    if (abaParam === 'personal' || abaParam === 'pessoal' || abaParam === 'minhas-tarefas') return 'personal';
+    if (abaParam === 'created' || abaParam === 'criadas' || abaParam === 'tarefas-criadas' || abaParam === 'atribuidas') return 'created';
+    if (abaParam === 'team' || abaParam === 'equipe') return 'team';
+    return null;
+  };
+
+  useEffect(() => {
+    const sincronizarAba = () => {
+      const abaUrl = obterAbaDaUrl();
+      if (abaUrl && abaUrl !== view) {
+        setView(abaUrl);
+      }
+    };
+
+    sincronizarAba();
+    window.addEventListener('popstate', sincronizarAba);
+    return () => {
+      window.removeEventListener('popstate', sincronizarAba);
+    };
+  }, []);
+
   // Filtros
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
@@ -308,6 +333,13 @@ export default function RelatoriosPage() {
   // Ao alternar entre as abas (Responsável, Criador, Equipe), reinicia filtros
   const handleTrocarView = (novaView: ReportView) => {
     setView(novaView);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const slug = novaView === 'personal' ? 'pessoal' : novaView === 'created' ? 'criadas' : 'equipe';
+      url.searchParams.set('aba', slug);
+      url.searchParams.delete('tab');
+      window.history.pushState({}, '', url.toString());
+    }
     setDataInicio('');
     setDataFim('');
     setFiltroStatus('');

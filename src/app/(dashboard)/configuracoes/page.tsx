@@ -73,6 +73,42 @@ export default function ConfiguracoesPage() {
 
   const [activeTab, setActiveTab] = useState<ConfigTab>('account');
 
+  const obterAbaDaUrl = (): ConfigTab | null => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const abaParam = (params.get('aba') || params.get('tab') || '').toLowerCase().trim();
+    if (abaParam === 'account' || abaParam === 'conta' || abaParam === 'minha-conta') return 'account';
+    if (abaParam === 'accessibility' || abaParam === 'acessibilidade') return 'accessibility';
+    if (abaParam === 'notifications' || abaParam === 'notificacoes' || abaParam === 'notificacao') return 'notifications';
+    return null;
+  };
+
+  const trocarAba = (tab: ConfigTab) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const slug = tab === 'account' ? 'minha-conta' : tab === 'accessibility' ? 'acessibilidade' : 'notificacoes';
+      url.searchParams.set('aba', slug);
+      url.searchParams.delete('tab');
+      window.history.pushState({}, '', url.toString());
+    }
+  };
+
+  useEffect(() => {
+    const sincronizarAba = () => {
+      const abaUrl = obterAbaDaUrl();
+      if (abaUrl) {
+        setActiveTab(abaUrl);
+      }
+    };
+
+    sincronizarAba();
+    window.addEventListener('popstate', sincronizarAba);
+    return () => {
+      window.removeEventListener('popstate', sincronizarAba);
+    };
+  }, []);
+
   // Estados da Aba Minha Conta
   const [nome, setNome] = useState(usuario?.nome || '');
   const [phoneCountry, setPhoneCountry] = useState('+55');
@@ -504,7 +540,7 @@ export default function ConfiguracoesPage() {
       <div className={styles.tabsHeader}>
         <button
           type="button"
-          onClick={() => setActiveTab('account')}
+          onClick={() => trocarAba('account')}
           className={`${styles.tabBtn} ${activeTab === 'account' ? styles.tabBtnActive : ''}`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -516,7 +552,7 @@ export default function ConfiguracoesPage() {
 
         <button
           type="button"
-          onClick={() => setActiveTab('accessibility')}
+          onClick={() => trocarAba('accessibility')}
           className={`${styles.tabBtn} ${activeTab === 'accessibility' ? styles.tabBtnActive : ''}`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -529,7 +565,7 @@ export default function ConfiguracoesPage() {
 
         <button
           type="button"
-          onClick={() => setActiveTab('notifications')}
+          onClick={() => trocarAba('notifications')}
           className={`${styles.tabBtn} ${activeTab === 'notifications' ? styles.tabBtnActive : ''}`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

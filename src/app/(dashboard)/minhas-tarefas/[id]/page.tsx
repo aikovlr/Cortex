@@ -58,19 +58,40 @@ export default function DetalhesTarefaPage() {
   const [showReport, setShowReport] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
+  const obterAbaDaUrl = useCallback((): 'detalhes' | 'sugestoes' | 'tickets' | null => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = (params.get('aba') || params.get('tab') || '').toLowerCase().trim();
+    if (tabParam === 'sugestoes') return 'sugestoes';
+    if (tabParam === 'tickets') return 'tickets';
+    if (tabParam === 'detalhes') return 'detalhes';
+    return null;
+  }, []);
+
+  const trocarAba = useCallback((tab: 'detalhes' | 'sugestoes' | 'tickets') => {
+    setActiveTab(tab);
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (tabParam === 'sugestoes') {
-        setActiveTab('sugestoes');
-      } else if (tabParam === 'tickets') {
-        setActiveTab('tickets');
-      } else if (tabParam === 'detalhes') {
-        setActiveTab('detalhes');
-      }
+      const url = new URL(window.location.href);
+      url.searchParams.set('aba', tab);
+      url.searchParams.delete('tab');
+      window.history.pushState({}, '', url.toString());
     }
   }, []);
+
+  useEffect(() => {
+    const sincronizarAba = () => {
+      const abaUrl = obterAbaDaUrl();
+      if (abaUrl) {
+        setActiveTab(abaUrl);
+      }
+    };
+
+    sincronizarAba();
+    window.addEventListener('popstate', sincronizarAba);
+    return () => {
+      window.removeEventListener('popstate', sincronizarAba);
+    };
+  }, [obterAbaDaUrl]);
 
   const carregarTicketsESugestoes = useCallback(async () => {
     if (!tarefaId || isNaN(tarefaId)) return;
@@ -88,12 +109,12 @@ export default function DetalhesTarefaPage() {
 
   const handleSugestaoCriada = async () => {
     await carregarTicketsESugestoes();
-    setActiveTab('sugestoes');
+    trocarAba('sugestoes');
   };
 
   const handleTicketCriado = async () => {
     await carregarTicketsESugestoes();
-    setActiveTab('tickets');
+    trocarAba('tickets');
   };
 
   const recarregarTarefa = async () => {
@@ -303,7 +324,7 @@ export default function DetalhesTarefaPage() {
               <div className={styles.tabsHeader}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('detalhes')}
+                  onClick={() => trocarAba('detalhes')}
                   className={`${styles.tabBtn} ${activeTab === 'detalhes' ? styles.tabBtnActive : ''}`}
                 >
                   <FileTextIcon size={16} />
@@ -312,7 +333,7 @@ export default function DetalhesTarefaPage() {
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab('sugestoes')}
+                  onClick={() => trocarAba('sugestoes')}
                   className={`${styles.tabBtn} ${activeTab === 'sugestoes' ? styles.tabBtnActive : ''}`}
                 >
                   <LightbulbIcon size={16} />
@@ -322,7 +343,7 @@ export default function DetalhesTarefaPage() {
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab('tickets')}
+                  onClick={() => trocarAba('tickets')}
                   className={`${styles.tabBtn} ${activeTab === 'tickets' ? styles.tabBtnActive : ''}`}
                 >
                   <AlertTriangleIcon size={16} />

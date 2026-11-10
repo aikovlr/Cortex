@@ -88,15 +88,40 @@ export default function TarefaAtribuidaDetalhesPage() {
   const [processandoSugestaoId, setProcessandoSugestaoId] = useState<number | null>(null);
   const [processandoTicketId, setProcessandoTicketId] = useState<number | null>(null);
 
-  useEffect(() => {
+  const obterAbaDaUrl = useCallback((): 'detalhes' | 'respostas' | 'sugestoes' | 'tickets' | null => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = (params.get('aba') || params.get('tab') || '').toLowerCase().trim();
+    if (['detalhes', 'respostas', 'sugestoes', 'tickets'].includes(tabParam)) {
+      return tabParam as 'detalhes' | 'respostas' | 'sugestoes' | 'tickets';
+    }
+    return null;
+  }, []);
+
+  const trocarAba = useCallback((tab: 'detalhes' | 'respostas' | 'sugestoes' | 'tickets') => {
+    setActiveTab(tab);
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (tabParam && ['detalhes', 'respostas', 'sugestoes', 'tickets'].includes(tabParam)) {
-        setActiveTab(tabParam as 'detalhes' | 'respostas' | 'sugestoes' | 'tickets');
-      }
+      const url = new URL(window.location.href);
+      url.searchParams.set('aba', tab);
+      url.searchParams.delete('tab');
+      window.history.pushState({}, '', url.toString());
     }
   }, []);
+
+  useEffect(() => {
+    const sincronizarAba = () => {
+      const abaUrl = obterAbaDaUrl();
+      if (abaUrl) {
+        setActiveTab(abaUrl);
+      }
+    };
+
+    sincronizarAba();
+    window.addEventListener('popstate', sincronizarAba);
+    return () => {
+      window.removeEventListener('popstate', sincronizarAba);
+    };
+  }, [obterAbaDaUrl]);
 
 
   // Carrega os dados da tarefa
@@ -529,7 +554,7 @@ export default function TarefaAtribuidaDetalhesPage() {
             <div className={styles.tabsHeader}>
               <button
                 type="button"
-                onClick={() => setActiveTab('detalhes')}
+                onClick={() => trocarAba('detalhes')}
                 className={`${styles.tabBtn} ${activeTab === 'detalhes' ? styles.tabBtnActive : ''}`}
               >
                 <FileTextIcon size={16} />
@@ -539,7 +564,7 @@ export default function TarefaAtribuidaDetalhesPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('respostas');
+                  trocarAba('respostas');
                   carregarRespostas();
                 }}
                 className={`${styles.tabBtn} ${activeTab === 'respostas' ? styles.tabBtnActive : ''}`}
@@ -551,7 +576,7 @@ export default function TarefaAtribuidaDetalhesPage() {
 
               <button
                 type="button"
-                onClick={() => setActiveTab('sugestoes')}
+                onClick={() => trocarAba('sugestoes')}
                 className={`${styles.tabBtn} ${activeTab === 'sugestoes' ? styles.tabBtnActive : ''}`}
               >
                 <LightbulbIcon size={16} />
@@ -561,7 +586,7 @@ export default function TarefaAtribuidaDetalhesPage() {
 
               <button
                 type="button"
-                onClick={() => setActiveTab('tickets')}
+                onClick={() => trocarAba('tickets')}
                 className={`${styles.tabBtn} ${activeTab === 'tickets' ? styles.tabBtnActive : ''}`}
               >
                 <UserIcon size={16} />
