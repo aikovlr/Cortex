@@ -199,6 +199,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={styles.wrapper}>
+      <a href="#conteudo-principal" className={styles.skipLink}>
+        Pular para o conteúdo principal
+      </a>
       {!isMobileOpen && (
         <div className={styles.edgeDragArea} aria-hidden="true" />
       )}

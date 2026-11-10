@@ -37,7 +37,7 @@
 
   --text-primary: #12192C;
   --text-secondary: #525064; /* WCAG AA: 5.6:1 contrast against #ffffff, 4.8:1 against #f0f2f5 */
-  --text-muted: #6e6d80;
+  --text-muted: #646376;
 
   --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04);
   --shadow-input: 0 2px 6px rgba(0, 0, 0, 0.03);
@@ -53,9 +53,9 @@
   --badge-atrasada-text: #721C24;
 
   --badge-baixa-bg: rgba(52, 152, 219, 0.15);
-  --badge-baixa-text: #2980b9;
+  --badge-baixa-text: #1d6fa5;
   --badge-media-bg: rgba(243, 156, 18, 0.15);
-  --badge-media-text: #b96500;
+  --badge-media-text: #934d00;
   --badge-alta-bg: rgba(230, 126, 34, 0.2);
   --badge-alta-text: #c0392b;
   --badge-urgente-bg: rgba(214, 49, 49, 0.2);

@@ -146,7 +146,7 @@ export default function TarefasAtribuidasPage() {
     <>
       <Header titulo="Tarefas atribuídas" />
 
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         {/* Barra de Pesquisa Padronizada */}
         <div className={styles.toolbar}>
           <SearchBar

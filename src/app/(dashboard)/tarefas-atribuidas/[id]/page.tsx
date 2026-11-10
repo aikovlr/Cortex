@@ -531,7 +531,7 @@ export default function TarefaAtribuidaDetalhesPage() {
     <>
       <Header titulo="Gerenciar Tarefa Atribuída" />
 
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         <button
           type="button"
           onClick={() => router.push('/tarefas-atribuidas')}

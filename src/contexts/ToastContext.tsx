@@ -37,6 +37,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div
+        role="region"
+        aria-label="Notificações do sistema"
         style={{
           position: 'fixed',
           bottom: '24px',
@@ -48,56 +50,64 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           pointerEvents: 'none',
         }}
       >
-        {toasts.map((toast) => {
-          let bgColor = 'var(--cortex-dark-card)';
-          let borderColor = 'var(--cortex-border)';
-          let textColor = '#ffffff';
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          style={{ display: 'contents' }}
+        >
+          {toasts.map((toast) => {
+            let bgColor = 'var(--cortex-dark-card)';
+            let borderColor = 'var(--cortex-border)';
+            let textColor = '#ffffff';
 
-          if (toast.type === 'success') {
-            borderColor = 'var(--cortex-green-badge-text)';
-            bgColor = '#14301a';
-            textColor = '#88f5a2';
-          } else if (toast.type === 'error') {
-            borderColor = 'var(--cortex-red-danger)';
-            bgColor = '#381616';
-            textColor = '#ff9999';
-          }
+            if (toast.type === 'success') {
+              borderColor = 'var(--cortex-green-badge-text)';
+              bgColor = '#14301a';
+              textColor = '#88f5a2';
+            } else if (toast.type === 'error') {
+              borderColor = 'var(--cortex-red-danger)';
+              bgColor = '#381616';
+              textColor = '#ff9999';
+            }
 
-          return (
-            <div
-              key={toast.id}
-              onClick={() => removeToast(toast.id)}
-              style={{
-                pointerEvents: 'auto',
-                padding: '12px 18px',
-                borderRadius: '10px',
-                backgroundColor: bgColor,
-                border: `1px solid ${borderColor}`,
-                color: textColor,
-                fontSize: '14px',
-                fontWeight: 500,
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                maxWidth: '380px',
-                animation: 'slideUp 0.3s ease-out',
-              }}
-            >
-              <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                {toast.type === 'success' ? (
-                  <CheckCircleIcon size={18} color="#ffffff" />
-                ) : toast.type === 'error' ? (
-                  <XCircleIcon size={18} color="#ffffff" />
-                ) : (
-                  <InfoIcon size={18} color="#ffffff" />
-                )}
-              </span>
-              <span>{toast.message}</span>
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={toast.id}
+                role={toast.type === 'error' ? 'alert' : 'status'}
+                onClick={() => removeToast(toast.id)}
+                style={{
+                  pointerEvents: 'auto',
+                  padding: '12px 18px',
+                  borderRadius: '10px',
+                  backgroundColor: bgColor,
+                  border: `1px solid ${borderColor}`,
+                  color: textColor,
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  maxWidth: '380px',
+                  animation: 'slideUp 0.3s ease-out',
+                }}
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  {toast.type === 'success' ? (
+                    <CheckCircleIcon size={18} color="#ffffff" />
+                  ) : toast.type === 'error' ? (
+                    <XCircleIcon size={18} color="#ffffff" />
+                  ) : (
+                    <InfoIcon size={18} color="#ffffff" />
+                  )}
+                </span>
+                <span>{toast.message}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </ToastContext.Provider>
   );

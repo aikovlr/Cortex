@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import styles from './Select.module.css';
 
 export interface Option {
@@ -13,8 +13,11 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, options, error, children, className = '', id, ...props }, ref) => {
-    const selectId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  ({ label, options, error, children, className = '', id, 'aria-describedby': ariaDescribedBy, ...props }, ref) => {
+    const generatedId = useId();
+    const selectId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : generatedId);
+    const errorId = error ? `${selectId}-error` : undefined;
+    const combinedDescribedBy = [ariaDescribedBy, errorId].filter(Boolean).join(' ') || undefined;
 
     return (
       <div className={styles.container}>
@@ -27,6 +30,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           <select
             id={selectId}
             ref={ref}
+            aria-invalid={Boolean(error)}
+            aria-describedby={combinedDescribedBy}
             className={`${styles.select} ${className}`}
             {...props}
           >
@@ -38,9 +43,15 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                 ))
               : children}
           </select>
-          <span className={styles.arrowIcon}>▼</span>
+          <span className={styles.arrowIcon} aria-hidden="true">
+            ▼
+          </span>
         </div>
-        {error && <span className={styles.errorMessage}>{error}</span>}
+        {error && (
+          <span id={errorId} role="alert" className={styles.errorMessage}>
+            {error}
+          </span>
+        )}
       </div>
     );
   }

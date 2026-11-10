@@ -264,7 +264,7 @@ export default function EquipeDetalhesPage({
     <>
       <Header titulo={equipe?.nome || 'Equipe'} />
 
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         <div className={styles.topBar}>
           <div className={styles.teamHeading}>
             <button

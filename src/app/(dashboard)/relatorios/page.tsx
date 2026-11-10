@@ -1306,7 +1306,7 @@ export default function RelatoriosPage() {
   return (
     <>
       <Header titulo="Relatórios" />
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         {/* Barra de Seleção de Relatório (Responsável vs Criador vs Equipe) */}
         <div className={styles.topBar}>
           <div className={styles.tabsHeader}>

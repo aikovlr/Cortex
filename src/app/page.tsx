@@ -25,6 +25,9 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className={styles.landingRoot}>
+      <a href="#conteudo-principal" className={styles.skipLink}>
+        Pular para o conteúdo principal
+      </a>
       {/* 1. Cabeçalho (Navbar Fixa) */}
       <Navbar />
 

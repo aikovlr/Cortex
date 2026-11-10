@@ -535,7 +535,7 @@ export default function ConfiguracoesPage() {
   return (
     <>
       <Header titulo="Configurações" />
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         {/* Abas de Navegação das Configurações */}
       <div className={styles.tabsHeader}>
         <button

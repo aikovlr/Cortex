@@ -560,7 +560,7 @@ export default function MetasPage() {
   return (
     <>
       <Header titulo="Metas" />
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         {/* Abas: Minhas Metas vs Metas de Equipe */}
         <div className={styles.tabsHeader}>
           <button

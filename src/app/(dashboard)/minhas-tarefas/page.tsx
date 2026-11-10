@@ -372,11 +372,13 @@ export default function MinhasTarefasPage() {
     <>
       <Header titulo="Minhas tarefas" />
 
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         {/* Abas Padronizadas no estilo de Configurações */}
-        <div className={styles.tabsHeader}>
+        <div className={styles.tabsHeader} role="tablist" aria-label="Abas de visualização de tarefas">
           <button
             type="button"
+            role="tab"
+            aria-selected={abaAtiva === 'pendentes'}
             onClick={() => trocarAba('pendentes')}
             className={`${styles.tabBtn} ${abaAtiva === 'pendentes' ? styles.tabBtnActive : ''}`}
           >
@@ -384,6 +386,8 @@ export default function MinhasTarefasPage() {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={abaAtiva === 'concluidas'}
             onClick={() => trocarAba('concluidas')}
             className={`${styles.tabBtn} ${abaAtiva === 'concluidas' ? styles.tabBtnActive : ''}`}
           >
@@ -417,6 +421,7 @@ export default function MinhasTarefasPage() {
             <div className={styles.filtersRow}>
               {abaAtiva === 'pendentes' && (
                 <select
+                  aria-label="Filtrar tarefas por status"
                   value={filtroStatus}
                   onChange={(e) => setFiltroStatus(e.target.value)}
                   className={styles.filterSelect}
@@ -428,6 +433,7 @@ export default function MinhasTarefasPage() {
               )}
 
               <select
+                aria-label="Filtrar tarefas por prioridade"
                 value={filtroPrioridade}
                 onChange={(e) => setFiltroPrioridade(e.target.value)}
                 className={styles.filterSelect}

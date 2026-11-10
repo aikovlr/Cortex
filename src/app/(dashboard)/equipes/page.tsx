@@ -64,7 +64,7 @@ export default function EquipesPage() {
     <>
       <Header titulo="Equipes" />
 
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         {/* Barra de Busca Padronizada + Botão Adicionar */}
         <div className={styles.toolbar}>
           <SearchBar

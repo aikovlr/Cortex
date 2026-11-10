@@ -261,7 +261,7 @@ function LoginForm() {
           </div>
 
           {errorMessage && (
-            <div className={styles.errorBanner}>
+            <div className={styles.errorBanner} role="alert" aria-live="assertive">
               <span>{errorMessage}</span>
             </div>
           )}
@@ -304,6 +304,8 @@ function LoginForm() {
                   type="button"
                   className={styles.togglePasswordBtn}
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+                  aria-pressed={showPassword}
                 >
                   {showPassword ? 'Ocultar' : 'Exibir'}
                 </button>
@@ -372,19 +374,19 @@ function LoginForm() {
           </div>
 
           {resendSuccess && (
-            <div className={styles.resendFeedback}>
+            <div className={styles.resendFeedback} role="status" aria-live="polite">
               {resendSuccess}
             </div>
           )}
 
           {verifyError && (
-            <div className={styles.errorBanner} style={{ marginBottom: '16px' }}>
+            <div className={styles.errorBanner} role="alert" aria-live="assertive" style={{ marginBottom: '16px' }}>
               <span>{verifyError}</span>
             </div>
           )}
 
           {verifySuccess && (
-            <div className={styles.verifySuccessMessage}>
+            <div className={styles.verifySuccessMessage} role="status" aria-live="polite">
               {verifySuccess}
             </div>
           )}
@@ -392,8 +394,8 @@ function LoginForm() {
           <form onSubmit={handleConfirmVerification}>
             {/* Caixa dos 6 dígitos: cada dígito com sua própria caixa de texto */}
             <div className={styles.codeSection}>
-              <span className={styles.codeLabel}>Digite o código de 6 dígitos</span>
-              <div className={styles.digitGroup} onPaste={handlePaste}>
+              <span className={styles.codeLabel} id="code-digits-label">Digite o código de 6 dígitos</span>
+              <div className={styles.digitGroup} onPaste={handlePaste} aria-labelledby="code-digits-label">
                 {digits.map((digit, idx) => (
                   <input
                     key={idx}
@@ -404,6 +406,7 @@ function LoginForm() {
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
+                    aria-label={`Dígito ${idx + 1} de 6 do código de verificação`}
                     onChange={(e) => handleDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
                     disabled={verifyLoading}

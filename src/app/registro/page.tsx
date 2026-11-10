@@ -99,24 +99,40 @@ export default function RegistroPage() {
           <p className={styles.headerSubtitle}>Junte-se à plataforma Cortex</p>
         </div>
 
-        {errorMessage && <div className={styles.errorBanner}>{errorMessage}</div>}
+        {errorMessage && (
+          <div className={styles.errorBanner} role="alert" aria-live="assertive">
+            {errorMessage}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Upload de Foto de Perfil */}
           <div className={styles.avatarUploadWrapper}>
             {fotoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={fotoPreview} alt="Preview Foto" className={styles.avatarPreview} />
+              <img src={fotoPreview} alt="Pré-visualização da foto de perfil selecionada" className={styles.avatarPreview} />
             ) : (
               <div className={styles.avatarPlaceholder} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CameraIcon size={24} />
               </div>
             )}
             <div className={styles.avatarUploadInfo}>
-              <label htmlFor="fotoInput" className={styles.uploadLabel}>
+              <label
+                htmlFor="fotoInput"
+                className={styles.uploadLabel}
+                tabIndex={0}
+                role="button"
+                aria-describedby="uploadHint"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    document.getElementById('fotoInput')?.click();
+                  }
+                }}
+              >
                 {fotoPreview ? 'Alterar foto de perfil' : 'Adicionar foto de perfil'}
               </label>
-              <span className={styles.uploadHint}>JPG, PNG ou WebP (opcional)</span>
+              <span id="uploadHint" className={styles.uploadHint}>JPG, PNG ou WebP (opcional)</span>
               <input
                 id="fotoInput"
                 type="file"

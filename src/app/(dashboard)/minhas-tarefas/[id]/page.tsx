@@ -302,7 +302,7 @@ export default function DetalhesTarefaPage() {
     <>
       <Header titulo="Detalhes da Tarefa" />
 
-      <main className={styles.container}>
+      <main id="conteudo-principal" className={styles.container}>
         <button
           type="button"
           onClick={() => router.push('/minhas-tarefas')}
