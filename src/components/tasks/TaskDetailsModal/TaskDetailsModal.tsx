@@ -7,6 +7,7 @@ import { Badge } from '@/components/common/Badge/Badge';
 import { DetalhesTarefaDTO } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
 import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { SuggestionModal } from '../SuggestionModal/SuggestionModal';
 import { ReportTicketModal } from '../ReportTicketModal/ReportTicketModal';
 import { AttachmentGallery } from '../AttachmentGallery/AttachmentGallery';
@@ -26,6 +27,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   onTaskUpdated,
 }) => {
   const { showToast } = useToast();
+  const { recarregarPerfil } = useAuth();
 
   const [tarefa, setTarefa] = useState<DetalhesTarefaDTO | null>(null);
   const [loading, setLoading] = useState(false);
@@ -67,6 +69,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       setCompleting(true);
       await tarefaService.concluirTarefa(tarefa.id);
       showToast('Tarefa marcada como concluída com sucesso!', 'success');
+      await recarregarPerfil();
       onTaskUpdated();
       onClose();
     } catch (err: unknown) {

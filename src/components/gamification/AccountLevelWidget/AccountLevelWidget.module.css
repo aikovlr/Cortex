@@ -1,0 +1,610 @@
+/* ============================================================
+   AccountLevelWidget — Estilos Modernos e Acessíveis de Gamificação
+   Seguindo as diretrizes do guia moderno de <progress>
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Modo: SIDEBAR
+   Oculto na visão desktop, exibido exclusivamente na visão mobile
+   ------------------------------------------------------------ */
+.sidebarContainer {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebarContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 10px 10px 10px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-sizing: border-box;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .sidebarContainer:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(123, 79, 201, 0.5);
+  }
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sidebarInfoBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.sidebarInfoBtn:hover,
+.sidebarInfoBtn:focus-visible {
+  background: rgba(147, 51, 234, 0.35);
+  border-color: rgba(192, 132, 252, 0.6);
+  color: #ffffff;
+  outline: none;
+}
+
+.sidebarToast {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.45) 0%, rgba(126, 34, 206, 0.4) 100%);
+  border: 1.5px solid rgba(192, 132, 252, 0.6);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  animation: toastFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 6px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebarToastHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebarToastTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f3e8ff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
+.sidebarToastClose {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  min-width: 28px;
+  min-height: 28px;
+  padding: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sidebarToastClose:hover,
+.sidebarToastClose:focus-visible {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #ffffff;
+  outline: none;
+}
+
+.sidebarToastText {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+}
+
+.sidebarToastText strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.sidebarToastFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidebarToastLink {
+  color: #f3e8ff;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(147, 51, 234, 0.35);
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  border-radius: 6px;
+  font-size: 11.5px;
+  align-self: flex-start;
+  transition: all 0.15s ease;
+}
+
+.sidebarToastLink:hover,
+.sidebarToastLink:focus-visible {
+  background: rgba(147, 51, 234, 0.65);
+  color: #ffffff;
+  border-color: #e9d5ff;
+  text-decoration: none;
+}
+
+.levelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.levelTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xpTextRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.xpNumbers {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.xpPercent {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cortex-purple);
+}
+
+/* ------------------------------------------------------------
+   Elemento <progress> semântico conforme Modern Web Guidance
+   ------------------------------------------------------------ */
+.progressBar {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0 solid transparent;
+  overflow: clip;
+  width: 100%;
+  height: 6px;
+  --progress-bar-radius: 9999px;
+  border-radius: var(--progress-bar-radius);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+  display: block;
+}
+
+.progressBar::-webkit-progress-bar {
+  background: transparent;
+}
+
+.progressBar::-webkit-progress-value {
+  background: linear-gradient(90deg, #7B4FC9 0%, #9B6CE8 100%);
+  border-radius: var(--progress-bar-radius);
+  transition: inline-size 0.4s ease;
+}
+
+.progressBar::-moz-progress-bar {
+  background: linear-gradient(90deg, #7B4FC9 0%, #9B6CE8 100%);
+  border-radius: var(--progress-bar-radius);
+  transition: inline-size 0.4s ease;
+}
+
+/* ------------------------------------------------------------
+   Modo: COMPACT (Header)
+   Exibido no desktop, ocultado na visão mobile (< 768px)
+   ------------------------------------------------------------ */
+.compactWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+@media (max-width: 768px) {
+  .compactWrapper {
+    display: none !important;
+  }
+}
+
+.compactBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-main);
+  border-radius: 9999px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.compactBtn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--cortex-purple);
+  box-shadow: 0 2px 8px var(--cortex-purple-glow);
+  transform: translateY(-1px);
+}
+
+.compactBtn:focus-visible {
+  outline: 2px solid var(--cortex-purple);
+  outline-offset: 2px;
+}
+
+.compactLevelChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 9999px;
+}
+
+.compactXpText {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.compactBar {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0 solid transparent;
+  overflow: clip;
+  width: 44px;
+  height: 5px;
+  --progress-bar-radius: 9999px;
+  border-radius: var(--progress-bar-radius);
+  background: var(--border-main);
+  display: inline-block;
+}
+
+.compactBar::-webkit-progress-bar {
+  background: transparent;
+}
+
+.compactBar::-webkit-progress-value {
+  background: var(--cortex-purple);
+  border-radius: var(--progress-bar-radius);
+  transition: inline-size 0.3s ease;
+}
+
+.compactBar::-moz-progress-bar {
+  background: var(--cortex-purple);
+  border-radius: var(--progress-bar-radius);
+  transition: inline-size 0.3s ease;
+}
+
+/* Popover flutuante no modo compacto */
+.popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.popoverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.popoverTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.popoverDescription {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.popoverTip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(123, 79, 201, 0.08);
+  border: 1px solid rgba(123, 79, 201, 0.18);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------------------
+   Modo: CARD (Minha Conta / Configurações)
+   ------------------------------------------------------------ */
+.cardContainer {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.cardHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.cardEmblemGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cardEmblem {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.cardTitles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardLevelLabel {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.cardLevelNumber {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardTierTag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.cardProgressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.cardProgressBar {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0 solid transparent;
+  overflow: clip;
+  width: 100%;
+  height: 10px;
+  --progress-bar-radius: 9999px;
+  border-radius: var(--progress-bar-radius);
+  background: var(--border-main);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: block;
+}
+
+.cardProgressBar::-webkit-progress-bar {
+  background: transparent;
+}
+
+.cardProgressBar::-webkit-progress-value {
+  background: linear-gradient(90deg, #7B4FC9 0%, #A855F7 100%);
+  border-radius: var(--progress-bar-radius);
+  transition: inline-size 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cardProgressBar::-moz-progress-bar {
+  background: linear-gradient(90deg, #7B4FC9 0%, #A855F7 100%);
+  border-radius: var(--progress-bar-radius);
+  transition: inline-size 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cardProgressStats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cardProgressHighlight {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cardInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.cardInfoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(123, 79, 201, 0.05);
+  border: 1px solid rgba(123, 79, 201, 0.15);
+}
+
+.cardInfoIcon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cardInfoBoxTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.cardInfoBoxText {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .cardContainer {
+    padding: 16px;
+    gap: 16px;
+    border-radius: 14px;
+  }
+
+  .cardEmblemGroup {
+    gap: 12px;
+    width: 100%;
+  }
+
+  .cardEmblem {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    font-size: 26px;
+  }
+
+  .cardLevelNumber {
+    font-size: 20px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .cardProgressSection {
+    padding: 12px;
+  }
+
+  .cardProgressStats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  .cardInfoGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .cardInfoBox {
+    padding: 12px;
+  }
+}
+

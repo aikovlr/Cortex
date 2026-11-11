@@ -52,6 +52,9 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
   const [loadingTarefas, setLoadingTarefas] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // O XP de meta de equipe deve iniciar em 0 e a cada tarefa vinculada, a recompensa deve ser aumentada em 5
+  const xpRecompensa = selectedTaskIds.length * 5;
+
   // Data máxima para 12 meses (RN15)
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 1);
@@ -243,6 +246,7 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
           tarefaIds: selectedTaskIds,
           dataFechamento: dataFechamento ? new Date(dataFechamento).toISOString() : undefined,
           equipeId: Number(targetEquipeId),
+          xpRecompensa: Number(xpRecompensa) || 0,
         });
       } else {
         // Atribui individualmente aos membros selecionados vinculando à equipe
@@ -254,6 +258,7 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
               dataFechamento: dataFechamento ? new Date(dataFechamento).toISOString() : undefined,
               equipeId: Number(targetEquipeId),
               usuarioId: uId,
+              xpRecompensa: Number(xpRecompensa) || 0,
             })
           )
         );
@@ -261,8 +266,8 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
 
       showToast(
         currentEquipeNome
-          ? `Meta criada e atribuída com sucesso na equipe "${currentEquipeNome}"!`
-          : 'Meta de equipe criada e atribuída com sucesso!',
+          ? `Meta criada e atribuída com sucesso na equipe "${currentEquipeNome}" (+${xpRecompensa} XP de recompensa)!`
+          : `Meta de equipe criada e atribuída com sucesso (+${xpRecompensa} XP de recompensa)!`,
         'success'
       );
 
@@ -504,6 +509,19 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
           />
           <span className={styles.helpText}>
             A data limite de conclusão não pode exceder 12 meses a partir de hoje.
+          </span>
+        </div>
+
+        {/* Recompensa de Gamificação (XP) */}
+        <div className={styles.field}>
+          <label className={styles.label}>
+            Recompensa de Experiência (XP da Meta)
+          </label>
+          <div className={styles.xpCalculadoBadge}>
+            <span>+{selectedTaskIds.length * 5} XP</span>
+          </div>
+          <span className={styles.helpText}>
+            O XP de meta de equipe inicia em 0 e cada tarefa vinculada adiciona +5 XP à recompensa ({selectedTaskIds.length} tarefa{selectedTaskIds.length === 1 ? '' : 's'} vinculada{selectedTaskIds.length === 1 ? '' : 's'} = +{selectedTaskIds.length * 5} XP ao concluir).
           </span>
         </div>
       </form>

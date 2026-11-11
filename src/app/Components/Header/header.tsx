@@ -7,6 +7,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
 import { useNotifications, NotificacaoItem } from '@/contexts/NotificationContext';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { AccountLevelWidget } from '@/components/gamification/AccountLevelWidget/AccountLevelWidget';
 import {
   FileTextIcon,
   AlertTriangleIcon,
@@ -88,6 +90,7 @@ export default function Header({
   const { theme, toggleTheme } = useAccessibility();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const handleToggleSidebar = onToggleSidebar || toggleSidebar;
+  const { usuario } = useAuth();
   const {
     notificacoes,
     naoLidasCount,
@@ -520,6 +523,14 @@ export default function Header({
       </div>
 
       <div className={styles.rightSection}>
+        {usuario && (
+          <AccountLevelWidget
+            nivel={usuario.nivel}
+            experiencia={usuario.experiencia}
+            variant="compact"
+          />
+        )}
+
         {/* Botão de Tema Claro / Escuro */}
         <button
           type="button"

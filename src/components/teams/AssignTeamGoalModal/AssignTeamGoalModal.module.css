@@ -67,6 +67,52 @@
   line-height: 1.3;
 }
 
+.xpCalculadoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(123, 79, 201, 0.15);
+  border: 1px solid rgba(123, 79, 201, 0.4);
+  color: #c4b5fd;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.xpPresetRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.xpPresetBtn {
+  background: rgba(123, 79, 201, 0.15);
+  border: 1px solid rgba(123, 79, 201, 0.3);
+  color: #c4b5fd;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.xpPresetBtn:hover {
+  background: var(--cortex-purple);
+  color: #ffffff;
+  border-color: var(--cortex-purple);
+}
+
+.xpPresetBtnActive {
+  background: var(--cortex-purple);
+  color: #ffffff;
+  border-color: var(--cortex-purple);
+}
+
 /* Opções de Atribuição (Radio Buttons) */
 .radioGroup {
   display: flex;

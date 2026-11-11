@@ -36,7 +36,7 @@ export default function DetalhesTarefaPage() {
   const params = useParams();
   const router = useRouter();
   const { showToast } = useToast();
-  const { usuario } = useAuth();
+  const { usuario, recarregarPerfil } = useAuth();
 
   const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const tarefaId = idParam ? Number(idParam) : null;
@@ -224,6 +224,7 @@ export default function DetalhesTarefaPage() {
       await tarefaService.concluirTarefa(tarefa.id);
       showToast('Tarefa marcada como finalizada com sucesso!', 'success');
       await recarregarTarefa();
+      await recarregarPerfil();
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');

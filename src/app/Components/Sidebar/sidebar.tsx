@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { AccountLevelWidget } from '@/components/gamification/AccountLevelWidget/AccountLevelWidget';
 import styles from './sidebar.module.css';
 
 const Sidebar = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
@@ -115,6 +116,14 @@ const Sidebar = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>
           );
         })}
       </nav>
+
+      {usuario && (
+        <AccountLevelWidget
+          nivel={usuario.nivel}
+          experiencia={usuario.experiencia}
+          variant="sidebar"
+        />
+      )}
 
       <div className={styles.footer}>
         {fotoUrl && failedUrl !== fotoUrl ? (

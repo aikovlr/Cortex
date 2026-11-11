@@ -77,10 +77,10 @@ export const metaService = {
   /**
    * Atribui uma meta existente a uma equipe (Apenas Dono/Admin da equipe).
    */
-  async atribuirEquipe(id: number, equipeId: number): Promise<ConsultaMetaDTO> {
+  async atribuirEquipe(id: number, equipeId: number, xpRecompensa?: number): Promise<ConsultaMetaDTO> {
     return apiFetch<ConsultaMetaDTO>(`/api/metas/${id}/equipe`, {
       method: 'POST',
-      body: JSON.stringify({ equipeId }),
+      body: JSON.stringify({ equipeId, xpRecompensa }),
     });
   },
 
@@ -90,6 +90,15 @@ export const metaService = {
   async listarPorEquipe(equipeId: number): Promise<ConsultaMetaDTO[]> {
     return apiFetch<ConsultaMetaDTO[]>(`/api/equipes/${equipeId}/metas`, {
       method: 'GET',
+    });
+  },
+
+  /**
+   * Verifica metas expiradas e aplica a penalidade de XP (-5 XP por meta não concluída expirada).
+   */
+  async verificarExpiradas(): Promise<{ metasPenalizadas: number }> {
+    return apiFetch<{ metasPenalizadas: number }>('/api/metas/verificar-expiradas', {
+      method: 'POST',
     });
   },
 };

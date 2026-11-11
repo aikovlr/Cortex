@@ -176,6 +176,9 @@
     visibility: hidden;
     pointer-events: none;
     box-shadow: none;
+    width: min(290px, 86vw);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar.mobileOpen {

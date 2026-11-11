@@ -9,6 +9,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { ConsultaMetaDTO, ConsultaTarefaDTO } from '@/types/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { UsersIcon, ZapIcon } from '@/components/common/Icons/Icons';
 import styles from './GoalEditModal.module.css';
 
 interface GoalEditModalProps {
@@ -197,6 +198,42 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
           required
           autoFocus
         />
+
+        {meta?.equipes && meta.equipes.length > 0 && (
+          <div
+            style={{
+              padding: '10px 14px',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(123, 79, 201, 0.12)',
+              border: '1px solid rgba(123, 79, 201, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '12px',
+              color: 'var(--cortex-white)',
+            }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <UsersIcon size={14} color="#c4b5fd" />
+              <span>Equipe: <strong>{meta.equipes.map((e) => e.nome).join(', ')}</strong></span>
+            </span>
+            <span
+              style={{
+                fontWeight: 700,
+                color: '#c4b5fd',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <ZapIcon size={14} color="#c4b5fd" />
+              <span>+{selectedTaskIds.length * 5} XP</span>
+              <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--cortex-gray-text)' }}>
+                (5 XP por tarefa vinculada)
+              </span>
+            </span>
+          </div>
+        )}
 
         <div className={styles.field}>
           <div className={styles.selectionHeader}>

@@ -31,6 +31,8 @@ export interface ConsultaUsuarioDTO {
   email: string;
   telefone?: string | null;
   emailVerificado?: boolean;
+  nivel?: number;
+  experiencia?: number;
   fotoPerfil?: ConsultaAnexoDTO | null;
 }
 
@@ -140,8 +142,10 @@ export interface ConsultaMetaDTO {
   usuarioId: number;
   tarefa?: { id: number; titulo: string; status?: string } | null;
   tarefas?: ConsultaTarefaDTO[];
-  usuario?: { id: number; nome: string } | null;
+  usuario?: { id: number; nome: string; nivel?: number; experiencia?: number } | null;
   equipes?: ConsultaEquipeDTO[];
+  xpRecompensa?: number;
+  penalidadeAplicada?: boolean;
 }
 
 export interface CriarMetaDTO {
@@ -151,10 +155,12 @@ export interface CriarMetaDTO {
   tarefaIds?: number[];
   usuarioId?: number;
   equipeId?: number;
+  xpRecompensa?: number;
 }
 
 export interface AtribuirEquipeMetaDTO {
   equipeId: number;
+  xpRecompensa?: number;
 }
 
 export interface AtualizarMetaDTO {
@@ -165,6 +171,7 @@ export interface AtualizarMetaDTO {
   tarefaIds?: number[];
   usuarioId?: number;
   limparDataFechamento?: boolean;
+  xpRecompensa?: number;
 }
 
 export interface ConsultaSugestaoDTO {

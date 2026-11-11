@@ -15,10 +15,13 @@ import {
   UsersIcon,
   UserIcon,
   PlusIcon,
+  ZapIcon,
 } from '@/components/common/Icons/Icons';
 import { GoalCreateModal } from '@/components/goals/GoalCreateModal/GoalCreateModal';
 import { GoalEditModal } from '@/components/goals/GoalEditModal/GoalEditModal';
 import { AssignTeamGoalModal } from '@/components/teams/AssignTeamGoalModal/AssignTeamGoalModal';
+import { XpCelebrationModal } from '@/components/gamification/XpCelebrationModal/XpCelebrationModal';
+import { authService } from '@/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
@@ -27,12 +30,23 @@ export type CriterioOrdenacao = 'status' | 'prazo' | 'nome' | 'progresso' | 'rec
 export type DirecaoOrdenacao = 'asc' | 'desc';
 
 export default function MetasPage() {
-  const { usuario } = useAuth();
+  const { usuario, recarregarPerfil } = useAuth();
   const { showToast } = useToast();
 
   const [metas, setMetas] = useState<ConsultaMetaDTO[]>([]);
   const [activeTab, setActiveTab] = useState<'pessoais' | 'equipes'>('pessoais');
   const [loading, setLoading] = useState(true);
+  const [celebrationData, setCelebrationData] = useState<{
+    isOpen: boolean;
+    metaNome: string;
+    xpGanho: number;
+    novoNivel?: number;
+    subiuDeNivel?: boolean;
+  }>({
+    isOpen: false,
+    metaNome: '',
+    xpGanho: 0,
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [criterioOrdenacao, setCriterioOrdenacao] = useState<CriterioOrdenacao>('status');
   const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<DirecaoOrdenacao>('asc');
@@ -100,6 +114,14 @@ export default function MetasPage() {
   const carregarMetas = useCallback(async () => {
     try {
       setLoading(true);
+
+      // Sincroniza verificação de metas expiradas
+      metaService.verificarExpiradas().then((res) => {
+        if (res && res.metasPenalizadas > 0) {
+          recarregarPerfil();
+        }
+      }).catch(() => {});
+
       const [metasPessoais, equipes] = await Promise.all([
         metaService.listar().catch(() => []),
         equipeService.listarMinhasEquipes().catch(() => []),
@@ -706,6 +728,10 @@ export default function MetasPage() {
               const ehCriadorDaMeta = Boolean(
                 usuario?.id && (meta.usuarioId === usuario.id || meta.usuario?.id === usuario.id)
               );
+              const ehMetaEquipe = Boolean(
+                (meta.equipes && meta.equipes.length > 0) ||
+                (meta.xpRecompensa !== undefined && meta.xpRecompensa > 0)
+              );
 
               return (
                 <div
@@ -733,45 +759,82 @@ export default function MetasPage() {
                       }
                     }}
                   >
-                    <div className={styles.groupTitleWrapper}>
-                      <span
-                        className={styles.dragHandle}
-                        title="Arraste para reordenar"
-                        aria-label="Arraste para reordenar"
-                        onClick={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="8" cy="6" r="2" />
-                          <circle cx="16" cy="6" r="2" />
-                          <circle cx="8" cy="12" r="2" />
-                          <circle cx="16" cy="12" r="2" />
-                          <circle cx="8" cy="18" r="2" />
-                          <circle cx="16" cy="18" r="2" />
-                        </svg>
-                      </span>
+                    <div className={styles.groupHeaderLeft}>
+                      {/* Linha 1 no mobile: titulo - data de vencimento (na extremidade da direita) */}
+                      <div className={styles.groupTitleRow}>
+                        <div className={styles.groupTitleLeftPart}>
+                          <span
+                            className={styles.dragHandle}
+                            title="Arraste para reordenar"
+                            aria-label="Arraste para reordenar"
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <circle cx="8" cy="6" r="2" />
+                              <circle cx="16" cy="6" r="2" />
+                              <circle cx="8" cy="12" r="2" />
+                              <circle cx="16" cy="12" r="2" />
+                              <circle cx="8" cy="18" r="2" />
+                              <circle cx="16" cy="18" r="2" />
+                            </svg>
+                          </span>
 
-                      <span className={`${styles.taskName} ${concluida ? styles.goalNameCompleted : ''}`}>
-                        {meta.nome}
-                      </span>
-                      <Badge
-                        type="status"
-                        value={status}
-                      />
-                      {meta.equipes && meta.equipes.length > 0 && (
-                        <span
-                          className={styles.teamBadge}
-                          title={`Equipe: ${meta.equipes.map((e) => e.nome).join(', ')}`}
-                        >
-                          <UsersIcon size={12} />
-                          {meta.equipes.map((e) => e.nome).join(', ')}
-                        </span>
-                      )}
-                      {meta.dataFechamento && (
-                        <span className={styles.dateLimit} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }} suppressHydrationWarning>
-                          <CalendarIcon size={13} /> Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}
-                        </span>
-                      )}
+                          <span className={`${styles.taskName} ${concluida ? styles.goalNameCompleted : ''}`}>
+                            {meta.nome}
+                          </span>
+                        </div>
+
+                        {meta.dataFechamento && (
+                          <span className={styles.dateLimitBadge} suppressHydrationWarning>
+                            <CalendarIcon size={12} />
+                            <span>Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Linha 2 no mobile: tag de status - equipe - xp */}
+                      <div className={styles.goalTagsRow}>
+                        <Badge
+                          type="status"
+                          value={status}
+                        />
+                        {meta.equipes && meta.equipes.length > 0 && (
+                          <span
+                            className={styles.teamBadge}
+                            title={`Equipe vinculada: ${meta.equipes.map((e) => e.nome).join(', ')}`}
+                          >
+                            <UsersIcon size={13} className={styles.teamBadgeIcon} />
+                            <span className={styles.teamBadgeLabel}>Equipe:</span>
+                            <span className={styles.teamBadgeName}>
+                              {meta.equipes.map((e) => e.nome).join(', ')}
+                            </span>
+                          </span>
+                        )}
+                        {status === 'Atrasada' ? (
+                          <span
+                            className={`${styles.xpBadge} ${styles.xpBadgePenalty}`}
+                            title="-5 XP deduzidos do saldo pela expiração desta meta não concluída. Tarefas concluídas não alteram o saldo de XP."
+                          >
+                            <ZapIcon size={12} color="currentColor" />
+                            <span>-5 XP</span>
+                          </span>
+                        ) : ehMetaEquipe ? (
+                          <span
+                            className={`${styles.xpBadge} ${concluida ? styles.xpBadgeCompleted : ''}`}
+                            title={
+                              concluida
+                                ? `+${meta.xpRecompensa ?? (tarefas.length * 5)} XP conquistados pela conclusão desta meta de equipe!`
+                                : `Recompensa de +${meta.xpRecompensa ?? (tarefas.length * 5)} XP ao concluir esta meta (+5 XP por tarefa vinculada)`
+                            }
+                          >
+                            <ZapIcon size={12} color="currentColor" />
+                            <span>
+                              +{meta.xpRecompensa ?? (tarefas.length * 5)} XP
+                            </span>
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className={styles.groupRightActionsWrapper}>
@@ -875,38 +938,58 @@ export default function MetasPage() {
 
                   {!isCollapsed && (
                     <div className={styles.goalsList}>
-                      <div style={{ padding: '8px 16px 4px', fontSize: '12px', fontWeight: 600, color: 'var(--cortex-gray-text)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        Tarefas Vinculadas ({tarefas.length})
+                      <div className={styles.tasksSectionHeader}>
+                        <span className={styles.tasksSectionTitle}>Tarefas Vinculadas</span>
+                        <span className={styles.tasksSummaryBadge}>
+                          {tarefas.filter((t) => t.status === 'Concluida').length} de {tarefas.length} concluída{tarefas.length === 1 ? '' : 's'}
+                        </span>
                       </div>
 
                       {tarefas.length === 0 ? (
-                        <div style={{ padding: '12px 16px', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
+                        <div className={styles.emptyTasksMessage}>
                           Nenhuma tarefa vinculada a esta meta.
                         </div>
                       ) : (
-                        tarefas.map((tarefa) => (
-                          <div key={tarefa.id} className={styles.goalItem}>
-                            <div className={styles.goalLeft}>
-                              <Badge type="status" value={tarefa.status} />
-                              <span
-                                className={`${styles.goalName} ${
-                                  tarefa.status === 'Concluida' ? styles.goalNameCompleted : ''
-                                }`}
-                              >
-                                {tarefa.titulo}
-                              </span>
-                            </div>
-
-                            <div className={styles.goalRight}>
-                              <Badge type="prioridade" value={tarefa.prioridade} />
-                              {tarefa.dataVencimento && (
-                                <span className={styles.dateLimit} suppressHydrationWarning>
-                                  Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}
+                        tarefas.map((tarefa) => {
+                          const tarefaConcluida = tarefa.status === 'Concluida';
+                          return (
+                            <div
+                              key={tarefa.id}
+                              className={`${styles.taskItemCard} ${tarefaConcluida ? styles.goalItemCompleted : ''}`}
+                            >
+                              {/* Linha 1: titulo */}
+                              <div className={styles.taskItemTitleRow}>
+                                <span
+                                  className={`${styles.goalName} ${
+                                    tarefaConcluida ? styles.goalNameCompleted : ''
+                                  }`}
+                                >
+                                  {tarefa.titulo}
                                 </span>
-                              )}
+                              </div>
+
+                              {/* Linha 2: tag de status - prioridade - data de entrega */}
+                              <div className={styles.taskItemMetaRow}>
+                                <Badge
+                                  type="status"
+                                  value={tarefa.status}
+                                  className={styles.taskStatusBadge}
+                                />
+                                <Badge
+                                  type="prioridade"
+                                  value={tarefa.prioridade}
+                                  className={styles.taskPriorityBadge}
+                                />
+                                {tarefa.dataVencimento && (
+                                  <span className={styles.taskDueDate} suppressHydrationWarning>
+                                    <CalendarIcon size={12} />
+                                    <span>Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}</span>
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   )}
@@ -940,6 +1023,16 @@ export default function MetasPage() {
           setEditingMeta(null);
         }}
         onSuccess={carregarMetas}
+      />
+
+      {/* Modal de Celebração de XP e Subida de Nível */}
+      <XpCelebrationModal
+        isOpen={celebrationData.isOpen}
+        onClose={() => setCelebrationData((prev) => ({ ...prev, isOpen: false }))}
+        metaNome={celebrationData.metaNome}
+        xpGanho={celebrationData.xpGanho}
+        novoNivel={celebrationData.novoNivel}
+        subiuDeNivel={celebrationData.subiuDeNivel}
       />
     </>
   );
