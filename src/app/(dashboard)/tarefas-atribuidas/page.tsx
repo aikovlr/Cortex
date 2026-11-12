@@ -101,6 +101,30 @@ export default function TarefasAtribuidasPage() {
     recarregar();
   }, [recarregar]);
 
+  const [highlightedTarefaId, setHighlightedTarefaId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || tarefas.length === 0) return;
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const targetId = params.get('tarefaId') || params.get('id');
+      if (targetId) {
+        const numId = Number(targetId);
+        const target = tarefas.find((t) => t.id === numId);
+        if (target) {
+          setHighlightedTarefaId(numId);
+          setTimeout(() => {
+            const el = document.getElementById(`tarefa-atribuida-row-${numId}`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+          const timer = setTimeout(() => setHighlightedTarefaId(null), 8000);
+          return () => clearTimeout(timer);
+        }
+      }
+    } catch {}
+  }, [tarefas]);
+
   const formatarData = (isoDate: string) => {
     const data = new Date(isoDate);
     return data.toLocaleDateString('pt-BR', {
@@ -326,7 +350,8 @@ export default function TarefasAtribuidasPage() {
                     return (
                       <tr
                         key={tarefa.id}
-                        className={styles.tr}
+                        id={`tarefa-atribuida-row-${tarefa.id}`}
+                        className={`${styles.tr} ${highlightedTarefaId === tarefa.id ? styles.trHighlighted : ''}`}
                         onClick={() => router.push(`/tarefas-atribuidas/${tarefa.id}`)}
                         style={{ cursor: 'pointer' }}
                       >

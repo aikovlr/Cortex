@@ -193,6 +193,11 @@ select {
   font-family: inherit;
 }
 
+select option {
+  background-color: var(--cortex-dark-input);
+  color: var(--cortex-white);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

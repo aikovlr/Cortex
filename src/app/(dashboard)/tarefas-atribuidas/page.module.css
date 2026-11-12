@@ -136,6 +136,21 @@
   background-color: var(--bg-surface-hover);
 }
 
+.trHighlighted {
+  background-color: rgba(124, 58, 237, 0.12) !important;
+  box-shadow: inset 4px 0 0 var(--cortex-purple);
+  animation: rowHighlightPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes rowHighlightPulse {
+  0% {
+    background-color: rgba(124, 58, 237, 0.08);
+  }
+  100% {
+    background-color: rgba(124, 58, 237, 0.2);
+  }
+}
+
 .td {
   padding: 16px 20px;
   font-size: 14px;

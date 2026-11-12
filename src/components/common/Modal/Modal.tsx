@@ -23,41 +23,59 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  const mouseDownOnOverlayRef = useRef(false);
   const titleId = useId();
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
+  // Mantém a referência de onClose atualizada sem invalidar callbacks ou effects
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
-      // Prende o foco dentro do modal ao navegar com Tab (WCAG 2.1.2)
-      if (e.key === 'Tab' && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
+  const handleOverlayMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Registra se o início do clique foi diretamente no backdrop externo com o botão esquerdo (0)
+    mouseDownOnOverlayRef.current = e.target === e.currentTarget && e.button === 0;
+  };
 
-        if (focusableElements.length === 0) return;
+  const handleOverlayMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Só fecha se TANTO o mousedown QUANTO o mouseup ocorreram diretamente no backdrop com botão esquerdo
+    // Impede fechamento acidental quando o usuário seleciona texto ou arrasta o mouse de dentro para fora
+    if (mouseDownOnOverlayRef.current && e.target === e.currentTarget && e.button === 0) {
+      onClose();
+    }
+    mouseDownOnOverlayRef.current = false;
+  };
 
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onCloseRef.current();
+      return;
+    }
 
-        if (e.shiftKey) {
-          if (document.activeElement === firstElement || document.activeElement === modalRef.current) {
-            e.preventDefault();
-            lastElement.focus();
-          }
-        } else {
-          if (document.activeElement === lastElement) {
-            e.preventDefault();
-            firstElement.focus();
-          }
+    // Prende o foco dentro do modal ao navegar com Tab (WCAG 2.1.2)
+    if (e.key === 'Tab' && modalRef.current) {
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement || document.activeElement === modalRef.current) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
         }
       }
-    },
-    [onClose]
-  );
+    }
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -66,14 +84,25 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
 
-      // Desloca o foco para o primeiro elemento interativo ou para o modal
+      // Desloca o foco para o primeiro campo interativo no corpo do modal (evitando focar no botão Fechar)
       const timer = setTimeout(() => {
-        if (modalRef.current) {
-          const focusable = modalRef.current.querySelector<HTMLElement>(
+        if (!modalRef.current) return;
+
+        // Procura primeiro por input com autofocus ou primeiro campo editável no corpo do modal
+        const bodyElement = modalRef.current.querySelector(`.${styles.body}`);
+        const firstBodyInput = bodyElement?.querySelector<HTMLElement>(
+          '[autofocus], input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [href]'
+        );
+
+        if (firstBodyInput) {
+          firstBodyInput.focus();
+        } else {
+          // Fallback caso o modal não tenha elementos interativos no corpo
+          const firstFocusable = modalRef.current.querySelector<HTMLElement>(
             'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href]'
           );
-          if (focusable) {
-            focusable.focus();
+          if (firstFocusable) {
+            firstFocusable.focus();
           } else {
             modalRef.current.focus();
           }
@@ -82,25 +111,26 @@ export const Modal: React.FC<ModalProps> = ({
 
       return () => {
         clearTimeout(timer);
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleKeyDown);
+        if (previouslyFocusedElementRef.current && typeof previouslyFocusedElementRef.current.focus === 'function') {
+          previouslyFocusedElementRef.current.focus();
+        }
       };
     } else {
       document.body.style.overflow = 'unset';
     }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-      window.removeEventListener('keydown', handleKeyDown);
-      // Devolve o foco ao elemento anterior quando o modal fecha (WCAG 2.4.3)
-      if (previouslyFocusedElementRef.current && typeof previouslyFocusedElementRef.current.focus === 'function') {
-        previouslyFocusedElementRef.current.focus();
-      }
-    };
   }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
 
   return (
-    <div className={styles.overlay} onClick={onClose} role="presentation">
+    <div
+      className={styles.overlay}
+      onMouseDown={handleOverlayMouseDown}
+      onMouseUp={handleOverlayMouseUp}
+      role="presentation"
+    >
       <div
         ref={modalRef}
         role="dialog"
@@ -109,7 +139,6 @@ export const Modal: React.FC<ModalProps> = ({
         tabIndex={-1}
         className={styles.modal}
         style={maxWidth ? { maxWidth } : undefined}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
           <h2 id={titleId} className={styles.title}>

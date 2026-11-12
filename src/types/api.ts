@@ -53,6 +53,7 @@ export interface CriarUsuarioDTO {
   senha: string;
   telefone?: string;
   fotoPerfil?: File;
+  aceitouTermosPrivacidade: boolean;
 }
 
 export interface AtualizarUsuarioDTO {

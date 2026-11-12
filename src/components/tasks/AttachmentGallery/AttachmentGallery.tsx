@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ConsultaAnexoDTO } from '@/types/api';
 import {
   DownloadIcon,
@@ -29,6 +29,7 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
 }) => {
   const [activeMedia, setActiveMedia] = useState<ConsultaAnexoDTO | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const isMouseDownOnBackdropRef = useRef(false);
 
   const getAttachmentUrl = (url?: string) => {
     if (!url) return '';
@@ -350,14 +351,21 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
       {activeMedia && (
         <div
           className={styles.lightboxBackdrop}
-          onClick={handleCloseLightbox}
+          onMouseDown={(e) => {
+            isMouseDownOnBackdropRef.current = e.target === e.currentTarget && e.button === 0;
+          }}
+          onMouseUp={(e) => {
+            if (isMouseDownOnBackdropRef.current && e.target === e.currentTarget && e.button === 0) {
+              handleCloseLightbox();
+            }
+            isMouseDownOnBackdropRef.current = false;
+          }}
           role="dialog"
           aria-modal="true"
           aria-label="Visualizador de anexo"
         >
           <div
             className={styles.lightboxContent}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.lightboxHeader}>
               <div className={styles.lightboxTitleArea}>

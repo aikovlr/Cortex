@@ -196,7 +196,7 @@
 .input,
 .select,
 .textarea {
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: var(--cortex-dark-input);
   border: 1px solid var(--cortex-border);
   border-radius: 8px;
   padding: 10px 14px;
@@ -205,6 +205,11 @@
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   font-family: inherit;
+}
+
+.select option {
+  background-color: var(--cortex-dark-input);
+  color: var(--cortex-white);
 }
 
 .input:focus,
@@ -447,6 +452,18 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.comboboxWrapper {
+  min-width: 250px;
+  flex: 1;
+}
+
+.divider {
+  height: 24px;
+  width: 1px;
+  background-color: var(--cortex-border);
+  margin: 0 4px;
 }
 
 .addRespBtn {
@@ -1015,7 +1032,8 @@
   }
 
   .addResponsavelRow select,
-  .addResponsavelRow button {
+  .addResponsavelRow button,
+  .comboboxWrapper {
     width: 100% !important;
     min-width: 0 !important;
     justify-content: center;

@@ -125,27 +125,27 @@
   border-color: var(--cortex-purple);
 }
 
-.addButton {
-  width: 42px;
+.createBtn {
   height: 42px;
-  border-radius: 50%;
+  padding: 0 18px;
   background-color: var(--cortex-purple);
   color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(123, 79, 201, 0.4);
-  transition: transform 0.15s ease, background-color 0.2s ease;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(123, 79, 201, 0.3);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
 }
 
-.addButton:hover {
+.createBtn:hover {
   background-color: var(--cortex-purple-hover);
-  transform: scale(1.08);
+  transform: translateY(-1px);
 }
 
 .tableCard {
@@ -279,6 +279,21 @@
   background-color: var(--bg-surface-hover);
 }
 
+.trHighlighted {
+  background-color: rgba(124, 58, 237, 0.12) !important;
+  box-shadow: inset 4px 0 0 var(--cortex-purple);
+  animation: rowHighlightPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes rowHighlightPulse {
+  0% {
+    background-color: rgba(124, 58, 237, 0.08);
+  }
+  100% {
+    background-color: rgba(124, 58, 237, 0.2);
+  }
+}
+
 .td {
   padding: 16px 20px;
   font-size: 14px;
@@ -382,14 +397,6 @@
 .searchBarFlex {
   flex: 1;
   min-width: 0;
-}
-
-.addButtonDesktop {
-  display: flex;
-}
-
-.addButtonMobile {
-  display: none;
 }
 
 .mobileCardsList {
@@ -532,15 +539,9 @@
     padding: 0 10px;
   }
 
-  .addButtonDesktop {
-    display: none !important;
-  }
-
-  .addButtonMobile {
-    display: flex !important;
-    width: 42px;
-    height: 42px;
-    flex-shrink: 0;
+  .createBtn {
+    width: 100%;
+    justify-content: center;
   }
 
   .tableResponsive {

@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProvider, useSidebar } from '@/contexts/SidebarContext';
+import { useAccessibility } from '@/contexts/AccessibilityContext';
 import Sidebar from '@/app/Components/Sidebar/sidebar';
 import styles from './layout.module.css';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
-  const { isCollapsed, isMobileOpen, closeMobile, setIsMobileOpen } = useSidebar();
+  const router = useRouter();
+  const { toggleTheme } = useAccessibility();
+  const { isCollapsed, isMobileOpen, closeMobile, setIsMobileOpen, toggleSidebar } = useSidebar();
   const sidebarRef = useRef<HTMLElement | null>(null);
   const backdropRef = useRef<HTMLDivElement | null>(null);
 
@@ -196,6 +199,118 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       window.removeEventListener('touchcancel', handleTouchCancel);
     };
   }, [isMobileOpen, setIsMobileOpen, closeMobile]);
+
+  // Teclas de Atalho Globais do Cortex com proteção contra conflito em campos editáveis
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+
+      // Proteção rigorosa contra conflito com digitação de inputs, selects, textareas e editáveis
+      const isInputFocused =
+        target !== null &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable ||
+          target.getAttribute('role') === 'textbox');
+
+      if (isInputFocused) {
+        // Se o foco estiver em um input, apenas a tecla Escape remove o foco (blur) com segurança
+        if (e.key === 'Escape') {
+          target.blur();
+        }
+        return; // Nunca processa atalhos globais enquanto o usuário digita
+      }
+
+      // Atalhos de Navegação do Workspace: Alt + [1-6]
+      if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        switch (e.key) {
+          case '1':
+            e.preventDefault();
+            router.push('/minhas-tarefas');
+            break;
+          case '2':
+            e.preventDefault();
+            router.push('/tarefas-atribuidas');
+            break;
+          case '3':
+            e.preventDefault();
+            router.push('/equipes');
+            break;
+          case '4':
+            e.preventDefault();
+            router.push('/metas');
+            break;
+          case '5':
+            e.preventDefault();
+            router.push('/relatorios');
+            break;
+          case '6':
+            e.preventDefault();
+            router.push('/configuracoes');
+            break;
+          case 't':
+          case 'T':
+            e.preventDefault();
+            toggleTheme();
+            break;
+          case 'b':
+          case 'B':
+            e.preventDefault();
+            toggleSidebar();
+            break;
+          default:
+            break;
+        }
+        return;
+      }
+
+      // Atalhos com Ctrl / Cmd
+      if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+        if (e.key.toLowerCase() === 'b') {
+          e.preventDefault();
+          toggleSidebar();
+          return;
+        }
+        if (e.key.toLowerCase() === 'k') {
+          const searchInput = document.querySelector<HTMLInputElement>(
+            'input[type="text"][placeholder*="Pesquisar"], input[type="search"], input[aria-label*="Pesquisar"]'
+          );
+          if (searchInput) {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+            return;
+          }
+        }
+      }
+
+      // Atalho de Foco na Busca: '/'
+      if (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        const searchInput = document.querySelector<HTMLInputElement>(
+          'input[type="text"][placeholder*="Pesquisar"], input[type="search"], input[aria-label*="Pesquisar"]'
+        );
+        if (searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+          return;
+        }
+      }
+
+      // Atalho para abrir guia de atalhos nas configurações: '?'
+      if (e.key === '?' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
+        router.push('/configuracoes?aba=atalhos');
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [router, toggleTheme, toggleSidebar]);
 
   return (
     <div className={styles.wrapper}>

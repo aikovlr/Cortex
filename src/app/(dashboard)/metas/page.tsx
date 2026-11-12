@@ -29,6 +29,24 @@ import styles from './page.module.css';
 export type CriterioOrdenacao = 'status' | 'prazo' | 'nome' | 'progresso' | 'recentes' | 'manual';
 export type DirecaoOrdenacao = 'asc' | 'desc';
 
+const PESO_STATUS_TAREFA: Record<string, number> = {
+  Atrasada: 1,
+  Pendente: 2,
+  Concluida: 3,
+};
+
+const getStatusRealTarefa = (tarefa: ConsultaTarefaDTO): 'Atrasada' | 'Pendente' | 'Concluida' => {
+  if (tarefa.status === 'Concluida') return 'Concluida';
+  if (tarefa.dataVencimento) {
+    const agora = new Date();
+    const dataVenc = new Date(tarefa.dataVencimento);
+    if (dataVenc < agora) {
+      return 'Atrasada';
+    }
+  }
+  return 'Pendente';
+};
+
 export default function MetasPage() {
   const { usuario, recarregarPerfil } = useAuth();
   const { showToast } = useToast();
@@ -53,7 +71,9 @@ export default function MetasPage() {
   const [customOrderIds, setCustomOrderIds] = useState<number[]>([]);
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dragOverId, setDragOverId] = useState<number | null>(null);
-  const [collapsedGoalIds, setCollapsedGoalIds] = useState<number[]>([]);
+  const [expandedGoalIds, setExpandedGoalIds] = useState<number[]>([]);
+  const [highlightedMetaId, setHighlightedMetaId] = useState<number | null>(null);
+  const [isHighlightPulsing, setIsHighlightPulsing] = useState<boolean>(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAssignTeamGoalOpen, setIsAssignTeamGoalOpen] = useState(false);
@@ -61,7 +81,7 @@ export default function MetasPage() {
   const [editingMeta, setEditingMeta] = useState<ConsultaMetaDTO | null>(null);
 
   const toggleGoalCollapse = (id: number) => {
-    setCollapsedGoalIds((prev) =>
+    setExpandedGoalIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
@@ -228,6 +248,76 @@ export default function MetasPage() {
     });
   }, [metas]);
 
+  // Extrai as tarefas vinculadas a uma meta
+  const getTarefasDaMeta = useCallback((meta: ConsultaMetaDTO): ConsultaTarefaDTO[] => {
+    if (meta.tarefas && meta.tarefas.length > 0) return meta.tarefas;
+    if (meta.tarefa) return [meta.tarefa as ConsultaTarefaDTO];
+    return [];
+  }, []);
+
+  // Sincroniza navegação direcionada até uma meta específica (?metaId= / ?metaNome= / ?tab=) e ativa o highlight
+  useEffect(() => {
+    if (typeof window === 'undefined' || metas.length === 0) return;
+
+    const aplicarNavegacaoEHighlight = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const targetMetaIdStr = params.get('metaId') || params.get('meta') || params.get('id');
+        const targetMetaNome = params.get('metaNome') || params.get('nome');
+        const targetMetaId = targetMetaIdStr ? Number(targetMetaIdStr) : null;
+
+        if (!targetMetaId && !targetMetaNome) return;
+
+        const targetMeta = metas.find((m) => {
+          if (targetMetaId && m.id === targetMetaId) return true;
+          if (targetMetaNome && m.nome.trim().toLowerCase() === targetMetaNome.trim().toLowerCase()) return true;
+          if (targetMetaNome && m.nome.toLowerCase().includes(targetMetaNome.toLowerCase())) return true;
+          return false;
+        });
+
+        if (targetMeta) {
+          const isTeam = Boolean(targetMeta.equipes && targetMeta.equipes.length > 0);
+          setActiveTab(isTeam ? 'equipes' : 'pessoais');
+
+          // Expande a meta selecionada para exibir suas tarefas
+          setExpandedGoalIds((prev) => (prev.includes(targetMeta.id) ? prev : [...prev, targetMeta.id]));
+
+          // Limpa termo de busca caso ele ocultasse a meta selecionada
+          setSearchTerm((currentSearch) => {
+            if (!currentSearch) return '';
+            const termo = currentSearch.toLowerCase();
+            const matchNome = targetMeta.nome.toLowerCase().includes(termo);
+            const tarefas = getTarefasDaMeta(targetMeta);
+            const matchTarefa = tarefas.some((t) => t.titulo.toLowerCase().includes(termo));
+            return matchNome || matchTarefa ? currentSearch : '';
+          });
+
+          setHighlightedMetaId(targetMeta.id);
+          setIsHighlightPulsing(true);
+
+          // Scroll suave com centralização na tela
+          setTimeout(() => {
+            const el = document.getElementById(`meta-card-${targetMeta.id}`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+
+          // Suaviza a pulsação após alguns segundos
+          const timer = setTimeout(() => {
+            setIsHighlightPulsing(false);
+          }, 7000);
+
+          return () => clearTimeout(timer);
+        }
+      } catch {}
+    };
+
+    aplicarNavegacaoEHighlight();
+    window.addEventListener('popstate', aplicarNavegacaoEHighlight);
+    return () => window.removeEventListener('popstate', aplicarNavegacaoEHighlight);
+  }, [metas, getTarefasDaMeta]);
+
   // Alteração de critério de ordenação
   const handleCriterioChange = (novoCriterio: CriterioOrdenacao) => {
     setCriterioOrdenacao(novoCriterio);
@@ -292,13 +382,6 @@ export default function MetasPage() {
     setEditingMeta(meta);
     setIsEditModalOpen(true);
   };
-
-  // Extrai as tarefas vinculadas a uma meta
-  const getTarefasDaMeta = useCallback((meta: ConsultaMetaDTO): ConsultaTarefaDTO[] => {
-    if (meta.tarefas && meta.tarefas.length > 0) return meta.tarefas;
-    if (meta.tarefa) return [meta.tarefa as ConsultaTarefaDTO];
-    return [];
-  }, []);
 
   // Calcula o percentual de conclusão da meta com base nas suas tarefas
   const getProgressoMeta = useCallback((meta: ConsultaMetaDTO) => {
@@ -719,12 +802,25 @@ export default function MetasPage() {
           <div className={styles.groupsContainer}>
             {metasFiltradas.map((meta, index) => {
               const tarefas = getTarefasDaMeta(meta);
+              const tarefasOrdenadas = [...tarefas].sort((a, b) => {
+                const statusA = getStatusRealTarefa(a);
+                const statusB = getStatusRealTarefa(b);
+                const pesoA = PESO_STATUS_TAREFA[statusA] ?? 99;
+                const pesoB = PESO_STATUS_TAREFA[statusB] ?? 99;
+                if (pesoA !== pesoB) return pesoA - pesoB;
+
+                const timeA = a.dataVencimento ? new Date(a.dataVencimento).getTime() : Infinity;
+                const timeB = b.dataVencimento ? new Date(b.dataVencimento).getTime() : Infinity;
+                if (timeA !== timeB) return timeA - timeB;
+                return a.id - b.id;
+              });
               const progresso = getProgressoMeta(meta);
               const status = getMetaStatus(meta);
               const concluida = status === 'Concluida';
               const isDraggingThis = draggedId === meta.id;
               const isDragOverThis = dragOverId === meta.id;
-              const isCollapsed = collapsedGoalIds.includes(meta.id);
+              const isExpanded = expandedGoalIds.includes(meta.id);
+              const isCollapsed = !isExpanded;
               const ehCriadorDaMeta = Boolean(
                 usuario?.id && (meta.usuarioId === usuario.id || meta.usuario?.id === usuario.id)
               );
@@ -736,6 +832,7 @@ export default function MetasPage() {
               return (
                 <div
                   key={meta.id}
+                  id={`meta-card-${meta.id}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, meta.id)}
                   onDragOver={(e) => handleDragOver(e, meta.id)}
@@ -744,6 +841,8 @@ export default function MetasPage() {
                   onDragEnd={handleDragEnd}
                   className={`${styles.taskGroupCard} ${isDraggingThis ? styles.cardDragging : ''} ${
                     isDragOverThis ? styles.cardDragOver : ''
+                  } ${highlightedMetaId === meta.id ? styles.cardHighlighted : ''} ${
+                    highlightedMetaId === meta.id && isHighlightPulsing ? styles.cardHighlightPulsing : ''
                   }`}
                 >
                   <div
@@ -760,7 +859,7 @@ export default function MetasPage() {
                     }}
                   >
                     <div className={styles.groupHeaderLeft}>
-                      {/* Linha 1 no mobile: titulo - data de vencimento (na extremidade da direita) */}
+                      {/* Título da meta */}
                       <div className={styles.groupTitleRow}>
                         <div className={styles.groupTitleLeftPart}>
                           <span
@@ -784,21 +883,24 @@ export default function MetasPage() {
                             {meta.nome}
                           </span>
                         </div>
-
-                        {meta.dataFechamento && (
-                          <span className={styles.dateLimitBadge} suppressHydrationWarning>
-                            <CalendarIcon size={12} />
-                            <span>Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}</span>
-                          </span>
-                        )}
                       </div>
 
-                      {/* Linha 2 no mobile: tag de status - equipe - xp */}
+                      {/* Tags de status, prazo de validade, equipe e xp da meta */}
                       <div className={styles.goalTagsRow}>
                         <Badge
                           type="status"
                           value={status}
                         />
+                        {meta.dataFechamento && (
+                          <span
+                            className={styles.dateLimitBadge}
+                            suppressHydrationWarning
+                            title={`Prazo de validade: ${new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}`}
+                          >
+                            <CalendarIcon size={13} className={styles.dateLimitBadgeIcon} />
+                            <span>Prazo: {new Date(meta.dataFechamento).toLocaleDateString('pt-BR')}</span>
+                          </span>
+                        )}
                         {meta.equipes && meta.equipes.length > 0 && (
                           <span
                             className={styles.teamBadge}
@@ -921,13 +1023,15 @@ export default function MetasPage() {
                             e.stopPropagation();
                             toggleGoalCollapse(meta.id);
                           }}
-                          className={styles.collapseToggleBtn}
+                          className={`${styles.collapseToggleBtn} ${
+                            isCollapsed ? styles.collapseToggleBtnCollapsed : styles.collapseToggleBtnExpanded
+                          }`}
                           title={isCollapsed ? 'Expandir tarefas da meta' : 'Recolher tarefas da meta'}
                           aria-label={isCollapsed ? `Expandir meta ${meta.nome}` : `Recolher meta ${meta.nome}`}
                           aria-expanded={!isCollapsed}
                         >
                           <ChevronDownIcon
-                            size={14}
+                            size={16}
                             className={`${styles.collapseIcon} ${!isCollapsed ? styles.collapseIconRotated : ''}`}
                           />
                           <span>{isCollapsed ? 'Expandir' : 'Recolher'}</span>
@@ -940,18 +1044,16 @@ export default function MetasPage() {
                     <div className={styles.goalsList}>
                       <div className={styles.tasksSectionHeader}>
                         <span className={styles.tasksSectionTitle}>Tarefas Vinculadas</span>
-                        <span className={styles.tasksSummaryBadge}>
-                          {tarefas.filter((t) => t.status === 'Concluida').length} de {tarefas.length} concluída{tarefas.length === 1 ? '' : 's'}
-                        </span>
                       </div>
 
-                      {tarefas.length === 0 ? (
+                      {tarefasOrdenadas.length === 0 ? (
                         <div className={styles.emptyTasksMessage}>
                           Nenhuma tarefa vinculada a esta meta.
                         </div>
                       ) : (
-                        tarefas.map((tarefa) => {
-                          const tarefaConcluida = tarefa.status === 'Concluida';
+                        tarefasOrdenadas.map((tarefa) => {
+                          const statusTarefa = getStatusRealTarefa(tarefa);
+                          const tarefaConcluida = statusTarefa === 'Concluida';
                           return (
                             <div
                               key={tarefa.id}
@@ -972,7 +1074,7 @@ export default function MetasPage() {
                               <div className={styles.taskItemMetaRow}>
                                 <Badge
                                   type="status"
-                                  value={tarefa.status}
+                                  value={statusTarefa}
                                   className={styles.taskStatusBadge}
                                 />
                                 <Badge

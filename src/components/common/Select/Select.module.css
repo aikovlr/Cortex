@@ -39,7 +39,7 @@
 }
 
 .select option {
-  background-color: var(--cortex-dark-card);
+  background-color: var(--cortex-dark-input);
   color: var(--cortex-white);
 }
 
@@ -49,6 +49,10 @@
   pointer-events: none;
   color: var(--cortex-gray-text);
   font-size: 11px;
+}
+
+.selectError {
+  border-color: #ff5c5c !important;
 }
 
 .errorMessage {

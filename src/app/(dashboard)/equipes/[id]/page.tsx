@@ -802,18 +802,23 @@ export default function EquipeDetalhesPage({
                       <div
                         key={meta.id}
                         className={styles.goalRow}
-                        onClick={() => router.push('/metas?tab=equipes')}
+                        onClick={() => router.push(`/metas?tab=equipes&metaId=${meta.id}&highlight=true`)}
                         role="button"
                         tabIndex={0}
-                        title="Ver metas de equipe"
+                        title={`Navegar até a meta ${meta.nome}`}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            router.push('/metas?tab=equipes');
+                            router.push(`/metas?tab=equipes&metaId=${meta.id}&highlight=true`);
                           }
                         }}
                       >
-                        <span className={styles.goalRowTitle}>{meta.nome}</span>
+                        <div className={styles.goalRowMain}>
+                          <span className={styles.goalRowTitle}>{meta.nome}</span>
+                          <span className={styles.goalRowNavHint} aria-hidden="true">
+                            Ver meta →
+                          </span>
+                        </div>
 
                         <div className={styles.goalRowRightGroup}>
                           {meta.dataFechamento && (
@@ -849,25 +854,56 @@ export default function EquipeDetalhesPage({
               Tickets de Problemas Reportados na Equipe ({tickets.length})
             </h3>
             <div className={styles.ticketGrid}>
-              {tickets.map((ticket) => (
-                <div key={ticket.id} className={styles.ticketCard}>
-                  <div className={styles.ticketHeader}>
-                    <span className={styles.ticketAuthor} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      <UserIcon size={14} /> {ticket.usuario?.nome || 'Membro'}
-                    </span>
-                    <Badge type="prioridade" value="Urgente" />
-                  </div>
-                  <p className={styles.ticketDesc}>{ticket.descricao}</p>
-                  <button
-                    type="button"
-                    className={styles.resolveTicketBtn}
-                    onClick={() => handleFecharTicket(ticket.id)}
-                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              {tickets.map((ticket) => {
+                const destinoTarefa = ticket.tarefaId
+                  ? `/tarefas-atribuidas/${ticket.tarefaId}?aba=tickets&ticketId=${ticket.id}&highlight=true`
+                  : null;
+
+                return (
+                  <div
+                    key={ticket.id}
+                    className={`${styles.ticketCard} ${destinoTarefa ? styles.ticketCardClickable : ''}`}
+                    onClick={() => {
+                      if (destinoTarefa) router.push(destinoTarefa);
+                    }}
+                    role={destinoTarefa ? 'button' : undefined}
+                    tabIndex={destinoTarefa ? 0 : undefined}
+                    title={destinoTarefa ? `Ver problema na tarefa #${ticket.tarefaId}` : undefined}
+                    onKeyDown={(e) => {
+                      if (destinoTarefa && (e.key === 'Enter' || e.key === ' ')) {
+                        const targetTag = (e.target as HTMLElement).tagName;
+                        if (targetTag === 'BUTTON') return;
+                        e.preventDefault();
+                        router.push(destinoTarefa);
+                      }
+                    }}
                   >
-                    <CheckIcon size={16} /> Marcar como resolvido
-                  </button>
-                </div>
-              ))}
+                    <div className={styles.ticketHeader}>
+                      <span className={styles.ticketAuthor} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <UserIcon size={14} /> {ticket.usuario?.nome || 'Membro'}
+                      </span>
+                      <Badge type="prioridade" value="Urgente" />
+                    </div>
+                    <p className={styles.ticketDesc}>{ticket.descricao}</p>
+                    {ticket.tarefa && (
+                      <span className={styles.ticketTaskLink}>
+                        Tarefa: {ticket.tarefa.titulo} →
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className={styles.resolveTicketBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFecharTicket(ticket.id);
+                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    >
+                      <CheckIcon size={16} /> Marcar como resolvido
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}

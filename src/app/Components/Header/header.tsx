@@ -243,7 +243,37 @@ export default function Header({
     marcarComoLida(item.id);
     setIsOpen(false);
     if (item.link) {
-      router.push(item.link);
+      let finalLink = item.link;
+
+      // Se for notificação de meta, adiciona parâmetros de metaNome/metaId/tab e highlight
+      if (item.tipo === 'meta') {
+        if (!finalLink.includes('metaId=') && !finalLink.includes('metaNome=')) {
+          const match =
+            item.mensagem.match(/["'“]([^"'”]+)["'”]/) ||
+            item.titulo.match(/["'“]([^"'”]+)["'”]/);
+          if (match && match[1]) {
+            const sep = finalLink.includes('?') ? '&' : '?';
+            finalLink = `${finalLink}${sep}metaNome=${encodeURIComponent(match[1])}`;
+          }
+        }
+        if (
+          !finalLink.includes('tab=') &&
+          (item.titulo.toLowerCase().includes('equipe') ||
+            item.mensagem.toLowerCase().includes('equipe'))
+        ) {
+          const sep = finalLink.includes('?') ? '&' : '?';
+          finalLink = `${finalLink}${sep}tab=equipes`;
+        }
+        if (!finalLink.includes('highlight=')) {
+          const sep = finalLink.includes('?') ? '&' : '?';
+          finalLink = `${finalLink}${sep}highlight=true`;
+        }
+      } else if (item.tarefaId && !finalLink.includes('highlight=')) {
+        const sep = finalLink.includes('?') ? '&' : '?';
+        finalLink = `${finalLink}${sep}highlight=true`;
+      }
+
+      router.push(finalLink);
     }
   };
 

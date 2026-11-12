@@ -15,7 +15,7 @@ import { parseStoredPhone, buildFullPhone } from '@/utils/phoneAndEmail';
 import { AccountLevelWidget } from '@/components/gamification/AccountLevelWidget/AccountLevelWidget';
 import styles from './page.module.css';
 
-type ConfigTab = 'account' | 'accessibility' | 'notifications';
+type ConfigTab = 'account' | 'accessibility' | 'notifications' | 'shortcuts';
 
 interface CanalPreferenciaState {
   ativo: boolean;
@@ -81,6 +81,7 @@ export default function ConfiguracoesPage() {
     if (abaParam === 'account' || abaParam === 'conta' || abaParam === 'minha-conta') return 'account';
     if (abaParam === 'accessibility' || abaParam === 'acessibilidade') return 'accessibility';
     if (abaParam === 'notifications' || abaParam === 'notificacoes' || abaParam === 'notificacao') return 'notifications';
+    if (abaParam === 'shortcuts' || abaParam === 'atalhos' || abaParam === 'atalho' || abaParam === 'teclas') return 'shortcuts';
     return null;
   };
 
@@ -88,7 +89,14 @@ export default function ConfiguracoesPage() {
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
-      const slug = tab === 'account' ? 'minha-conta' : tab === 'accessibility' ? 'acessibilidade' : 'notificacoes';
+      const slug =
+        tab === 'account'
+          ? 'minha-conta'
+          : tab === 'accessibility'
+          ? 'acessibilidade'
+          : tab === 'notifications'
+          ? 'notificacoes'
+          : 'atalhos';
       url.searchParams.set('aba', slug);
       url.searchParams.delete('tab');
       window.history.pushState({}, '', url.toString());
@@ -574,6 +582,18 @@ export default function ConfiguracoesPage() {
               <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
             </svg>
             Notificações
+          </button>
+
+          <button
+            type="button"
+            onClick={() => trocarAba('shortcuts')}
+            className={`${styles.tabBtn} ${activeTab === 'shortcuts' ? styles.tabBtnActive : ''}`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
+            </svg>
+            Teclas de Atalho
           </button>
         </div>
 
@@ -1152,6 +1172,229 @@ export default function ConfiguracoesPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* CONTEÚDO DA ABA 4: TECLAS DE ATALHO */}
+        {activeTab === 'shortcuts' && (
+          <div className={styles.tabContent}>
+            {/* Banner de Proteção contra Conflitos */}
+            <div className={styles.shortcutsBanner} role="note">
+              <div className={styles.shortcutsBannerIcon}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <div>
+                <strong>Proteção Inteligente de Digitação:</strong> Os atalhos de teclado do Cortex são suspensos automaticamente sempre que o cursor estiver ativo dentro de qualquer campo de texto (inputs, caixas de busca, formulários ou áreas de edição). Você pode digitar livremente sem risco de disparar comandos indesejados.
+              </div>
+            </div>
+
+            {/* Card 1: Navegação Rápida no Workspace */}
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Navegação Rápida no Workspace</h2>
+                <p className={styles.cardSubtitle}>
+                  Acesse qualquer módulo principal da plataforma de forma instantânea através do teclado.
+                </p>
+              </div>
+
+              <div className={styles.shortcutsGrid}>
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Minhas Tarefas</span>
+                    <span className={styles.shortcutDesc}>Abre a tela com suas tarefas pessoais e fluxo de trabalho</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>1</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Tarefas Atribuídas</span>
+                    <span className={styles.shortcutDesc}>Abre a listagem de tarefas delegadas a você e prazos</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>2</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Equipes</span>
+                    <span className={styles.shortcutDesc}>Navega para a gestão de equipes, membros e tickets</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>3</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Metas</span>
+                    <span className={styles.shortcutDesc}>Visualiza seus objetivos, metas de equipe e barras de progresso</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>4</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Relatórios</span>
+                    <span className={styles.shortcutDesc}>Acessa métricas de produtividade, gráficos e exportação PDF</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>5</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Configurações</span>
+                    <span className={styles.shortcutDesc}>Abre as preferências de conta, acessibilidade, tema e notificações</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>6</kbd>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Ações Globais do Sistema */}
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Ações Globais da Interface</h2>
+                <p className={styles.cardSubtitle}>
+                  Comandos de produtividade para controle da barra lateral, busca e tema visual.
+                </p>
+              </div>
+
+              <div className={styles.shortcutsGrid}>
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Focar no Campo de Busca</span>
+                    <span className={styles.shortcutDesc}>Posiciona o cursor imediatamente na barra de pesquisa da página ativa</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>/</kbd>
+                    <span className={styles.kbdSeparator}>ou</span>
+                    <kbd className={styles.kbd}>Ctrl</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>K</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Alternar Tema (Claro / Escuro)</span>
+                    <span className={styles.shortcutDesc}>Alterna rapidamente o tema da interface sem abrir as configurações</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>T</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Recolher / Expandir Menu Lateral</span>
+                    <span className={styles.shortcutDesc}>Oculta ou exibe a barra lateral de navegação (Sidebar) para ganhar espaço</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Alt</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>B</kbd>
+                    <span className={styles.kbdSeparator}>ou</span>
+                    <kbd className={styles.kbd}>Ctrl</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>B</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Ajuda de Atalhos</span>
+                    <span className={styles.shortcutDesc}>Abre diretamente esta central de atalhos</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>?</kbd>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Acessibilidade & Diálogos */}
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Diálogos e Acessibilidade (WCAG)</h2>
+                <p className={styles.cardSubtitle}>
+                  Padrões universais de navegação por teclado implementados no Cortex.
+                </p>
+              </div>
+
+              <div className={styles.shortcutsGrid}>
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Fechar Modal ou Remover Foco</span>
+                    <span className={styles.shortcutDesc}>Fecha qualquer modal ou menu aberto, ou desseleciona o campo atual</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Esc</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Pular para o Conteúdo Principal</span>
+                    <span className={styles.shortcutDesc}>Skip Link visível ao pressionar Tab logo no início da página</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Tab</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Percorrer Elementos Interativos</span>
+                    <span className={styles.shortcutDesc}>Avança ou retorna o foco entre botões, links e campos da tela</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Tab</kbd>
+                    <span className={styles.kbdSeparator}>/</span>
+                    <kbd className={styles.kbd}>Shift</kbd>
+                    <span className={styles.kbdSeparator}>+</span>
+                    <kbd className={styles.kbd}>Tab</kbd>
+                  </div>
+                </div>
+
+                <div className={styles.shortcutRow}>
+                  <div className={styles.shortcutInfo}>
+                    <span className={styles.shortcutTitle}>Acionar Botão ou Seleção</span>
+                    <span className={styles.shortcutDesc}>Confirma a ação do elemento atualmente focado</span>
+                  </div>
+                  <div className={styles.kbdGroup}>
+                    <kbd className={styles.kbd}>Enter</kbd>
+                    <span className={styles.kbdSeparator}>ou</span>
+                    <kbd className={styles.kbd}>Espaço</kbd>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </main>

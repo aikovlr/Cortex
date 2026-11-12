@@ -77,12 +77,13 @@ export default function EquipesPage() {
 
           <button
             type="button"
-            className={styles.addButton}
+            className={styles.createBtn}
             onClick={() => setIsCreateOpen(true)}
             title="Criar nova equipe"
             aria-label="Criar nova equipe"
           >
-            <PlusIcon size={20} color="#ffffff" />
+            <PlusIcon size={18} />
+            Criar Equipe
           </button>
         </div>
 

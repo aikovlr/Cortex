@@ -32,7 +32,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             aria-invalid={Boolean(error)}
             aria-describedby={combinedDescribedBy}
-            className={`${styles.select} ${className}`}
+            className={`${styles.select} ${error ? styles.selectError : ''} ${className}`}
             {...props}
           >
             {options

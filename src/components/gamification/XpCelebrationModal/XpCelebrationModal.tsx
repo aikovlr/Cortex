@@ -22,6 +22,7 @@ export const XpCelebrationModal: React.FC<XpCelebrationModalProps> = ({
   subiuDeNivel,
 }) => {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const isMouseDownOnOverlayRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -44,14 +45,21 @@ export const XpCelebrationModal: React.FC<XpCelebrationModalProps> = ({
   return (
     <div
       className={styles.overlay}
-      onClick={onClose}
+      onMouseDown={(e) => {
+        isMouseDownOnOverlayRef.current = e.target === e.currentTarget && e.button === 0;
+      }}
+      onMouseUp={(e) => {
+        if (isMouseDownOnOverlayRef.current && e.target === e.currentTarget && e.button === 0) {
+          onClose();
+        }
+        isMouseDownOnOverlayRef.current = false;
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="celebration-title"
     >
       <div
         className={styles.modalContent}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.trophyCircle} aria-hidden="true">
           {subiuDeNivel ? (

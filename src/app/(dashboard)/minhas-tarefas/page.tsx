@@ -84,6 +84,37 @@ export default function MinhasTarefasPage() {
       window.removeEventListener('popstate', sincronizarAba);
     };
   }, []);
+
+  const [highlightedTarefaId, setHighlightedTarefaId] = useState<number | null>(null);
+
+  // Sincroniza tarefa vinda de notificação com highlight
+  useEffect(() => {
+    if (typeof window === 'undefined' || tarefas.length === 0) return;
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const targetId = params.get('tarefaId') || params.get('id');
+      if (targetId) {
+        const numId = Number(targetId);
+        const target = tarefas.find((t) => t.id === numId);
+        if (target) {
+          if (target.status === 'Concluida') {
+            setAbaAtiva('concluidas');
+          } else {
+            setAbaAtiva('pendentes');
+          }
+          setHighlightedTarefaId(numId);
+          setTimeout(() => {
+            const el = document.getElementById(`tarefa-row-${numId}`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+          const timer = setTimeout(() => setHighlightedTarefaId(null), 8000);
+          return () => clearTimeout(timer);
+        }
+      }
+    } catch {}
+  }, [tarefas]);
+
   const [termoBusca, setTermoBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [filtroPrioridade, setFiltroPrioridade] = useState<string>('todas');
@@ -398,25 +429,13 @@ export default function MinhasTarefasPage() {
         {/* Barra de Ferramentas: Busca + Filtros + Botão Adicionar */}
         <div className={styles.toolbar}>
           <div className={styles.searchFilters}>
-            <div className={styles.searchRow}>
-              <SearchBar
-                value={termoBusca}
-                onChange={setTermoBusca}
-                placeholder="Pesquisar tarefa..."
-                maxWidth={360}
-                className={styles.searchBarFlex}
-              />
-
-              <button
-                type="button"
-                className={`${styles.addButton} ${styles.addButtonMobile}`}
-                onClick={() => setIsCreateOpen(true)}
-                title="Criar nova tarefa"
-                aria-label="Criar nova tarefa"
-              >
-                <PlusIcon size={20} color="#ffffff" />
-              </button>
-            </div>
+            <SearchBar
+              value={termoBusca}
+              onChange={setTermoBusca}
+              placeholder="Pesquisar tarefa..."
+              maxWidth={360}
+              className={styles.searchBarFlex}
+            />
 
             <div className={styles.filtersRow}>
               {abaAtiva === 'pendentes' && (
@@ -449,12 +468,13 @@ export default function MinhasTarefasPage() {
 
           <button
             type="button"
-            className={`${styles.addButton} ${styles.addButtonDesktop}`}
+            className={styles.createBtn}
             onClick={() => setIsCreateOpen(true)}
             title="Criar nova tarefa"
             aria-label="Criar nova tarefa"
           >
-            <PlusIcon size={20} color="#ffffff" />
+            <PlusIcon size={18} />
+            Criar Tarefa
           </button>
         </div>
 
@@ -660,7 +680,8 @@ export default function MinhasTarefasPage() {
                     return (
                       <tr
                         key={tarefa.id}
-                        className={styles.tr}
+                        id={`tarefa-row-${tarefa.id}`}
+                        className={`${styles.tr} ${highlightedTarefaId === tarefa.id ? styles.trHighlighted : ''}`}
                         onClick={() => router.push(`/minhas-tarefas/${tarefa.id}`)}
                       >
                         <td className={styles.td}>

@@ -88,7 +88,7 @@
 .assignTeamBtn:hover {
   background-color: var(--cortex-purple);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(123, 79, 201, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
@@ -105,12 +105,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(123, 79, 201, 0.3);
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 .createBtn:hover {
   background-color: var(--cortex-purple-hover);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 
@@ -236,6 +237,26 @@
   border-color: var(--cortex-purple);
   box-shadow: 0 0 0 2px var(--cortex-purple);
   transform: translateY(-2px);
+}
+
+.cardHighlighted {
+  border-color: var(--cortex-purple) !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3), 0 8px 24px rgba(124, 58, 237, 0.18) !important;
+  position: relative;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cardHighlightPulsing {
+  animation: cardHighlightPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes cardHighlightPulse {
+  0% {
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2), 0 4px 12px rgba(124, 58, 237, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 5px rgba(124, 58, 237, 0.45), 0 10px 28px rgba(124, 58, 237, 0.25);
+  }
 }
 
 .dragHandle {
@@ -498,15 +519,24 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 10px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-main);
+  height: 26px;
+  padding: 0 10px;
+  background: var(--bg-surface-secondary, #f8fafc);
+  border: 1px solid var(--border-main, #e2e8f0);
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--cortex-gray-text);
+  color: var(--text-secondary, #64748b);
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.dateLimitBadgeIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary, #94a3b8);
 }
 
 .cardActions {
@@ -615,14 +645,13 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  background-color: rgba(123, 79, 201, 0.16);
+  background-color: rgba(123, 79, 201, 0.12);
   color: #5b21b6;
-  border: 1px solid rgba(123, 79, 201, 0.35);
+  border: 1px solid rgba(123, 79, 201, 0.3);
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(123, 79, 201, 0.08);
 }
 
 .teamBadgeIcon {
@@ -651,25 +680,24 @@
   align-items: center;
   gap: 5px;
   padding: 3px 10px;
-  background: linear-gradient(90deg, rgba(123, 79, 201, 0.16) 0%, rgba(168, 85, 247, 0.22) 100%);
+  background-color: rgba(123, 79, 201, 0.12);
   color: #6b21a8;
-  border: 1px solid rgba(147, 51, 234, 0.38);
+  border: 1px solid rgba(147, 51, 234, 0.3);
   border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(123, 79, 201, 0.08);
 }
 
 .xpBadgeCompleted {
-  background: rgba(16, 185, 129, 0.15);
+  background-color: rgba(16, 185, 129, 0.15);
   color: #065f46;
   border-color: rgba(16, 185, 129, 0.4);
 }
 
 .xpBadgePenalty {
-  background: rgba(239, 68, 68, 0.15);
+  background-color: rgba(239, 68, 68, 0.15);
   color: #b91c1c;
   border-color: rgba(239, 68, 68, 0.4);
 }
@@ -679,10 +707,9 @@
    ============================================================ */
 :global(html[data-theme='dark']) .teamBadge,
 :global(html.dark) .teamBadge {
-  background-color: rgba(147, 51, 234, 0.28);
+  background-color: rgba(147, 51, 234, 0.22);
   color: #f3e8ff;
-  border: 1px solid rgba(192, 132, 252, 0.6);
-  box-shadow: 0 2px 8px rgba(123, 79, 201, 0.35);
+  border: 1px solid rgba(192, 132, 252, 0.5);
 }
 
 :global(html[data-theme='dark']) .teamBadgeIcon,
@@ -703,22 +730,21 @@
 
 :global(html[data-theme='dark']) .xpBadge,
 :global(html.dark) .xpBadge {
-  background: linear-gradient(90deg, rgba(147, 51, 234, 0.32) 0%, rgba(168, 85, 247, 0.38) 100%);
+  background-color: rgba(147, 51, 234, 0.22);
   color: #f5d0fe;
-  border: 1px solid rgba(216, 180, 254, 0.65);
-  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.3);
+  border: 1px solid rgba(216, 180, 254, 0.5);
 }
 
 :global(html[data-theme='dark']) .xpBadgeCompleted,
 :global(html.dark) .xpBadgeCompleted {
-  background: rgba(16, 185, 129, 0.25);
+  background-color: rgba(16, 185, 129, 0.25);
   color: #6ee7b7;
   border-color: rgba(52, 211, 153, 0.6);
 }
 
 :global(html[data-theme='dark']) .xpBadgePenalty,
 :global(html.dark) .xpBadgePenalty {
-  background: rgba(239, 68, 68, 0.25);
+  background-color: rgba(239, 68, 68, 0.25);
   color: #fca5a5;
   border-color: rgba(248, 113, 113, 0.6);
 }
@@ -728,6 +754,11 @@
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.16);
   color: #cbd5e1;
+}
+
+:global(html[data-theme='dark']) .dateLimitBadgeIcon,
+:global(html.dark) .dateLimitBadgeIcon {
+  color: #94a3b8;
 }
 
 :global(html[data-theme='dark']) .tasksSummaryBadge,
@@ -740,9 +771,8 @@
 :global(html[data-theme='dark']) .tabBtnActive,
 :global(html.dark) .tabBtnActive {
   color: #f3e8ff;
-  background-color: rgba(147, 51, 234, 0.3);
-  border: 1px solid rgba(192, 132, 252, 0.5);
-  box-shadow: 0 2px 6px rgba(123, 79, 201, 0.25);
+  background-color: rgba(147, 51, 234, 0.25);
+  border: 1px solid rgba(192, 132, 252, 0.45);
 }
 
 :global(html[data-theme='dark']) .tabBtnActive .tabBadge,
@@ -769,22 +799,84 @@
 }
 
 .collapseToggleBtn {
-  background: rgba(123, 79, 201, 0.08);
-  border: 1px solid rgba(123, 79, 201, 0.2);
-  color: var(--cortex-purple);
   cursor: pointer;
-  padding: 5px 10px;
+  height: 34px;
+  padding: 0 14px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
 }
 
-.collapseToggleBtn:hover {
-  background-color: var(--cortex-purple);
+.collapseToggleBtnCollapsed {
+  background-color: var(--cortex-purple, #7c3aed);
+  border: 1.5px solid var(--cortex-purple, #7c3aed);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.collapseToggleBtnCollapsed:hover {
+  background-color: #6d28d9;
+  border-color: #6d28d9;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.collapseToggleBtnCollapsed:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.collapseToggleBtnExpanded {
+  background-color: rgba(124, 58, 237, 0.1);
+  border: 1.5px solid var(--cortex-purple, #7c3aed);
+  color: var(--cortex-purple, #7c3aed);
+}
+
+.collapseToggleBtnExpanded:hover {
+  background-color: rgba(124, 58, 237, 0.18);
+  border-color: #6d28d9;
+  color: #6d28d9;
+  transform: translateY(-1px);
+}
+
+.collapseToggleBtnExpanded:active {
+  transform: translateY(0);
+}
+
+:global(html[data-theme='dark']) .collapseToggleBtnCollapsed,
+:global(html.dark) .collapseToggleBtnCollapsed {
+  background-color: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+:global(html[data-theme='dark']) .collapseToggleBtnCollapsed:hover,
+:global(html.dark) .collapseToggleBtnCollapsed:hover {
+  background-color: #7c3aed;
+  border-color: #7c3aed;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+:global(html[data-theme='dark']) .collapseToggleBtnExpanded,
+:global(html.dark) .collapseToggleBtnExpanded {
+  background-color: rgba(139, 92, 246, 0.18);
+  border-color: #a78bfa;
+  color: #ddd6fe;
+}
+
+:global(html[data-theme='dark']) .collapseToggleBtnExpanded:hover,
+:global(html.dark) .collapseToggleBtnExpanded:hover {
+  background-color: rgba(139, 92, 246, 0.28);
+  border-color: #c4b5fd;
   color: #ffffff;
 }
 
@@ -922,10 +1014,17 @@
 
   .dateLimitBadge {
     font-size: 11px;
-    padding: 2.5px 8px;
+    height: 24px;
+    padding: 0 8px;
     border-radius: 6px;
-    margin-left: auto;
+    margin-left: 0;
     flex-shrink: 0;
+  }
+
+  .collapseToggleBtn {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 12.5px;
   }
 
   .goalTagsRow {

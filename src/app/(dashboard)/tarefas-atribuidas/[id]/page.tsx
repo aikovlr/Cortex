@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/app/Components/Header/header';
 import { Badge } from '@/components/common/Badge/Badge';
+import { Combobox } from '@/components/common/Combobox/Combobox';
 import {
   DetalhesTarefaDTO,
   ConsultaUsuarioDTO,
@@ -802,6 +803,68 @@ export default function TarefaAtribuidaDetalhesPage() {
                 </p>
               </div>
 
+              {/* Caixa de Ação: Adicionar ou Alterar Responsável */}
+              <div className={styles.addResponsavelBox}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cortex-white)' }}>
+                  Atribuir novo responsável ou equipe
+                </span>
+
+                <div className={styles.addResponsavelRow}>
+                  {/* Atribuição Individual */}
+                  <Combobox
+                    value={usuarioSelecionadoId}
+                    onChange={(val) => setUsuarioSelecionadoId(val !== '' ? Number(val) : '')}
+                    placeholder="Selecione um usuário..."
+                    searchPlaceholder="Buscar por nome ou email..."
+                    clearable
+                    options={usuariosDisponiveis.map((u) => ({
+                      value: u.id,
+                      label: u.nome,
+                      sublabel: u.email,
+                    }))}
+                    className={styles.comboboxWrapper}
+                  />
+
+                  <button
+                    type="button"
+                    className={styles.addRespBtn}
+                    disabled={!usuarioSelecionadoId || adicionandoResp}
+                    onClick={handleAdicionarResponsavel}
+                  >
+                    + Adicionar Usuário
+                  </button>
+
+                  {/* Atribuição por Equipe */}
+                  {equipesGerenciaveis.length > 0 && (
+                    <>
+                      <div className={styles.divider} />
+
+                      <Combobox
+                        value={equipeSelecionadaId}
+                        onChange={(val) => setEquipeSelecionadaId(val !== '' ? Number(val) : '')}
+                        placeholder="Selecione uma equipe..."
+                        searchPlaceholder="Buscar por nome da equipe..."
+                        clearable
+                        options={equipesGerenciaveis.map((eq) => ({
+                          value: eq.id,
+                          label: eq.nome,
+                        }))}
+                        className={styles.comboboxWrapper}
+                      />
+
+                      <button
+                        type="button"
+                        className={styles.addRespBtn}
+                        disabled={!equipeSelecionadaId || adicionandoResp}
+                        onClick={handleAtribuirEquipe}
+                      >
+                        + Atribuir Equipe Inteira
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
               {tarefa.responsaveis && tarefa.responsaveis.length > 0 ? (
                 <div className={styles.responsaveisList}>
                   {tarefa.responsaveis.map((resp) => {
@@ -851,69 +914,6 @@ export default function TarefaAtribuidaDetalhesPage() {
                   Nenhum responsável foi atribuído a esta tarefa ainda.
                 </div>
               )}
-
-              {/* Caixa de Ação: Adicionar ou Alterar Responsável */}
-              <div className={styles.addResponsavelBox}>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cortex-white)' }}>
-                  Atribuir novo responsável ou equipe
-                </span>
-
-                <div className={styles.addResponsavelRow}>
-                  {/* Atribuição Individual */}
-                  <select
-                    value={usuarioSelecionadoId}
-                    onChange={(e) => setUsuarioSelecionadoId(e.target.value ? Number(e.target.value) : '')}
-                    className={styles.select}
-                    style={{ minWidth: '240px', flex: 1 }}
-                  >
-                    <option value="">Selecione um usuário...</option>
-                    {usuariosDisponiveis.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.nome} ({u.email})
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    type="button"
-                    className={styles.addRespBtn}
-                    disabled={!usuarioSelecionadoId || adicionandoResp}
-                    onClick={handleAdicionarResponsavel}
-                  >
-                    + Adicionar Usuário
-                  </button>
-
-                  {/* Atribuição por Equipe */}
-                  {equipesGerenciaveis.length > 0 && (
-                    <>
-                      <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--cortex-border)', margin: '0 8px' }} />
-
-                      <select
-                        value={equipeSelecionadaId}
-                        onChange={(e) => setEquipeSelecionadaId(e.target.value ? Number(e.target.value) : '')}
-                        className={styles.select}
-                        style={{ minWidth: '200px' }}
-                      >
-                        <option value="">Selecione uma equipe...</option>
-                        {equipesGerenciaveis.map((eq) => (
-                          <option key={eq.id} value={eq.id}>
-                            {eq.nome}
-                          </option>
-                        ))}
-                      </select>
-
-                      <button
-                        type="button"
-                        className={styles.addRespBtn}
-                        disabled={!equipeSelecionadaId || adicionandoResp}
-                        onClick={handleAtribuirEquipe}
-                      >
-                        + Atribuir Equipe Inteira
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
             </div>
           </>
         )}

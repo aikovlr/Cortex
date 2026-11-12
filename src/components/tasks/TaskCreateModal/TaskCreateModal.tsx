@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Modal } from '@/components/common/Modal/Modal';
 import { Input } from '@/components/common/Input/Input';
 import { Select } from '@/components/common/Select/Select';
+import { Combobox } from '@/components/common/Combobox/Combobox';
 import { Button } from '@/components/common/Button/Button';
 import { Prioridade, ConsultaUsuarioDTO, ConsultaEquipeDTO } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
@@ -61,6 +62,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   const [descricao, setDescricao] = useState('');
   const [dataVencimento, setDataVencimento] = useState('');
   const [dataErro, setDataErro] = useState('');
+  const [responsavelErro, setResponsavelErro] = useState('');
+  const [equipeErro, setEquipeErro] = useState('');
   const [pontuacao, setPontuacao] = useState<number | ''>('');
   const [prioridade, setPrioridade] = useState<Prioridade>('Media');
   const [tipoAtribuicao, setTipoAtribuicao] = useState<'individual' | 'equipe'>('individual');
@@ -114,24 +117,46 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
     }
   };
 
+  const handleTipoAtribuicaoChange = (tipo: 'individual' | 'equipe') => {
+    setTipoAtribuicao(tipo);
+    setResponsavelErro('');
+    setEquipeErro('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!titulo || !dataVencimento) {
+    let hasError = false;
+
+    if (!titulo.trim() || !dataVencimento) {
       showToast('Preencha os campos obrigatórios (*)', 'error');
-      return;
+      hasError = true;
     }
 
     if (isPastDateTime(dataVencimento)) {
       setDataErro('A data de entrega não pode ser anterior à data e hora atual.');
       showToast('A data de entrega não pode ser anterior à data e hora atual.', 'error');
-      return;
+      hasError = true;
     }
+
+    if (tipoAtribuicao === 'individual' && !responsavelId) {
+      setResponsavelErro('Selecione um responsável para a tarefa.');
+      showToast('Selecione um responsável para a tarefa.', 'error');
+      hasError = true;
+    }
+
+    if (tipoAtribuicao === 'equipe' && !equipeId) {
+      setEquipeErro('Selecione uma equipe para a tarefa.');
+      showToast('Selecione uma equipe para a tarefa.', 'error');
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     try {
       setSubmitting(true);
 
       const formData = new FormData();
-      formData.append('Titulo', titulo);
+      formData.append('Titulo', titulo.trim());
       if (descricao) formData.append('Descricao', descricao);
       formData.append('DataVencimento', new Date(dataVencimento).toISOString());
       if (pontuacao !== '') formData.append('Pontuacao', pontuacao.toString());
@@ -144,19 +169,30 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
 
       const novaTarefa = await tarefaService.criarTarefa(formData);
 
-      // Atribuição individual ou de equipe
-      if (tipoAtribuicao === 'individual' && responsavelId !== '') {
-        await tarefaService.atribuirResponsavel(novaTarefa.id, Number(responsavelId));
-        notificarNovoResponsavelTarefa(Number(responsavelId), novaTarefa.id, titulo, prioridade);
-      } else if (tipoAtribuicao === 'equipe' && equipeId !== '') {
-        const membrosAtribuidos = await tarefaService.atribuirEquipe(novaTarefa.id, Number(equipeId));
-        if (Array.isArray(membrosAtribuidos)) {
+      // Atribuição individual ou de equipe com proteção contra tarefa órfã
+      try {
+        if (tipoAtribuicao === 'individual' && responsavelId !== '') {
+          await tarefaService.atribuirResponsavel(novaTarefa.id, Number(responsavelId));
+          notificarNovoResponsavelTarefa(Number(responsavelId), novaTarefa.id, titulo.trim(), prioridade);
+        } else if (tipoAtribuicao === 'equipe' && equipeId !== '') {
+          const membrosAtribuidos = await tarefaService.atribuirEquipe(novaTarefa.id, Number(equipeId));
+          if (!membrosAtribuidos || membrosAtribuidos.length === 0) {
+            throw new Error('A equipe selecionada não possui membros elegíveis para atribuição.');
+          }
           membrosAtribuidos.forEach((m) => {
             if (m.usuarioId) {
-              notificarNovoResponsavelTarefa(m.usuarioId, novaTarefa.id, titulo, prioridade);
+              notificarNovoResponsavelTarefa(m.usuarioId, novaTarefa.id, titulo.trim(), prioridade);
             }
           });
         }
+      } catch (assignError) {
+        // Rollback da tarefa caso a atribuição falhe, garantindo que não fique sem responsável
+        try {
+          await tarefaService.excluirTarefa(novaTarefa.id);
+        } catch {
+          // ignora falha de exclusão
+        }
+        throw assignError;
       }
 
       if (typeof window !== 'undefined') {
@@ -172,6 +208,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       setDescricao('');
       setDataVencimento('');
       setDataErro('');
+      setResponsavelErro('');
+      setEquipeErro('');
       setPontuacao('');
       setPrioridade('Media');
       setAnexos([]);
@@ -194,14 +232,16 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
     }
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = useCallback(() => {
     setDataErro('');
+    setResponsavelErro('');
+    setEquipeErro('');
     if (initialEquipeId) {
       setTipoAtribuicao('equipe');
       setEquipeId(initialEquipeId);
     }
     onClose();
-  };
+  }, [initialEquipeId, onClose]);
 
   return (
     <Modal
@@ -223,6 +263,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
         <Input
           label="Nome da tarefa *"
           required
+          autoFocus
           placeholder="Ex: Desenvolver fluxo de login"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
@@ -269,7 +310,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
                   name="tipoAtribuicao"
                   value="individual"
                   checked={tipoAtribuicao === 'individual'}
-                  onChange={() => setTipoAtribuicao('individual')}
+                  onChange={() => handleTipoAtribuicaoChange('individual')}
                 />
                 Individual
               </label>
@@ -279,7 +320,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
                   name="tipoAtribuicao"
                   value="equipe"
                   checked={tipoAtribuicao === 'equipe'}
-                  onChange={() => setTipoAtribuicao('equipe')}
+                  onChange={() => handleTipoAtribuicaoChange('equipe')}
                 />
                 Equipe
               </label>
@@ -300,24 +341,43 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
         </div>
 
         {tipoAtribuicao === 'individual' ? (
-          <Select
-            label="Selecionar responsável"
+          <Combobox
+            label="Selecionar responsável *"
+            required
             value={responsavelId}
-            onChange={(e) => setResponsavelId(e.target.value ? Number(e.target.value) : '')}
-            options={[
-              { value: '', label: 'Selecione um usuário...' },
-              ...usuarios.map((u) => ({ value: u.id, label: `${u.nome} (${u.email})` })),
-            ]}
+            error={responsavelErro}
+            placeholder="Selecione um responsável..."
+            searchPlaceholder="Buscar por nome ou email..."
+            clearable
+            onChange={(val) => {
+              const numericVal = val !== '' ? Number(val) : '';
+              setResponsavelId(numericVal);
+              if (numericVal) setResponsavelErro('');
+            }}
+            options={usuarios.map((u) => ({
+              value: u.id,
+              label: u.nome,
+              sublabel: u.email,
+            }))}
           />
         ) : (
-          <Select
-            label="Selecionar equipe"
+          <Combobox
+            label="Selecionar equipe *"
+            required
             value={equipeId}
-            onChange={(e) => setEquipeId(e.target.value ? Number(e.target.value) : '')}
-            options={[
-              { value: '', label: 'Selecione uma equipe...' },
-              ...equipesGerenciaveis.map((eq) => ({ value: eq.id, label: eq.nome })),
-            ]}
+            error={equipeErro}
+            placeholder="Selecione uma equipe..."
+            searchPlaceholder="Buscar equipe..."
+            clearable
+            onChange={(val) => {
+              const numericVal = val !== '' ? Number(val) : '';
+              setEquipeId(numericVal);
+              if (numericVal) setEquipeErro('');
+            }}
+            options={equipesGerenciaveis.map((eq) => ({
+              value: eq.id,
+              label: eq.nome,
+            }))}
           />
         )}
 
