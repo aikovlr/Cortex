@@ -30,6 +30,13 @@ import { ticketService } from '@/services/ticketService';
 import { metaService } from '@/services/metaService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import {
+  CriticalActionDialog,
+  useCriticalAction,
+  createDeleteDialogConfig,
+  createResolveTicketDialogConfig,
+  createChangeRoleDialogConfig,
+} from '@/components/common/CriticalActionDialog';
 import styles from './page.module.css';
 
 type CampoOrdenacaoMembro = 'integrante' | 'desde' | 'cargo';
@@ -52,6 +59,7 @@ export default function EquipeDetalhesPage({
   const router = useRouter();
   const { usuario } = useAuth();
   const { showToast } = useToast();
+  const { openAction, dialogProps } = useCriticalAction();
 
   const [equipe, setEquipe] = useState<ConsultaEquipeDTO | null>(null);
   const [membros, setMembros] = useState<ConsultaMembroEquipeDTO[]>([]);
@@ -191,58 +199,95 @@ export default function EquipeDetalhesPage({
     };
   }, [equipeId, showToast]);
 
-  const handleRemoverMembro = async (membroId: number, nome: string) => {
-    if (!window.confirm(`Deseja remover ${nome} da equipe?`)) return;
-
-    try {
-      await equipeService.removerMembro(equipeId, membroId);
-      showToast('Membro removido com sucesso.', 'success');
-      recarregar();
-    } catch (err: unknown) {
-      if (err instanceof Error) showToast(err.message, 'error');
-    }
-  };
-
-  const handleAlterarCargo = async (membroId: number, novoCargo: CargoEquipe) => {
-    try {
-      await equipeService.alterarCargo(equipeId, membroId, novoCargo);
-      showToast(`Cargo alterado para ${novoCargo}!`, 'success');
-      recarregar();
-    } catch (err: unknown) {
-      if (err instanceof Error) showToast(err.message, 'error');
-    }
-  };
-
-  const handleExcluirEquipe = async () => {
-    if (!equipe) return;
-    const confirmacao = window.confirm(
-      `Tem certeza de que deseja excluir a equipe "${equipe.nome}"? Esta ação é irreversível e removerá todos os membros e vínculos associados.`
+  const handleRemoverMembro = (membroId: number, nome: string) => {
+    openAction(
+      createDeleteDialogConfig({
+        itemName: nome,
+        itemType: 'membro da equipe',
+        onConfirm: async () => {
+          try {
+            await equipeService.removerMembro(equipeId, membroId);
+            showToast('Membro removido com sucesso.', 'success');
+            recarregar();
+          } catch (err: unknown) {
+            if (err instanceof Error) showToast(err.message, 'error');
+          }
+        },
+      })
     );
-    if (!confirmacao) return;
-
-    try {
-      setDeletingTeam(true);
-      await equipeService.excluirEquipe(equipeId);
-      showToast('Equipe excluída com sucesso!', 'success');
-      router.push('/equipes');
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao excluir equipe.', 'error');
-      }
-      setDeletingTeam(false);
-    }
   };
 
-  const handleFecharTicket = async (ticketId: number) => {
-    try {
-      await ticketService.fecharTicket(ticketId);
-      showToast('Ticket resolvido e fechado com sucesso!', 'success');
-      setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-    } catch (err: unknown) {
-      if (err instanceof Error) showToast(err.message, 'error');
-    }
+  const handleAlterarCargo = (
+    membroId: number,
+    novoCargo: CargoEquipe,
+    nomeMembro?: string,
+    cargoAtual?: CargoEquipe
+  ) => {
+    openAction(
+      createChangeRoleDialogConfig({
+        userName: nomeMembro || `Membro #${membroId}`,
+        currentRole: cargoAtual || 'Membro',
+        newRole: novoCargo,
+        isPrivilegeEscalation: novoCargo === 'Admin' || novoCargo === 'Dono',
+        onConfirm: async () => {
+          try {
+            await equipeService.alterarCargo(equipeId, membroId, novoCargo);
+            showToast(`Cargo alterado para ${novoCargo}!`, 'success');
+            recarregar();
+          } catch (err: unknown) {
+            if (err instanceof Error) showToast(err.message, 'error');
+          }
+        },
+      })
+    );
+  };
+
+  const handleExcluirEquipe = () => {
+    if (!equipe) return;
+
+    openAction(
+      createDeleteDialogConfig({
+        itemName: equipe.nome,
+        itemType: 'equipe',
+        requireTextMatch: true,
+        matchText: equipe.nome,
+        onConfirm: async () => {
+          try {
+            setDeletingTeam(true);
+            await equipeService.excluirEquipe(equipeId);
+            showToast('Equipe excluída com sucesso!', 'success');
+            router.push('/equipes');
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              showToast(err.message, 'error');
+            } else {
+              showToast('Falha ao excluir equipe.', 'error');
+            }
+            setDeletingTeam(false);
+          }
+        },
+      })
+    );
+  };
+
+  const handleFecharTicket = (ticketId: number, descricao?: string, autorNome?: string) => {
+    openAction(
+      createResolveTicketDialogConfig({
+        ticketId,
+        ticketTitle:
+          descricao && descricao.length > 50 ? `${descricao.slice(0, 50)}...` : descricao || `Ticket #${ticketId}`,
+        assigneeName: autorNome || 'Membro',
+        onConfirm: async () => {
+          try {
+            await ticketService.fecharTicket(ticketId);
+            showToast('Ticket resolvido e fechado com sucesso!', 'success');
+            setTickets((prev) => prev.filter((t) => t.id !== ticketId));
+          } catch (err: unknown) {
+            if (err instanceof Error) showToast(err.message, 'error');
+          }
+        },
+      })
+    );
   };
 
   const getAvatarUrl = (url?: string | null) => {
@@ -495,7 +540,12 @@ export default function EquipeDetalhesPage({
                               className={styles.roleSelect}
                               onClick={(e) => e.stopPropagation()}
                               onChange={(e) =>
-                                handleAlterarCargo(membro.id, e.target.value as CargoEquipe)
+                                handleAlterarCargo(
+                                  membro.id,
+                                  e.target.value as CargoEquipe,
+                                  nome,
+                                  membro.cargo
+                                )
                               }
                             >
                               <option value="Admin">Admin</option>
@@ -633,7 +683,12 @@ export default function EquipeDetalhesPage({
                             value={membro.cargo}
                             className={styles.roleSelect}
                             onChange={(e) =>
-                              handleAlterarCargo(membro.id, e.target.value as CargoEquipe)
+                              handleAlterarCargo(
+                                membro.id,
+                                e.target.value as CargoEquipe,
+                                nome,
+                                membro.cargo
+                              )
                             }
                           >
                             <option value="Admin">Admin</option>
@@ -895,7 +950,11 @@ export default function EquipeDetalhesPage({
                       className={styles.resolveTicketBtn}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleFecharTicket(ticket.id);
+                        handleFecharTicket(
+                          ticket.id,
+                          ticket.descricao,
+                          ticket.usuario?.nome
+                        );
                       }}
                       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     >
@@ -926,6 +985,9 @@ export default function EquipeDetalhesPage({
         onClose={() => setIsAssignGoalOpen(false)}
         onSuccess={recarregar}
       />
+
+      {/* Diálogo de Confirmação para Ações Críticas */}
+      <CriticalActionDialog {...dialogProps} />
     </>
   );
 }

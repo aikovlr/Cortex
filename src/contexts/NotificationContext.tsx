@@ -10,6 +10,7 @@ export type TipoNotificacao =
   | 'tarefa_urgente'
   | 'resposta_ticket'
   | 'ticket_criador'
+  | 'ticket'
   | 'sugestao'
   | 'equipe'
   | 'meta';
@@ -84,17 +85,41 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         return;
       }
 
-      const mapeadas: NotificacaoItem[] = listaDb.map((n) => ({
-        id: String(n.id),
-        tipo: (n.tipo as TipoNotificacao) || 'tarefa',
-        titulo: n.titulo,
-        mensagem: n.mensagem,
-        dataCriacao: n.dataCriacao,
-        lida: Boolean(n.lida),
-        destaque: Boolean(n.destaque),
-        tarefaId: n.tarefaId || undefined,
-        link: n.link || '/minhas-tarefas',
-      }));
+      const mapeadas: NotificacaoItem[] = listaDb.map((n) => {
+        let tipo = (n.tipo as TipoNotificacao) || 'tarefa';
+
+        const isReporteAberto =
+          n.tipo === 'ticket_criador' ||
+          (n.tipo === 'ticket' &&
+            (Boolean(n.destaque) ||
+              n.titulo?.toLowerCase().includes('reporte') ||
+              n.titulo?.toLowerCase().includes('aberto'))) ||
+          Boolean(n.titulo && n.titulo.toLowerCase().includes('ticket de reporte'));
+
+        const isRespostaTicket =
+          n.tipo === 'resposta_ticket' ||
+          (n.tipo === 'ticket' &&
+            (n.titulo?.toLowerCase().includes('resolvido') ||
+              n.titulo?.toLowerCase().includes('resposta')));
+
+        if (isReporteAberto) {
+          tipo = 'ticket_criador';
+        } else if (isRespostaTicket) {
+          tipo = 'resposta_ticket';
+        }
+
+        return {
+          id: String(n.id),
+          tipo,
+          titulo: n.titulo,
+          mensagem: n.mensagem,
+          dataCriacao: n.dataCriacao,
+          lida: Boolean(n.lida),
+          destaque: isReporteAberto ? true : Boolean(n.destaque),
+          tarefaId: n.tarefaId || undefined,
+          link: n.link || '/minhas-tarefas',
+        };
+      });
 
       // Ordena por data decrescente (mais recentes primeiro)
       mapeadas.sort(

@@ -13,6 +13,11 @@ import { useToast } from '@/contexts/ToastContext';
 import { PhoneInput } from '@/components/ui/PhoneInput/PhoneInput';
 import { parseStoredPhone, buildFullPhone } from '@/utils/phoneAndEmail';
 import { AccountLevelWidget } from '@/components/gamification/AccountLevelWidget/AccountLevelWidget';
+import {
+  CriticalActionDialog,
+  useCriticalAction,
+  createDeleteDialogConfig,
+} from '@/components/common/CriticalActionDialog';
 import styles from './page.module.css';
 
 type ConfigTab = 'account' | 'accessibility' | 'notifications' | 'shortcuts';
@@ -71,6 +76,7 @@ export default function ConfiguracoesPage() {
   const { usuario, recarregarPerfil, logout } = useAuth();
   const { fontSize, setFontSize, highContrast, setHighContrast, theme, setTheme } = useAccessibility();
   const { showToast } = useToast();
+  const { openAction, dialogProps } = useCriticalAction();
 
   const [activeTab, setActiveTab] = useState<ConfigTab>('account');
 
@@ -424,28 +430,32 @@ export default function ConfiguracoesPage() {
       return;
     }
 
-    if (!confirm('Deseja realmente remover sua foto de perfil?')) {
-      return;
-    }
-
-    try {
-      setRemovingFoto(true);
-      const fotoId = usuario.fotoPerfil.id;
-      await usuarioService.removerFotoPerfil(fotoId);
-      await recarregarPerfil();
-      setFotoPreview(null);
-      setFotoError(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      showToast('Foto de perfil removida com sucesso!', 'success');
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao remover foto de perfil.', 'error');
-      }
-    } finally {
-      setRemovingFoto(false);
-    }
+    openAction(
+      createDeleteDialogConfig({
+        itemName: 'sua foto de perfil',
+        itemType: 'foto de perfil',
+        onConfirm: async () => {
+          try {
+            setRemovingFoto(true);
+            const fotoId = usuario.fotoPerfil!.id;
+            await usuarioService.removerFotoPerfil(fotoId);
+            await recarregarPerfil();
+            setFotoPreview(null);
+            setFotoError(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            showToast('Foto de perfil removida com sucesso!', 'success');
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              showToast(err.message, 'error');
+            } else {
+              showToast('Falha ao remover foto de perfil.', 'error');
+            }
+          } finally {
+            setRemovingFoto(false);
+          }
+        },
+      })
+    );
   };
 
   // Salvar dados do Perfil
@@ -518,26 +528,34 @@ export default function ConfiguracoesPage() {
   };
 
   // Excluir Conta (RN05)
-  const handleExcluirConta = async () => {
-    const confirmacao = prompt(
-      'Atenção: Esta ação é irreversível. Para confirmar a exclusão da sua conta, digite "EXCLUIR":'
-    );
-    if (confirmacao !== 'EXCLUIR') {
-      showToast('Exclusão cancelada.', 'info');
-      return;
-    }
-
-    try {
-      await usuarioService.excluirMinhaConta();
-      showToast('Sua conta foi excluída com sucesso.', 'success');
-      await logout();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Não foi possível excluir a conta. Verifique se possui tarefas pendentes.', 'error');
-      }
-    }
+  const handleExcluirConta = () => {
+    openAction({
+      variant: 'danger',
+      title: 'Excluir minha conta',
+      description: (
+        <>
+          Tem certeza de que deseja excluir permanentemente sua conta? Esta ação é irreversível e removerá todos os seus dados e histórico da plataforma. A exclusão só é permitida se você não possuir tarefas pendentes ou atrasadas.
+        </>
+      ),
+      confirmLabel: 'Excluir minha conta permanentemente',
+      cancelLabel: 'Cancelar',
+      confirmTextMatch: 'EXCLUIR',
+      confirmTextLabel: 'Para confirmar a exclusão definitiva, digite "EXCLUIR" abaixo:',
+      confirmTextPlaceholder: 'EXCLUIR',
+      onConfirm: async () => {
+        try {
+          await usuarioService.excluirMinhaConta();
+          showToast('Sua conta foi excluída com sucesso.', 'success');
+          await logout();
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            showToast(err.message, 'error');
+          } else {
+            showToast('Não foi possível excluir a conta. Verifique se possui tarefas pendentes.', 'error');
+          }
+        }
+      },
+    });
   };
 
 
@@ -1398,6 +1416,9 @@ export default function ConfiguracoesPage() {
           </div>
         )}
       </main>
+
+      {/* Diálogo de Confirmação para Ações Críticas */}
+      <CriticalActionDialog {...dialogProps} />
     </>
   );
 }

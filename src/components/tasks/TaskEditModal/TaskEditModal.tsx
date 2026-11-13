@@ -11,6 +11,12 @@ import { tarefaService } from '@/services/tarefaService';
 import { sugestaoService } from '@/services/sugestaoService';
 import { useToast } from '@/contexts/ToastContext';
 import { PaperclipIcon, FileTextIcon, UserIcon } from '@/components/common/Icons/Icons';
+import {
+  CriticalActionDialog,
+  useCriticalAction,
+  createDeleteDialogConfig,
+  createRejectSuggestionDialogConfig,
+} from '@/components/common/CriticalActionDialog';
 import styles from './TaskEditModal.module.css';
 
 interface TaskEditModalProps {
@@ -27,6 +33,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
   onSuccess,
 }) => {
   const { showToast } = useToast();
+  const { openAction, dialogProps } = useCriticalAction();
 
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -126,26 +133,32 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
     }
   };
 
-  const handleExcluir = async () => {
+  const handleExcluir = () => {
     if (!tarefaId) return;
-    const confirmou = window.confirm('Tem certeza de que deseja excluir permanentemente esta tarefa?');
-    if (!confirmou) return;
 
-    try {
-      setDeleting(true);
-      await tarefaService.excluirTarefa(tarefaId);
-      showToast('Tarefa excluída com sucesso.', 'success');
-      onSuccess();
-      onClose();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao excluir tarefa.', 'error');
-      }
-    } finally {
-      setDeleting(false);
-    }
+    openAction(
+      createDeleteDialogConfig({
+        itemName: titulo || 'esta tarefa',
+        itemType: 'tarefa',
+        onConfirm: async () => {
+          try {
+            setDeleting(true);
+            await tarefaService.excluirTarefa(tarefaId);
+            showToast('Tarefa excluída com sucesso.', 'success');
+            onSuccess();
+            onClose();
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              showToast(err.message, 'error');
+            } else {
+              showToast('Falha ao excluir tarefa.', 'error');
+            }
+          } finally {
+            setDeleting(false);
+          }
+        },
+      })
+    );
   };
 
   const handleAprovarSugestao = async (sugestaoId: number) => {
@@ -160,16 +173,25 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
     }
   };
 
-  const handleRejeitarSugestao = async (sugestaoId: number) => {
-    try {
-      await sugestaoService.rejeitarSugestao(sugestaoId);
-      showToast('Sugestão rejeitada.', 'info');
-      setSugestoes((prev) =>
-        prev.map((s) => (s.id === sugestaoId ? { ...s, status: 'Rejeitada' } : s))
-      );
-    } catch (err: unknown) {
-      if (err instanceof Error) showToast(err.message, 'error');
-    }
+  const handleRejeitarSugestao = (sug: ConsultaSugestaoDTO) => {
+    openAction(
+      createRejectSuggestionDialogConfig({
+        suggestionTitle:
+          sug.descricao.length > 50 ? `${sug.descricao.slice(0, 50)}...` : sug.descricao,
+        suggestionAuthor: sug.usuario?.nome || 'Responsável',
+        onConfirm: async () => {
+          try {
+            await sugestaoService.rejeitarSugestao(sug.id);
+            showToast('Sugestão rejeitada.', 'info');
+            setSugestoes((prev) =>
+              prev.map((s) => (s.id === sug.id ? { ...s, status: 'Rejeitada' } : s))
+            );
+          } catch (err: unknown) {
+            if (err instanceof Error) showToast(err.message, 'error');
+          }
+        },
+      })
+    );
   };
 
   if (!isOpen || !tarefaId) return null;
@@ -313,7 +335,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
                       <button
                         type="button"
                         className={styles.rejectBtn}
-                        onClick={() => handleRejeitarSugestao(sug.id)}
+                        onClick={() => handleRejeitarSugestao(sug)}
                       >
                         Recusar
                       </button>
@@ -332,6 +354,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
           )}
         </form>
       )}
+      <CriticalActionDialog {...dialogProps} />
     </Modal>
   );
 };

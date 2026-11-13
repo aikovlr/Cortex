@@ -24,6 +24,11 @@ import { XpCelebrationModal } from '@/components/gamification/XpCelebrationModal
 import { authService } from '@/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import {
+  CriticalActionDialog,
+  useCriticalAction,
+  createDeleteDialogConfig,
+} from '@/components/common/CriticalActionDialog';
 import styles from './page.module.css';
 
 export type CriterioOrdenacao = 'status' | 'prazo' | 'nome' | 'progresso' | 'recentes' | 'manual';
@@ -50,6 +55,7 @@ const getStatusRealTarefa = (tarefa: ConsultaTarefaDTO): 'Atrasada' | 'Pendente'
 export default function MetasPage() {
   const { usuario, recarregarPerfil } = useAuth();
   const { showToast } = useToast();
+  const { openAction, dialogProps } = useCriticalAction();
 
   const [metas, setMetas] = useState<ConsultaMetaDTO[]>([]);
   const [activeTab, setActiveTab] = useState<'pessoais' | 'equipes'>('pessoais');
@@ -342,35 +348,41 @@ export default function MetasPage() {
   };
 
   // Exclusão de meta (Apenas o criador da meta pode excluir)
-  const handleDeleteMeta = async (id: number) => {
+  const handleDeleteMeta = (id: number) => {
     const meta = metas.find((m) => m.id === id);
     if (meta && usuario?.id && meta.usuarioId !== usuario.id && meta.usuario?.id !== usuario.id) {
       showToast('Apenas o criador da meta possui permissão para excluí-la.', 'error');
       return;
     }
 
-    if (!confirm('Deseja realmente excluir esta meta?')) return;
-
-    try {
-      await metaService.deletar(id);
-      showToast('Meta removida com sucesso.', 'success');
-      setMetas((prev) => prev.filter((m) => m.id !== id));
-      setCustomOrderIds((prev) => {
-        const atualizados = prev.filter((mId) => mId !== id);
-        try {
-          localStorage.setItem('cortex_metas_ordem_ids', JSON.stringify(atualizados));
-        } catch {
-          // Ignora
-        }
-        return atualizados;
-      });
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao excluir meta.', 'error');
-      }
-    }
+    openAction(
+      createDeleteDialogConfig({
+        itemName: meta?.nome || 'esta meta',
+        itemType: 'meta',
+        onConfirm: async () => {
+          try {
+            await metaService.deletar(id);
+            showToast('Meta removida com sucesso.', 'success');
+            setMetas((prev) => prev.filter((m) => m.id !== id));
+            setCustomOrderIds((prev) => {
+              const atualizados = prev.filter((mId) => mId !== id);
+              try {
+                localStorage.setItem('cortex_metas_ordem_ids', JSON.stringify(atualizados));
+              } catch {
+                // Ignora
+              }
+              return atualizados;
+            });
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              showToast(err.message, 'error');
+            } else {
+              showToast('Falha ao excluir meta.', 'error');
+            }
+          }
+        },
+      })
+    );
   };
 
   // Edição de meta (Apenas o criador da meta pode editar)
@@ -1136,6 +1148,9 @@ export default function MetasPage() {
         novoNivel={celebrationData.novoNivel}
         subiuDeNivel={celebrationData.subiuDeNivel}
       />
+
+      {/* Diálogo de Confirmação para Ações Críticas */}
+      <CriticalActionDialog {...dialogProps} />
     </>
   );
 }

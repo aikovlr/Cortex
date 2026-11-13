@@ -34,10 +34,19 @@ import {
   SpinnerIcon,
   ChevronDownIcon,
   LightbulbIcon,
+  AlertTriangleIcon,
 } from '@/components/common/Icons/Icons';
+import {
+  CriticalActionDialog,
+  useCriticalAction,
+  createDeleteDialogConfig,
+  createRejectSuggestionDialogConfig,
+  createResolveTicketDialogConfig,
+} from '@/components/common/CriticalActionDialog';
 import styles from './page.module.css';
 
 export default function TarefaAtribuidaDetalhesPage() {
+  const { openAction, dialogProps } = useCriticalAction();
   const params = useParams();
   const router = useRouter();
   const { showToast } = useToast();
@@ -260,10 +269,10 @@ export default function TarefaAtribuidaDetalhesPage() {
           carregarTickets(),
           usuarioService.listarUsuarios().then((u) => {
             if (isMounted) setTodosUsuarios(u || []);
-          }).catch(() => {}),
+          }).catch(() => { }),
           equipeService.listarMinhasEquipes().then((eq) => {
             if (isMounted) setMinhasEquipes(eq || []);
-          }).catch(() => {}),
+          }).catch(() => { }),
         ]);
       } finally {
         if (isMounted) setLoading(false);
@@ -342,46 +351,57 @@ export default function TarefaAtribuidaDetalhesPage() {
   };
 
   // Excluir tarefa
-  const handleExcluirTarefa = async () => {
+  const handleExcluirTarefa = () => {
     if (!tarefaId) return;
-    const confirmacao = window.confirm('Tem certeza de que deseja excluir permanentemente esta tarefa atribuída?');
-    if (!confirmacao) return;
 
-    try {
-      setDeleting(true);
-      await tarefaService.excluirTarefa(tarefaId);
-      showToast('Tarefa excluída com sucesso.', 'success');
-      router.push('/tarefas-atribuidas');
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao excluir tarefa.', 'error');
-      }
-    } finally {
-      setDeleting(false);
-    }
+    openAction(
+      createDeleteDialogConfig({
+        itemName: tarefa?.titulo || 'esta tarefa',
+        itemType: 'tarefa atribuída',
+        onConfirm: async () => {
+          try {
+            setDeleting(true);
+            await tarefaService.excluirTarefa(tarefaId);
+            showToast('Tarefa excluída com sucesso.', 'success');
+            router.push('/tarefas-atribuidas');
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              showToast(err.message, 'error');
+            } else {
+              showToast('Falha ao excluir tarefa.', 'error');
+            }
+          } finally {
+            setDeleting(false);
+          }
+        },
+      })
+    );
   };
 
   // Remover anexo da tarefa
-  const handleRemoverAnexo = async (anexoId: number) => {
-    const confirmacao = window.confirm('Deseja realmente remover este arquivo da tarefa?');
-    if (!confirmacao) return;
-
-    try {
-      setRemovendoAnexoId(anexoId);
-      await tarefaService.removerAnexo(anexoId);
-      showToast('Anexo removido com sucesso!', 'success');
-      await carregarTarefa();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao remover anexo.', 'error');
-      }
-    } finally {
-      setRemovendoAnexoId(null);
-    }
+  const handleRemoverAnexo = (anexoId: number, nomeAnexo?: string) => {
+    openAction(
+      createDeleteDialogConfig({
+        itemName: nomeAnexo || 'arquivo anexado',
+        itemType: 'anexo',
+        onConfirm: async () => {
+          try {
+            setRemovendoAnexoId(anexoId);
+            await tarefaService.removerAnexo(anexoId);
+            showToast('Anexo removido com sucesso!', 'success');
+            await carregarTarefa();
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              showToast(err.message, 'error');
+            } else {
+              showToast('Falha ao remover anexo.', 'error');
+            }
+          } finally {
+            setRemovendoAnexoId(null);
+          }
+        },
+      })
+    );
   };
 
   // Adicionar responsável individual
@@ -443,25 +463,36 @@ export default function TarefaAtribuidaDetalhesPage() {
   };
 
   // Remover responsável
-  const handleRemoverResponsavel = async (responsavelId: number) => {
+  const handleRemoverResponsavel = (responsavelId: number, nomeResponsavel?: string) => {
     if (!tarefaId) return;
-    const confirmou = window.confirm('Deseja desvincular este responsável da tarefa?');
-    if (!confirmou) return;
 
-    try {
-      setRemovendoRespId(responsavelId);
-      await tarefaService.removerResponsavel(tarefaId, responsavelId);
-      await carregarTarefa();
-      showToast('Responsável removido da tarefa.', 'success');
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message, 'error');
-      } else {
-        showToast('Falha ao desvincular responsável.', 'error');
-      }
-    } finally {
-      setRemovendoRespId(null);
-    }
+    openAction({
+      variant: 'danger',
+      title: 'Desvincular responsável',
+      description: (
+        <>
+          Deseja realmente desvincular <strong>{nomeResponsavel || 'este colaborador'}</strong> desta tarefa? O colaborador deixará de receber notificações e a tarefa não aparecerá mais em sua lista de atribuições.
+        </>
+      ),
+      confirmLabel: 'Desvincular colaborador',
+      cancelLabel: 'Cancelar',
+      onConfirm: async () => {
+        try {
+          setRemovendoRespId(responsavelId);
+          await tarefaService.removerResponsavel(tarefaId, responsavelId);
+          await carregarTarefa();
+          showToast('Responsável removido da tarefa.', 'success');
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            showToast(err.message, 'error');
+          } else {
+            showToast('Falha ao desvincular responsável.', 'error');
+          }
+        } finally {
+          setRemovendoRespId(null);
+        }
+      },
+    });
   };
 
   // Aprovar sugestão
@@ -480,31 +511,50 @@ export default function TarefaAtribuidaDetalhesPage() {
   };
 
   // Rejeitar sugestão
-  const handleRejeitarSugestao = async (sugestaoId: number) => {
-    try {
-      setProcessandoSugestaoId(sugestaoId);
-      await sugestaoService.rejeitarSugestao(sugestaoId);
-      showToast('Sugestão recusada.', 'info');
-      await carregarSugestoes();
-    } catch (err: unknown) {
-      if (err instanceof Error) showToast(err.message, 'error');
-    } finally {
-      setProcessandoSugestaoId(null);
-    }
+  const handleRejeitarSugestao = (sugestao: ConsultaSugestaoDTO) => {
+    openAction(
+      createRejectSuggestionDialogConfig({
+        suggestionTitle:
+          sugestao.descricao.length > 60 ? `${sugestao.descricao.slice(0, 60)}...` : sugestao.descricao,
+        suggestionAuthor: sugestao.usuario?.nome || 'Colaborador',
+        onConfirm: async () => {
+          try {
+            setProcessandoSugestaoId(sugestao.id);
+            await sugestaoService.rejeitarSugestao(sugestao.id);
+            showToast('Sugestão recusada com sucesso.', 'info');
+            await carregarSugestoes();
+          } catch (err: unknown) {
+            if (err instanceof Error) showToast(err.message, 'error');
+          } finally {
+            setProcessandoSugestaoId(null);
+          }
+        },
+      })
+    );
   };
 
   // Fechar ticket
-  const handleFecharTicket = async (ticketId: number) => {
-    try {
-      setProcessandoTicketId(ticketId);
-      await ticketService.fecharTicket(ticketId);
-      showToast('Ticket marcado como resolvido!', 'success');
-      await carregarTickets();
-    } catch (err: unknown) {
-      if (err instanceof Error) showToast(err.message, 'error');
-    } finally {
-      setProcessandoTicketId(null);
-    }
+  const handleFecharTicket = (ticket: ConsultaTicketReporteDTO) => {
+    openAction(
+      createResolveTicketDialogConfig({
+        ticketId: ticket.id,
+        ticketTitle:
+          ticket.descricao.length > 60 ? `${ticket.descricao.slice(0, 60)}...` : ticket.descricao,
+        assigneeName: ticket.usuario?.nome || 'Colaborador',
+        onConfirm: async () => {
+          try {
+            setProcessandoTicketId(ticket.id);
+            await ticketService.fecharTicket(ticket.id);
+            showToast('Ticket marcado como resolvido!', 'success');
+            await carregarTickets();
+          } catch (err: unknown) {
+            if (err instanceof Error) showToast(err.message, 'error');
+          } finally {
+            setProcessandoTicketId(null);
+          }
+        },
+      })
+    );
   };
 
   const getAvatarUrl = (url?: string | null) => {
@@ -591,8 +641,8 @@ export default function TarefaAtribuidaDetalhesPage() {
                 onClick={() => trocarAba('tickets')}
                 className={`${styles.tabBtn} ${activeTab === 'tickets' ? styles.tabBtnActive : ''}`}
               >
-                <UserIcon size={16} />
-                Tickets de Problema
+                <AlertTriangleIcon size={16} />
+                Tickets de Reporte
                 <span className={styles.tabCount}>{tickets.length}</span>
               </button>
             </div>
@@ -605,249 +655,222 @@ export default function TarefaAtribuidaDetalhesPage() {
                   <div className={styles.cardHeader}>
                     <div className={styles.titleArea}>
                       <h1 className={styles.taskTitle}>{tarefa.titulo}</h1>
-                  <div className={styles.badgesRow}>
-                    <Badge type="prioridade" value={tarefa.prioridade} />
-                    {tarefa.pontuacao !== null && tarefa.pontuacao !== undefined && (
-                      <span className={styles.ptsBadge}>
-                        {tarefa.pontuacao} pts
-                      </span>
-                    )}
-                    <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
-                      ID #{tarefa.id}
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.headerActions}>
-                  {tarefa.status !== 'Concluida' && (
-                    <button
-                      type="button"
-                      className={styles.btnComplete}
-                      disabled={completing || saving}
-                      onClick={handleConcluirTarefa}
-                      title="Marcar tarefa como finalizada"
-                    >
-                      <CheckIcon size={16} />
-                      {completing ? 'Concluindo...' : 'Finalizar tarefa'}
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    className={styles.btnDelete}
-                    disabled={deleting || saving}
-                    onClick={handleExcluirTarefa}
-                    title="Excluir permanentemente"
-                  >
-                    <TrashIcon size={16} />
-                    {deleting ? 'Excluindo...' : 'Excluir'}
-                  </button>
-
-                  <button
-                    type="button"
-                    className={styles.btnSave}
-                    disabled={saving}
-                    onClick={handleSalvarTarefa}
-                  >
-                    {saving ? 'Salvando...' : 'Salvar Alterações'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Formulário de Edição */}
-              <form onSubmit={handleSalvarTarefa} className={styles.editForm}>
-                <div className={styles.field}>
-                  <label className={styles.label}>Título da Tarefa *</label>
-                  <input
-                    type="text"
-                    required
-                    value={titulo}
-                    onChange={(e) => setTitulo(e.target.value)}
-                    className={styles.input}
-                    placeholder="Nome descritivo da tarefa..."
-                  />
-                </div>
-
-                <div className={styles.field}>
-                  <label className={styles.label}>Instruções & Descrição</label>
-                  <textarea
-                    value={descricao}
-                    onChange={(e) => setDescricao(e.target.value)}
-                    className={styles.textarea}
-                    placeholder="Orientações detalhadas para a execução da tarefa..."
-                  />
-                </div>
-
-                <div className={styles.formGrid}>
-                  <div className={styles.field}>
-                    <label className={styles.label}>Data de Vencimento *</label>
-                    <input
-                      type="datetime-local"
-                      required
-                      value={dataVencimento}
-                      onChange={(e) => setDataVencimento(e.target.value)}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.label}>Prioridade *</label>
-                    <select
-                      value={prioridade}
-                      onChange={(e) => setPrioridade(e.target.value as Prioridade)}
-                      className={styles.select}
-                    >
-                      <option value="Baixa">Baixa</option>
-                      <option value="Media">Média</option>
-                      <option value="Alta">Alta</option>
-                      <option value="Urgente">Urgente</option>
-                    </select>
-                  </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.label}>Pontuação (Gamificação)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={pontuacao}
-                      onChange={(e) => setPontuacao(e.target.value ? Number(e.target.value) : '')}
-                      className={styles.input}
-                      placeholder="Ex: 50"
-                    />
-                  </div>
-                </div>
-
-                {/* Seção de Anexos */}
-                <div className={styles.anexosSection}>
-                  <label className={styles.label}>
-                    Anexos da Tarefa ({tarefa.anexos?.length || 0})
-                  </label>
-
-                  {tarefa.anexos && tarefa.anexos.length > 0 && (
-                    <div className={styles.anexosList}>
-                      {tarefa.anexos.map((anexo) => (
-                        <div key={anexo.id} className={styles.anexoItemWrapper}>
-                          <a
-                            href={anexo.urlCaminho}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.anexoCard}
-                            title={`Abrir ${anexo.nomeOriginal}`}
-                          >
-                            <PaperclipIcon size={15} color="var(--cortex-purple)" />
-                            <span className={styles.anexoNome}>{anexo.nomeOriginal}</span>
-                          </a>
-                          <button
-                            type="button"
-                            className={styles.removeAnexoBtn}
-                            onClick={() => handleRemoverAnexo(anexo.id)}
-                            disabled={removendoAnexoId === anexo.id}
-                            title={`Remover anexo ${anexo.nomeOriginal}`}
-                            aria-label={`Remover anexo ${anexo.nomeOriginal}`}
-                          >
-                            {removendoAnexoId === anexo.id ? (
-                              <SpinnerIcon size={14} color="var(--cortex-gray-text)" />
-                            ) : (
-                              <TrashIcon size={14} />
-                            )}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <label className={styles.uploadLabelBtn}>
-                    <PaperclipIcon size={16} />
-                    <span>Adicionar novos anexos</span>
-                    <input
-                      type="file"
-                      multiple
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        if (e.target.files) {
-                          setNovosAnexos((prev) => [...prev, ...Array.from(e.target.files!)]);
-                        }
-                      }}
-                    />
-                  </label>
-
-                  {novosAnexos.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
-                      {novosAnexos.map((f, i) => (
-                        <span key={i} className={styles.fileTag} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <FileTextIcon size={14} />
-                          <span>{f.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => setNovosAnexos((prev) => prev.filter((_, idx) => idx !== i))}
-                            style={{ background: 'none', border: 'none', color: '#ff8888', cursor: 'pointer', padding: 0 }}
-                          >
-                            ×
-                          </button>
+                      <div className={styles.badgesRow}>
+                        <Badge type="prioridade" value={tarefa.prioridade} />
+                        {tarefa.pontuacao !== null && tarefa.pontuacao !== undefined && (
+                          <span className={styles.ptsBadge}>
+                            {tarefa.pontuacao} pts
+                          </span>
+                        )}
+                        <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
+                          ID #{tarefa.id}
                         </span>
-                      ))}
+                      </div>
                     </div>
-                  )}
+
+                    <div className={styles.headerActions}>
+                      {tarefa.status !== 'Concluida' && (
+                        <button
+                          type="button"
+                          className={styles.btnComplete}
+                          disabled={completing || saving}
+                          onClick={handleConcluirTarefa}
+                          title="Marcar tarefa como finalizada"
+                        >
+                          <CheckIcon size={16} />
+                          {completing ? 'Concluindo...' : 'Finalizar tarefa'}
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className={styles.btnDelete}
+                        disabled={deleting || saving}
+                        onClick={handleExcluirTarefa}
+                        title="Excluir permanentemente"
+                      >
+                        <TrashIcon size={16} />
+                        {deleting ? 'Excluindo...' : 'Excluir'}
+                      </button>
+
+                      <button
+                        type="button"
+                        className={styles.btnSave}
+                        disabled={saving}
+                        onClick={handleSalvarTarefa}
+                      >
+                        {saving ? 'Salvando...' : 'Salvar Alterações'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Formulário de Edição */}
+                  <form onSubmit={handleSalvarTarefa} className={styles.editForm}>
+                    <div className={styles.field}>
+                      <label className={styles.label}>Título da Tarefa *</label>
+                      <input
+                        type="text"
+                        required
+                        value={titulo}
+                        onChange={(e) => setTitulo(e.target.value)}
+                        className={styles.input}
+                        placeholder="Nome descritivo da tarefa..."
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <label className={styles.label}>Instruções & Descrição</label>
+                      <textarea
+                        value={descricao}
+                        onChange={(e) => setDescricao(e.target.value)}
+                        className={styles.textarea}
+                        placeholder="Orientações detalhadas para a execução da tarefa..."
+                      />
+                    </div>
+
+                    <div className={styles.formGrid}>
+                      <div className={styles.field}>
+                        <label className={styles.label}>Data de Vencimento *</label>
+                        <input
+                          type="datetime-local"
+                          required
+                          value={dataVencimento}
+                          onChange={(e) => setDataVencimento(e.target.value)}
+                          className={styles.input}
+                        />
+                      </div>
+
+                      <div className={styles.field}>
+                        <label className={styles.label}>Prioridade *</label>
+                        <select
+                          value={prioridade}
+                          onChange={(e) => setPrioridade(e.target.value as Prioridade)}
+                          className={styles.select}
+                        >
+                          <option value="Baixa">Baixa</option>
+                          <option value="Media">Média</option>
+                          <option value="Alta">Alta</option>
+                          <option value="Urgente">Urgente</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.field}>
+                        <label className={styles.label}>Pontuação (Gamificação)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={pontuacao}
+                          onChange={(e) => setPontuacao(e.target.value ? Number(e.target.value) : '')}
+                          className={styles.input}
+                          placeholder="Ex: 50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Seção de Anexos */}
+                    <div className={styles.anexosSection}>
+                      <label className={styles.label}>
+                        Anexos da Tarefa ({tarefa.anexos?.length || 0})
+                      </label>
+
+                      {tarefa.anexos && tarefa.anexos.length > 0 && (
+                        <div className={styles.anexosList}>
+                          {tarefa.anexos.map((anexo) => (
+                            <div key={anexo.id} className={styles.anexoItemWrapper}>
+                              <a
+                                href={anexo.urlCaminho}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.anexoCard}
+                                title={`Abrir ${anexo.nomeOriginal}`}
+                              >
+                                <PaperclipIcon size={15} color="var(--cortex-purple)" />
+                                <span className={styles.anexoNome}>{anexo.nomeOriginal}</span>
+                              </a>
+                              <button
+                                type="button"
+                                className={styles.removeAnexoBtn}
+                                onClick={() => handleRemoverAnexo(anexo.id, anexo.nomeOriginal)}
+                                disabled={removendoAnexoId === anexo.id}
+                                title={`Remover anexo ${anexo.nomeOriginal}`}
+                                aria-label={`Remover anexo ${anexo.nomeOriginal}`}
+                              >
+                                {removendoAnexoId === anexo.id ? (
+                                  <SpinnerIcon size={14} color="var(--cortex-gray-text)" />
+                                ) : (
+                                  <TrashIcon size={14} />
+                                )}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <label className={styles.uploadLabelBtn}>
+                        <PaperclipIcon size={16} />
+                        <span>Adicionar novos anexos</span>
+                        <input
+                          type="file"
+                          multiple
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            if (e.target.files) {
+                              setNovosAnexos((prev) => [...prev, ...Array.from(e.target.files!)]);
+                            }
+                          }}
+                        />
+                      </label>
+
+                      {novosAnexos.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                          {novosAnexos.map((f, i) => (
+                            <span key={i} className={styles.fileTag} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <FileTextIcon size={14} />
+                              <span>{f.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => setNovosAnexos((prev) => prev.filter((_, idx) => idx !== i))}
+                                style={{ background: 'none', border: 'none', color: '#ff8888', cursor: 'pointer', padding: 0 }}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </form>
                 </div>
-              </form>
-            </div>
 
-            {/* CONTAINER 2: PESSOAS RESPONSÁVEIS & ALTERAÇÃO DE RESPONSÁVEL */}
-            <div className={styles.responsaveisSection}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>
-                  Pessoas Responsáveis ({tarefa.responsaveis?.length || 0})
-                </h2>
-                <p className={styles.sectionSubtitle}>
-                  Membros encarregados de realizar a tarefa. Você pode adicionar ou alterar responsáveis a qualquer momento.
-                </p>
-              </div>
+                {/* CONTAINER 2: PESSOAS RESPONSÁVEIS & ALTERAÇÃO DE RESPONSÁVEL */}
+                <div className={styles.responsaveisSection}>
+                  <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>
+                      Pessoas Responsáveis ({tarefa.responsaveis?.length || 0})
+                    </h2>
+                    <p className={styles.sectionSubtitle}>
+                      Membros encarregados de realizar a tarefa. Você pode adicionar ou alterar responsáveis a qualquer momento.
+                    </p>
+                  </div>
 
-              {/* Caixa de Ação: Adicionar ou Alterar Responsável */}
-              <div className={styles.addResponsavelBox}>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cortex-white)' }}>
-                  Atribuir novo responsável ou equipe
-                </span>
+                  {/* Caixa de Ação: Adicionar ou Alterar Responsável */}
+                  <div className={styles.addResponsavelBox}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cortex-white)' }}>
+                      Atribuir novo responsável ou equipe
+                    </span>
 
-                <div className={styles.addResponsavelRow}>
-                  {/* Atribuição Individual */}
-                  <Combobox
-                    value={usuarioSelecionadoId}
-                    onChange={(val) => setUsuarioSelecionadoId(val !== '' ? Number(val) : '')}
-                    placeholder="Selecione um usuário..."
-                    searchPlaceholder="Buscar por nome ou email..."
-                    clearable
-                    options={usuariosDisponiveis.map((u) => ({
-                      value: u.id,
-                      label: u.nome,
-                      sublabel: u.email,
-                    }))}
-                    className={styles.comboboxWrapper}
-                  />
-
-                  <button
-                    type="button"
-                    className={styles.addRespBtn}
-                    disabled={!usuarioSelecionadoId || adicionandoResp}
-                    onClick={handleAdicionarResponsavel}
-                  >
-                    + Adicionar Usuário
-                  </button>
-
-                  {/* Atribuição por Equipe */}
-                  {equipesGerenciaveis.length > 0 && (
-                    <>
-                      <div className={styles.divider} />
-
+                    <div className={styles.addResponsavelRow}>
+                      {/* Atribuição Individual */}
                       <Combobox
-                        value={equipeSelecionadaId}
-                        onChange={(val) => setEquipeSelecionadaId(val !== '' ? Number(val) : '')}
-                        placeholder="Selecione uma equipe..."
-                        searchPlaceholder="Buscar por nome da equipe..."
+                        value={usuarioSelecionadoId}
+                        onChange={(val) => setUsuarioSelecionadoId(val !== '' ? Number(val) : '')}
+                        placeholder="Selecione um usuário..."
+                        searchPlaceholder="Buscar por nome ou email..."
                         clearable
-                        options={equipesGerenciaveis.map((eq) => ({
-                          value: eq.id,
-                          label: eq.nome,
+                        options={usuariosDisponiveis.map((u) => ({
+                          value: u.id,
+                          label: u.nome,
+                          sublabel: u.email,
                         }))}
                         className={styles.comboboxWrapper}
                       />
@@ -855,68 +878,95 @@ export default function TarefaAtribuidaDetalhesPage() {
                       <button
                         type="button"
                         className={styles.addRespBtn}
-                        disabled={!equipeSelecionadaId || adicionandoResp}
-                        onClick={handleAtribuirEquipe}
+                        disabled={!usuarioSelecionadoId || adicionandoResp}
+                        onClick={handleAdicionarResponsavel}
                       >
-                        + Atribuir Equipe Inteira
+                        + Adicionar Usuário
                       </button>
-                    </>
+
+                      {/* Atribuição por Equipe */}
+                      {equipesGerenciaveis.length > 0 && (
+                        <>
+                          <div className={styles.divider} />
+
+                          <Combobox
+                            value={equipeSelecionadaId}
+                            onChange={(val) => setEquipeSelecionadaId(val !== '' ? Number(val) : '')}
+                            placeholder="Selecione uma equipe..."
+                            searchPlaceholder="Buscar por nome da equipe..."
+                            clearable
+                            options={equipesGerenciaveis.map((eq) => ({
+                              value: eq.id,
+                              label: eq.nome,
+                            }))}
+                            className={styles.comboboxWrapper}
+                          />
+
+                          <button
+                            type="button"
+                            className={styles.addRespBtn}
+                            disabled={!equipeSelecionadaId || adicionandoResp}
+                            onClick={handleAtribuirEquipe}
+                          >
+                            + Atribuir Equipe Inteira
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {tarefa.responsaveis && tarefa.responsaveis.length > 0 ? (
+                    <div className={styles.responsaveisList}>
+                      {tarefa.responsaveis.map((resp) => {
+                        const nome = resp.usuario?.nome || `Usuário #${resp.usuarioId}`;
+                        const email = resp.usuario?.email || '';
+                        const foto = resp.usuario?.fotoPerfil?.urlCaminho;
+
+                        return (
+                          <div key={resp.id} className={styles.responsavelCard}>
+                            <div className={styles.responsavelInfo}>
+                              {foto && getAvatarUrl(foto) ? (
+                                <Image
+                                  src={getAvatarUrl(foto)}
+                                  alt={nome}
+                                  width={40}
+                                  height={40}
+                                  className={styles.avatar}
+                                  unoptimized
+                                />
+                              ) : (
+                                <div className={styles.avatar}>
+                                  {nome.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+
+                              <div className={styles.responsavelDetails}>
+                                <span className={styles.responsavelName}>{nome}</span>
+                                {email && <span className={styles.responsavelEmail}>{email}</span>}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              className={styles.removeRespBtn}
+                              disabled={removendoRespId === resp.id}
+                              onClick={() => handleRemoverResponsavel(resp.id, nome)}
+                              title="Remover atribuição deste usuário"
+                            >
+                              {removendoRespId === resp.id ? 'Removendo...' : 'Remover'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={styles.emptyBox}>
+                      Nenhum responsável foi atribuído a esta tarefa ainda.
+                    </div>
                   )}
                 </div>
-              </div>
-
-              {tarefa.responsaveis && tarefa.responsaveis.length > 0 ? (
-                <div className={styles.responsaveisList}>
-                  {tarefa.responsaveis.map((resp) => {
-                    const nome = resp.usuario?.nome || `Usuário #${resp.usuarioId}`;
-                    const email = resp.usuario?.email || '';
-                    const foto = resp.usuario?.fotoPerfil?.urlCaminho;
-
-                    return (
-                      <div key={resp.id} className={styles.responsavelCard}>
-                        <div className={styles.responsavelInfo}>
-                          {foto && getAvatarUrl(foto) ? (
-                            <Image
-                              src={getAvatarUrl(foto)}
-                              alt={nome}
-                              width={40}
-                              height={40}
-                              className={styles.avatar}
-                              unoptimized
-                            />
-                          ) : (
-                            <div className={styles.avatar}>
-                              {nome.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-
-                          <div className={styles.responsavelDetails}>
-                            <span className={styles.responsavelName}>{nome}</span>
-                            {email && <span className={styles.responsavelEmail}>{email}</span>}
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          className={styles.removeRespBtn}
-                          disabled={removendoRespId === resp.id}
-                          onClick={() => handleRemoverResponsavel(resp.id)}
-                          title="Remover atribuição deste usuário"
-                        >
-                          {removendoRespId === resp.id ? 'Removendo...' : 'Remover'}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className={styles.emptyBox}>
-                  Nenhum responsável foi atribuído a esta tarefa ainda.
-                </div>
-              )}
-            </div>
-          </>
-        )}
+              </>
+            )}
 
             {/* ABA 2: RESPOSTAS DA TAREFA */}
             {activeTab === 'respostas' && (
@@ -1116,7 +1166,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                                 type="button"
                                 className={styles.rejectBtn}
                                 disabled={processandoSugestaoId === sug.id}
-                                onClick={() => handleRejeitarSugestao(sug.id)}
+                                onClick={() => handleRejeitarSugestao(sug)}
                               >
                                 Recusar
                               </button>
@@ -1138,12 +1188,12 @@ export default function TarefaAtribuidaDetalhesPage() {
               </div>
             )}
 
-            {/* ABA 3: TICKETS DE PROBLEMA */}
+            {/* ABA 3: TICKETS DE REPORTE */}
             {activeTab === 'tickets' && (
               <div className={styles.detailsCard}>
                 <div className={styles.sectionHeader}>
                   <h2 className={styles.sectionTitle}>
-                    Tickets de Problema ({tickets.length})
+                    Tickets de Reporte ({tickets.length})
                   </h2>
                   <p className={styles.sectionSubtitle}>
                     Problemas e impedimentos reportados pelos colaboradores encarregados.
@@ -1184,9 +1234,8 @@ export default function TarefaAtribuidaDetalhesPage() {
                             </div>
 
                             <span
-                              className={`${styles.statusTag} ${
-                                isAberto ? styles.tagAberto : styles.tagFechado
-                              }`}
+                              className={`${styles.statusTag} ${isAberto ? styles.tagAberto : styles.tagFechado
+                                }`}
                             >
                               {isAberto ? 'Aberto' : 'Resolvido'}
                             </span>
@@ -1202,7 +1251,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                                 type="button"
                                 className={styles.resolveBtn}
                                 disabled={processandoTicketId === ticket.id}
-                                onClick={() => handleFecharTicket(ticket.id)}
+                                onClick={() => handleFecharTicket(ticket)}
                               >
                                 Marcar como Resolvido
                               </button>
@@ -1218,6 +1267,8 @@ export default function TarefaAtribuidaDetalhesPage() {
           </>
         )}
       </main>
+
+      <CriticalActionDialog {...dialogProps} />
     </>
   );
 }

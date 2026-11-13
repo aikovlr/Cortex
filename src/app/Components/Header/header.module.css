@@ -584,6 +584,11 @@
   border-left: 3.5px solid #ef4444 !important;
 }
 
+.notificationItemDestaque.notificationItemUnread,
+.notificationItemVencida.notificationItemUnread {
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
 .notificationItemVencida:hover,
 .notificationItemDestaque:hover {
   background-color: rgba(239, 68, 68, 0.1);

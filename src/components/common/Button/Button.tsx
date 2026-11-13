@@ -8,28 +8,37 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   icon?: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  children,
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  icon,
-  className = '',
-  disabled,
-  ...props
-}) => {
-  return (
-    <button
-      className={`${styles.button} ${styles[variant]} ${styles[size]} ${className}`}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading ? (
-        <span className={styles.spinner} />
-      ) : (
-        icon && <span className={styles.icon}>{icon}</span>
-      )}
-      {children}
-    </button>
-  );
-};
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      children,
+      variant = 'primary',
+      size = 'md',
+      loading = false,
+      icon,
+      className = '',
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <button
+        ref={ref}
+        className={`${styles.button} ${styles[variant]} ${styles[size]} ${className}`}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading ? (
+          <span className={styles.spinner} />
+        ) : (
+          icon && <span className={styles.icon}>{icon}</span>
+        )}
+        {children}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button';
+

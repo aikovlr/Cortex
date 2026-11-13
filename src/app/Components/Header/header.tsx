@@ -296,8 +296,27 @@ export default function Header({
     }
   };
 
-  const renderIcon = (tipo: NotificacaoItem['tipo']) => {
-    switch (tipo) {
+  const isTicketReporteItem = (item: NotificacaoItem) => {
+    return (
+      item.tipo === 'ticket_criador' ||
+      (item.tipo === 'ticket' &&
+        (Boolean(item.destaque) ||
+          item.titulo?.toLowerCase().includes('reporte') ||
+          item.titulo?.toLowerCase().includes('aberto'))) ||
+      Boolean(item.titulo?.toLowerCase().includes('ticket de reporte'))
+    );
+  };
+
+  const renderIcon = (item: NotificacaoItem) => {
+    if (isTicketReporteItem(item)) {
+      return (
+        <div className={`${styles.notificationIcon} ${styles.iconDestaque}`} title="Ticket de Reporte">
+          <AlertTriangleIcon size={18} />
+        </div>
+      );
+    }
+
+    switch (item.tipo) {
       case 'tarefa_vencida':
         return (
           <div className={`${styles.notificationIcon} ${styles.iconDestaque}`} title="Tarefa Vencida">
@@ -315,12 +334,13 @@ export default function Header({
         return (
           <div
             className={`${styles.notificationIcon} ${styles.iconTarefa}`}
-            title={tipo === 'tarefa_urgente' ? 'Tarefa Urgente' : 'Tarefa'}
+            title={item.tipo === 'tarefa_urgente' ? 'Tarefa Urgente' : 'Tarefa'}
           >
             <FileTextIcon size={18} />
           </div>
         );
       case 'resposta_ticket':
+      case 'ticket':
         return (
           <div className={`${styles.notificationIcon} ${styles.iconTicket}`} title="Ticket">
             <AlertTriangleIcon size={18} />
@@ -353,8 +373,12 @@ export default function Header({
     }
   };
 
-  const renderTag = (tipo: NotificacaoItem['tipo']) => {
-    switch (tipo) {
+  const renderTag = (item: NotificacaoItem) => {
+    if (isTicketReporteItem(item)) {
+      return <span className={`${styles.notificationTag} ${styles.tagDestaque}`}>Reporte Urgente</span>;
+    }
+
+    switch (item.tipo) {
       case 'tarefa_vencida':
         return <span className={`${styles.notificationTag} ${styles.tagDestaque}`}>Vencida</span>;
       case 'ticket_criador':
@@ -364,6 +388,7 @@ export default function Header({
       case 'tarefa':
         return <span className={`${styles.notificationTag} ${styles.tagTarefa}`}>Tarefa</span>;
       case 'resposta_ticket':
+      case 'ticket':
         return <span className={`${styles.notificationTag} ${styles.tagTicket}`}>Ticket</span>;
       case 'sugestao':
         return <span className={`${styles.notificationTag} ${styles.tagSugestao}`}>Sugestão</span>;
@@ -678,7 +703,9 @@ export default function Header({
                 <div className={styles.notificationsList}>
                   {(filtro === 'naoLidas' ? notificacoes.filter((n) => !n.lida) : notificacoes).map((item) => {
                     const isVencidaOuReporte =
-                      item.tipo === 'tarefa_vencida' || item.tipo === 'ticket_criador';
+                      item.tipo === 'tarefa_vencida' ||
+                      isTicketReporteItem(item) ||
+                      Boolean(item.destaque);
                     const isUrgente = item.tipo === 'tarefa_urgente';
                     const stackMatch = item.titulo.match(/\((\d+)\)$/);
                     const stackCount = stackMatch ? stackMatch[1] : null;
@@ -702,11 +729,11 @@ export default function Header({
                           }
                         }}
                       >
-                        {renderIcon(item.tipo)}
+                        {renderIcon(item)}
 
                         <div className={styles.notificationBody}>
                           <div className={styles.notificationMeta}>
-                            {renderTag(item.tipo)}
+                            {renderTag(item)}
                             <span className={styles.notificationTime}>
                               {formatRelativeTime(item.dataCriacao)}
                             </span>
