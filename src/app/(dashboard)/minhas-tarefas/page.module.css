@@ -94,6 +94,11 @@
   transition: border-color 0.2s, box-shadow 0.2s, background-color 0.25s, color 0.25s;
 }
 
+.searchInput::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
 .searchInput:focus {
   border-color: var(--cortex-purple);
   box-shadow: 0 0 0 3px var(--cortex-purple-glow);
@@ -102,7 +107,7 @@
 .searchIcon {
   position: absolute;
   left: 14px;
-  color: var(--cortex-gray-text);
+  color: var(--text-secondary);
   font-size: 14px;
   pointer-events: none;
 }
@@ -259,7 +264,7 @@
 }
 
 .sortIconInactive {
-  opacity: 0.35;
+  opacity: 0.7;
   color: var(--text-secondary);
   transition: opacity 0.15s ease, color 0.15s ease;
 }

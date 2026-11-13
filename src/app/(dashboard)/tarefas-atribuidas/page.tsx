@@ -19,7 +19,7 @@ import { tarefaService } from '@/services/tarefaService';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './page.module.css';
 
-type CampoOrdenacao = 'titulo' | 'vencimento' | 'status' | 'prioridade' | 'criacao';
+type CampoOrdenacao = 'titulo' | 'vencimento' | 'prioridade' | 'criacao';
 type DirecaoOrdenacao = 'asc' | 'desc';
 
 const PESO_PRIORIDADE: Record<string, number> = {
@@ -27,12 +27,6 @@ const PESO_PRIORIDADE: Record<string, number> = {
   Media: 2,
   Alta: 3,
   Urgente: 4,
-};
-
-const PESO_STATUS: Record<string, number> = {
-  Atrasada: 1,
-  Pendente: 2,
-  Concluida: 3,
 };
 
 export default function TarefasAtribuidasPage() {
@@ -43,16 +37,16 @@ export default function TarefasAtribuidasPage() {
   const [loading, setLoading] = useState(true);
   const [termoBusca, setTermoBusca] = useState('');
 
-  // Ordenação por coluna
-  const [campoOrdenacao, setCampoOrdenacao] = useState<CampoOrdenacao | null>(null);
-  const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<DirecaoOrdenacao>('asc');
+  // Ordenação por coluna (padrão: data de criação mais recente)
+  const [campoOrdenacao, setCampoOrdenacao] = useState<CampoOrdenacao | null>('criacao');
+  const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<DirecaoOrdenacao>('desc');
 
   const alternarOrdenacao = (campo: CampoOrdenacao) => {
     if (campoOrdenacao === campo) {
       setDirecaoOrdenacao((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setCampoOrdenacao(campo);
-      setDirecaoOrdenacao('asc');
+      setDirecaoOrdenacao(campo === 'criacao' ? 'desc' : 'asc');
     }
   };
 
@@ -70,12 +64,6 @@ export default function TarefasAtribuidasPage() {
   const isVencida = (isoDate: string, status: string) => {
     if (status === 'Concluida') return false;
     return new Date(isoDate) < new Date();
-  };
-
-  const obterStatusReal = (tarefa: ConsultaTarefaDTO) => {
-    if (tarefa.status === 'Concluida') return 'Concluida';
-    if (isVencida(tarefa.dataVencimento, tarefa.status)) return 'Atrasada';
-    return tarefa.status;
   };
 
   const recarregar = useCallback(() => {
@@ -144,10 +132,6 @@ export default function TarefasAtribuidasPage() {
         const timeA = new Date(a.dataVencimento).getTime() || 0;
         const timeB = new Date(b.dataVencimento).getTime() || 0;
         diff = timeA - timeB;
-      } else if (campoOrdenacao === 'status') {
-        const statusA = obterStatusReal(a);
-        const statusB = obterStatusReal(b);
-        diff = (PESO_STATUS[statusA] ?? 99) - (PESO_STATUS[statusB] ?? 99);
       } else if (campoOrdenacao === 'prioridade') {
         diff = (PESO_PRIORIDADE[a.prioridade] ?? 0) - (PESO_PRIORIDADE[b.prioridade] ?? 0);
       } else if (campoOrdenacao === 'criacao') {
@@ -162,7 +146,7 @@ export default function TarefasAtribuidasPage() {
         return direcaoOrdenacao === 'asc' ? diff : -diff;
       }
 
-      return a.id - b.id;
+      return b.id - a.id;
     });
   }, [tarefas, campoOrdenacao, direcaoOrdenacao]);
 
@@ -260,34 +244,6 @@ export default function TarefasAtribuidasPage() {
 
                     <th
                       className={`${styles.th} ${styles.thSortable}`}
-                      onClick={() => alternarOrdenacao('status')}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          alternarOrdenacao('status');
-                        }
-                      }}
-                      role="columnheader"
-                      tabIndex={0}
-                      aria-sort={
-                        campoOrdenacao === 'status'
-                          ? direcaoOrdenacao === 'asc'
-                            ? 'ascending'
-                            : 'descending'
-                          : 'none'
-                      }
-                      title="Clique para alternar a ordem por Status (crescente/decrescente)"
-                    >
-                      <div className={styles.thContent}>
-                        <span>Status</span>
-                        <span className={styles.sortIconContainer}>
-                          {renderIconeOrdenacao('status')}
-                        </span>
-                      </div>
-                    </th>
-
-                    <th
-                      className={`${styles.th} ${styles.thSortable}`}
                       onClick={() => alternarOrdenacao('prioridade')}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -371,13 +327,6 @@ export default function TarefasAtribuidasPage() {
                         </td>
 
                         <td className={styles.td}>
-                          <Badge
-                            type="status"
-                            value={vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status}
-                          />
-                        </td>
-
-                        <td className={styles.td}>
                           <Badge type="prioridade" value={tarefa.prioridade} />
                         </td>
 
@@ -396,7 +345,6 @@ export default function TarefasAtribuidasPage() {
             <div className={styles.mobileCardsList}>
               {tarefasExibidas.map((tarefa) => {
                 const vencida = isVencida(tarefa.dataVencimento, tarefa.status);
-                const statusReal = vencida && tarefa.status !== 'Concluida' ? 'Atrasada' : tarefa.status;
 
                 return (
                   <div
@@ -418,7 +366,6 @@ export default function TarefasAtribuidasPage() {
 
                     <div className={styles.mobileCardFooter}>
                       <div className={styles.mobileCardBadges}>
-                        <Badge type="status" value={statusReal} />
                         <Badge type="prioridade" value={tarefa.prioridade} />
                       </div>
 

@@ -79,6 +79,7 @@ export interface ConsultaTarefaDTO {
   prioridade: Prioridade;
   criadorId: number;
   dataCriacao?: string;
+  finalizadaPeloCriador?: boolean;
 }
 
 export interface ConsultaResponsavelTarefaDTO {

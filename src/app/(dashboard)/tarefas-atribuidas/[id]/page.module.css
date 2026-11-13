@@ -129,9 +129,9 @@
 .btnComplete {
   height: 40px;
   padding: 0 16px;
-  background-color: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  background-color: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
@@ -143,8 +143,31 @@
 }
 
 .btnComplete:hover:not(:disabled) {
-  background-color: #10b981;
+  background-color: #f59e0b;
   color: #ffffff;
+  border-color: #f59e0b;
+}
+
+.btnRevert {
+  height: 40px;
+  padding: 0 16px;
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btnRevert:hover:not(:disabled) {
+  background-color: #f59e0b;
+  color: #ffffff;
+  border-color: #f59e0b;
 }
 
 .btnDelete {
@@ -525,7 +548,7 @@
 }
 
 .tabCount {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--cortex-gray-text);
   font-size: 11px;
   font-weight: 700;
@@ -1008,6 +1031,7 @@
 
   .btnSave,
   .btnComplete,
+  .btnRevert,
   .btnDelete {
     width: 100%;
     justify-content: center;
@@ -1102,5 +1126,64 @@
     align-items: flex-start;
     gap: 8px;
   }
+}
+
+.creatorBanner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+}
+
+.creatorBannerIcon {
+  flex-shrink: 0;
+  color: #f59e0b;
+}
+
+.creatorBannerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.creatorBannerTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.creatorBannerText {
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+/* Badges de Avaliação e Respostas */
+.gradeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+}
+
+.gradeBadgeNeutral {
+  background-color: rgba(100, 116, 139, 0.2);
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.gradeBadgeGraded {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.4);
 }
 

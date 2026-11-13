@@ -17,6 +17,7 @@ import {
 import { Badge } from '@/components/common/Badge/Badge';
 import { Modal } from '@/components/common/Modal/Modal';
 import { Button } from '@/components/common/Button/Button';
+import { DownloadIcon } from '@/components/common/Icons/Icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
@@ -672,6 +673,154 @@ export default function RelatoriosPage() {
       };
     });
   }, [metricasMetas]);
+
+  // Função para exportar os dados do relatório como CSV
+  const handleExportarCsv = () => {
+    if (!metricas) {
+      showToast('Nenhum dado disponível para exportação.', 'info');
+      return;
+    }
+
+    const equipeNome = relatorioEquipe?.equipeNome || 'Equipe';
+    const geradoEmFormatado = new Date().toLocaleString('pt-BR');
+    const solicitanteNome = usuario?.nome || 'Usuário';
+
+    const tituloDoc =
+      view === 'team'
+        ? `Relatorio_Analitico_${equipeNome.replace(/\s+/g, '_')}`
+        : view === 'created'
+        ? 'Relatorio_Analitico_Tarefas_Criadas'
+        : 'Relatorio_Analitico_Minhas_Tarefas';
+
+    const escapeCsv = (val: string | number | null | undefined): string => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const linhas: string[] = [];
+
+    // Cabeçalho e Metadados do Relatório
+    linhas.push([escapeCsv('RELATÓRIO ANALÍTICO CORTEX')].join(';'));
+    linhas.push([escapeCsv('Visão'), escapeCsv(view === 'team' ? `Equipe: ${equipeNome}` : view === 'created' ? 'Tarefas Criadas por Mim' : 'Tarefas Onde Sou Responsável')].join(';'));
+    linhas.push([escapeCsv('Gerado em'), escapeCsv(geradoEmFormatado)].join(';'));
+    linhas.push([escapeCsv('Solicitante'), escapeCsv(solicitanteNome)].join(';'));
+    linhas.push([escapeCsv('Período'), escapeCsv(`${filtrosAplicados.dataInicio ? new Date(filtrosAplicados.dataInicio).toLocaleDateString('pt-BR') : 'Início'} até ${filtrosAplicados.dataFim ? new Date(filtrosAplicados.dataFim).toLocaleDateString('pt-BR') : 'Hoje'}`)].join(';'));
+    linhas.push([escapeCsv('Filtro de Status'), escapeCsv(filtrosAplicados.status || 'Todos')].join(';'));
+    linhas.push([escapeCsv('Filtro de Prioridade'), escapeCsv(filtrosAplicados.prioridade || 'Todas')].join(';'));
+    linhas.push('');
+
+    // Seção 1: Resumo Geral de Métricas
+    linhas.push([escapeCsv('RESUMO GERAL DE MÉTRICAS')].join(';'));
+    linhas.push(['Total de Tarefas', 'Concluídas', 'Pendentes', 'Atrasadas', 'Taxa de Conclusão (%)', 'Média de Notas'].map(escapeCsv).join(';'));
+    linhas.push([
+      escapeCsv(metricas.totalTarefas),
+      escapeCsv(metricas.concluidas),
+      escapeCsv(metricas.pendentes),
+      escapeCsv(metricas.atrasadas),
+      escapeCsv(`${metricas.taxaConclusaoPercentual}%`),
+      escapeCsv(metricas.mediaNotas !== null && metricas.mediaNotas !== undefined ? `${metricas.mediaNotas} pts` : 'N/A'),
+    ].join(';'));
+    linhas.push('');
+
+    // Seção 2: Desempenho por Membro / Responsável (quando aplicável)
+    const membrosCsv =
+      view === 'team'
+        ? (relatorioEquipe?.desempenhoMembros || []).filter(
+            (m) =>
+              filtrosAplicados.responsaveisIds.length === 0 ||
+              filtrosAplicados.responsaveisIds.includes(m.usuarioId)
+          )
+        : view === 'created' && responsaveisCriadosExibidos.length > 0
+        ? responsaveisCriadosExibidos
+        : [];
+
+    if (membrosCsv.length > 0) {
+      linhas.push([escapeCsv(view === 'team' ? 'DESEMPENHO POR MEMBRO DA EQUIPE' : 'DESEMPENHO POR RESPONSÁVEL')].join(';'));
+      if (view === 'team') {
+        linhas.push(['Nome', 'E-mail', 'Cargo', 'Total Atribuídas', 'Concluídas', 'Pendentes', 'Atrasadas', 'Taxa de Conclusão (%)', 'Média de Notas'].map(escapeCsv).join(';'));
+        membrosCsv.forEach((m) => {
+          linhas.push([
+            escapeCsv(m.nome),
+            escapeCsv(m.email),
+            escapeCsv((m as { cargo?: string }).cargo || 'Membro'),
+            escapeCsv(m.totalAtribuidas),
+            escapeCsv(m.concluidas),
+            escapeCsv(m.pendentes),
+            escapeCsv(m.atrasadas),
+            escapeCsv(`${m.taxaConclusaoPercentual}%`),
+            escapeCsv(m.mediaNotas !== null && m.mediaNotas !== undefined ? `${m.mediaNotas} pts` : '-'),
+          ].join(';'));
+        });
+      } else {
+        linhas.push(['Nome', 'E-mail', 'Total Atribuídas', 'Concluídas', 'Pendentes', 'Atrasadas', 'Taxa de Conclusão (%)', 'Média de Notas'].map(escapeCsv).join(';'));
+        membrosCsv.forEach((m) => {
+          linhas.push([
+            escapeCsv(m.nome),
+            escapeCsv(m.email),
+            escapeCsv(m.totalAtribuidas),
+            escapeCsv(m.concluidas),
+            escapeCsv(m.pendentes),
+            escapeCsv(m.atrasadas),
+            escapeCsv(`${m.taxaConclusaoPercentual}%`),
+            escapeCsv(m.mediaNotas !== null && m.mediaNotas !== undefined ? `${m.mediaNotas} pts` : '-'),
+          ].join(';'));
+        });
+      }
+      linhas.push('');
+    }
+
+    // Seção 3: Metas da Equipe (se aplicável)
+    if (metricasMetas.total > 0) {
+      linhas.push([escapeCsv('MÉTRICAS DE METAS')].join(';'));
+      linhas.push(['Total de Metas', 'Concluídas', 'Pendentes', 'Atrasadas', 'Taxa de Conclusão (%)'].map(escapeCsv).join(';'));
+      linhas.push([
+        escapeCsv(metricasMetas.total),
+        escapeCsv(metricasMetas.concluidas),
+        escapeCsv(metricasMetas.pendentes),
+        escapeCsv(metricasMetas.atrasadas),
+        escapeCsv(`${metricasMetas.taxaConclusaoPercentual}%`),
+      ].join(';'));
+      linhas.push('');
+    }
+
+    // Seção 4: Lista Detalhada de Tarefas
+    linhas.push([escapeCsv('LISTA DETALHADA DE TAREFAS')].join(';'));
+    linhas.push(['ID', 'Título', 'Status', 'Prioridade', 'Pontuação', 'Data de Criação', 'Data de Vencimento', 'Descrição'].map(escapeCsv).join(';'));
+
+    const tarefasCsv = metricas.tarefas || [];
+    if (tarefasCsv.length === 0) {
+      linhas.push([escapeCsv('Nenhuma tarefa encontrada para os filtros aplicados.')].join(';'));
+    } else {
+      tarefasCsv.forEach((t) => {
+        linhas.push([
+          escapeCsv(t.id),
+          escapeCsv(t.titulo),
+          escapeCsv(t.status),
+          escapeCsv(t.prioridade),
+          escapeCsv(t.pontuacao !== null && t.pontuacao !== undefined ? `${t.pontuacao} pts` : '-'),
+          escapeCsv(t.dataCriacao ? new Date(t.dataCriacao).toLocaleDateString('pt-BR') : '-'),
+          escapeCsv(t.dataVencimento ? new Date(t.dataVencimento).toLocaleDateString('pt-BR') : '-'),
+          escapeCsv(t.descricao ? t.descricao.replace(/\r?\n/g, ' ') : ''),
+        ].join(';'));
+      });
+    }
+
+    // Garante compatibilidade UTF-8 com Microsoft Excel adicionando BOM (\uFEFF)
+    const csvContent = '\uFEFF' + linhas.join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dataIso = new Date().toISOString().split('T')[0];
+    link.href = url;
+    link.setAttribute('download', `${tituloDoc}_${dataIso}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast('Dados exportados em CSV com sucesso!', 'success');
+  };
 
   // Função para gerar e exportar relatório em PDF com o que está presente na página
   const handleExportarPdf = () => {
@@ -1355,21 +1504,32 @@ export default function RelatoriosPage() {
             )}
 
             {(view !== 'team' || usuarioEhAdminOuDonoDaEquipeSelecionada) && (
-              <button
-                type="button"
-                onClick={() => setIsPdfModalOpen(true)}
-                className={styles.exportPdfBtn}
-                title="Exportar relatório em PDF"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <polyline points="10 9 9 9 8 9" />
-                </svg>
-                Exportar PDF
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleExportarCsv}
+                  className={styles.exportBtn}
+                  title="Exportar dados como planilha CSV"
+                >
+                  <DownloadIcon size={16} />
+                  Exportar CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPdfModalOpen(true)}
+                  className={styles.exportBtn}
+                  title="Exportar relatório em PDF"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                  Exportar PDF
+                </button>
+              </>
             )}
           </div>
         </div>

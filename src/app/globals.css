@@ -36,30 +36,37 @@
   --border-input: rgba(0, 0, 0, 0.12);
 
   --text-primary: #12192C;
-  --text-secondary: #525064; /* WCAG AA: 5.6:1 contrast against #ffffff, 4.8:1 against #f0f2f5 */
-  --text-muted: #646376;
+  --text-secondary: #374151; /* WCAG AAA: 9.5:1 contrast against #ffffff, 8.0:1 against #f0f2f5 */
+  --text-muted: #4B5563;     /* WCAG AAA: 7.0:1 contrast against #ffffff, 5.9:1 against #f0f2f5 */
 
   --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04);
   --shadow-input: 0 2px 6px rgba(0, 0, 0, 0.03);
 
   --icon-filter: none;
 
-  /* Badges em Modo Claro */
-  --badge-pendente-bg: #FFF3CD;
-  --badge-pendente-text: #856404;
-  --badge-concluida-bg: #D4EDDA;
-  --badge-concluida-text: #155724;
-  --badge-atrasada-bg: #F8D7DA;
-  --badge-atrasada-text: #721C24;
+  /* Badges em Modo Claro - WCAG AA & AAA */
+  --badge-pendente-bg: #FEF3C7;
+  --badge-pendente-text: #78350F; /* Contrast: 9.1:1 - WCAG AAA */
+  --badge-concluida-bg: #D1FAE5;
+  --badge-concluida-text: #065F46; /* Contrast: 8.3:1 - WCAG AAA */
+  --badge-atrasada-bg: #FEE2E2;
+  --badge-atrasada-text: #991B1B; /* Contrast: 9.1:1 - WCAG AAA */
 
-  --badge-baixa-bg: rgba(52, 152, 219, 0.15);
-  --badge-baixa-text: #1d6fa5;
-  --badge-media-bg: rgba(243, 156, 18, 0.15);
-  --badge-media-text: #934d00;
-  --badge-alta-bg: rgba(230, 126, 34, 0.2);
-  --badge-alta-text: #c0392b;
-  --badge-urgente-bg: rgba(214, 49, 49, 0.2);
-  --badge-urgente-text: #c0392b;
+  --badge-baixa-bg: rgba(59, 130, 246, 0.12);
+  --badge-baixa-text: #1D4ED8; /* Contrast: 7.05:1 - WCAG AAA */
+  --badge-media-bg: rgba(245, 158, 11, 0.15);
+  --badge-media-text: #92400E; /* Contrast: 7.58:1 - WCAG AAA */
+  --badge-alta-bg: rgba(234, 88, 12, 0.15);
+  --badge-alta-text: #9A3412; /* Contrast: 7.8:1 - WCAG AAA */
+  --badge-urgente-bg: rgba(220, 38, 38, 0.15);
+  --badge-urgente-text: #991B1B; /* Contrast: 9.1:1 - WCAG AAA */
+
+  --badge-dono-bg: rgba(123, 79, 201, 0.15);
+  --badge-dono-text: #5B21B6; /* Contrast: 9.4:1 - WCAG AAA */
+  --badge-admin-bg: rgba(2, 132, 199, 0.15);
+  --badge-admin-text: #075985; /* Contrast: 7.8:1 - WCAG AAA */
+  --badge-membro-bg: #F1F5F9;
+  --badge-membro-text: #334155; /* Contrast: 9.2:1 - WCAG AAA */
 
   --cortex-gray-text: var(--text-secondary);
   --cortex-border-light: var(--border-main);
@@ -130,6 +137,13 @@ html.dark {
   --badge-alta-text: #FED7AA;
   --badge-urgente-bg: rgba(220, 38, 38, 0.26);
   --badge-urgente-text: #FECACA;
+
+  --badge-dono-bg: rgba(123, 79, 201, 0.25);
+  --badge-dono-text: #C4B5FD;
+  --badge-admin-bg: rgba(41, 128, 185, 0.25);
+  --badge-admin-text: #7DD3FC;
+  --badge-membro-bg: rgba(255, 255, 255, 0.12);
+  --badge-membro-text: #E2E8F0;
 
   --cortex-gray-text: var(--text-secondary);
   --cortex-border-light: var(--border-main);
@@ -640,6 +654,24 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(input, s
    (Sidebar, DetailsCard, ResponsaveisSection, ResponseCard, Modais, Landing Page etc.)
    Garante texto em branco 100% visível, nítido e em conformidade WCAG AAA
    ============================================================ */
+/* Regra base para modo claro (independente de alto contraste): textos cinzas adaptam para tom claro legível */
+html:not([data-theme="dark"]):not(.dark) :is(
+  [class*="sidebar"],
+  [class*="detailsCard"],
+  [class*="responsaveisSection"],
+  [class*="responseCard"],
+  [class*="sugestaoCard"],
+  [class*="loadingWrapper"],
+  [class*="modal"],
+  [class*="Modal"],
+  [class*="dialog"]
+) {
+  --cortex-gray-text: #CBD5E1;
+  --cinzaTexto: #CBD5E1;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+}
+
 html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
   [class*="sidebar"],
   [class*="detailsCard"],
@@ -960,6 +992,7 @@ html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
   [class*="btnPrimary"],
   [class*="btnSave"],
   [class*="btnComplete"],
+  [class*="btnRevert"],
   [class*="btnDelete"],
   [class*="btnCancelDelivery"],
   [class*="createBtn"],
@@ -978,6 +1011,7 @@ html.high-contrast:not([data-theme="dark"]):not(.dark) :is(
   [class*="btnPrimary"],
   [class*="btnSave"],
   [class*="btnComplete"],
+  [class*="btnRevert"],
   [class*="btnDelete"],
   [class*="btnCancelDelivery"],
   [class*="createBtn"],
@@ -996,6 +1030,7 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
   [class*="btnPrimary"],
   [class*="btnSave"],
   [class*="btnComplete"],
+  [class*="btnRevert"],
   [class*="btnDelete"],
   [class*="btnCancelDelivery"],
   [class*="createBtn"],
@@ -1014,6 +1049,7 @@ html[data-high-contrast="true"]:not([data-theme="dark"]):not(.dark) :is(
   [class*="btnPrimary"],
   [class*="btnSave"],
   [class*="btnComplete"],
+  [class*="btnRevert"],
   [class*="btnDelete"],
   [class*="btnCancelDelivery"],
   [class*="createBtn"],

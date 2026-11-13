@@ -32,6 +32,7 @@ import {
   UserIcon,
   TrashIcon,
   CheckIcon,
+  RotateCcwIcon,
   SpinnerIcon,
   ChevronDownIcon,
   LightbulbIcon,
@@ -61,6 +62,7 @@ export default function TarefaAtribuidaDetalhesPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [reverting, setReverting] = useState(false);
   const [removendoAnexoId, setRemovendoAnexoId] = useState<number | null>(null);
 
   // Campos alteráveis
@@ -353,6 +355,26 @@ export default function TarefaAtribuidaDetalhesPage() {
       }
     } finally {
       setCompleting(false);
+    }
+  };
+
+  // Reverter conclusão da tarefa
+  const handleReverterTarefa = async () => {
+    if (!tarefaId) return;
+    try {
+      setReverting(true);
+      await tarefaService.cancelarConclusaoTarefa(tarefaId);
+      showToast('Conclusão da tarefa revertida com sucesso! A tarefa voltou a ficar pendente.', 'info');
+      await Promise.all([carregarTarefa(), carregarRespostas()]);
+      await recarregarPerfil();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message, 'error');
+      } else {
+        showToast('Falha ao reverter conclusão da tarefa.', 'error');
+      }
+    } finally {
+      setReverting(false);
     }
   };
 
@@ -658,6 +680,17 @@ export default function TarefaAtribuidaDetalhesPage() {
               <>
                 {/* CONTAINER 1: DETALHES ALTERÁVEIS DA TAREFA */}
                 <div className={styles.detailsCard}>
+                  {tarefa.finalizadaPeloCriador && (
+                    <div className={styles.creatorBanner} role="status">
+                      <div className={styles.creatorBannerContent}>
+                        <span className={styles.creatorBannerTitle}>Tarefa Finalizada Diretamente</span>
+                        <span className={styles.creatorBannerText}>
+                          Você marcou esta tarefa como concluída. Ela consta como finalizada para os responsáveis.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className={styles.cardHeader}>
                     <div className={styles.titleArea}>
                       <h1 className={styles.taskTitle}>{tarefa.titulo}</h1>
@@ -675,16 +708,26 @@ export default function TarefaAtribuidaDetalhesPage() {
                     </div>
 
                     <div className={styles.headerActions}>
-                      {tarefa.status !== 'Concluida' && (
+                      {tarefa.status !== 'Concluida' ? (
                         <button
                           type="button"
                           className={styles.btnComplete}
-                          disabled={completing || saving}
+                          disabled={completing || saving || reverting}
                           onClick={handleConcluirTarefa}
                           title="Marcar tarefa como finalizada"
                         >
-                          <CheckIcon size={16} />
                           {completing ? 'Concluindo...' : 'Finalizar tarefa'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.btnRevert}
+                          disabled={reverting || saving || completing}
+                          onClick={handleReverterTarefa}
+                          title="Reverter conclusão e reabrir tarefa"
+                        >
+                          <RotateCcwIcon size={16} />
+                          {reverting ? 'Revertendo...' : 'Reverter conclusão'}
                         </button>
                       )}
 
@@ -1037,7 +1080,7 @@ export default function TarefaAtribuidaDetalhesPage() {
 
                             <div className={styles.collapsibleMeta}>
                               {(!resp.anexos || resp.anexos.length === 0) && (
-                                <span className={styles.gradeBadge} style={{ background: 'var(--cortex-gray-100, #F3F4F6)', color: 'var(--cortex-gray-700, #4B5563)' }}>
+                                <span className={`${styles.gradeBadge} ${styles.gradeBadgeNeutral}`}>
                                   Finalizada sem anexo
                                 </span>
                               )}

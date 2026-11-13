@@ -652,4 +652,99 @@
   }
 }
 
+.creatorBanner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+}
+
+.creatorBannerIcon {
+  flex-shrink: 0;
+  color: #f59e0b;
+}
+
+.creatorBannerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.creatorBannerTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.creatorBannerText {
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.finalizadaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Abas de Navegação Superiores */
+.tabsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-gray-text);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.tabBtn:hover {
+  color: var(--text-primary, #ffffff);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tabBtnActive {
+  color: var(--cortex-purple);
+  background: rgba(123, 79, 201, 0.15);
+  font-weight: 600;
+}
+
+.tabCount {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--cortex-gray-text);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.tabBtnActive .tabCount {
+  background: var(--cortex-purple);
+  color: #ffffff;
+}
+
 

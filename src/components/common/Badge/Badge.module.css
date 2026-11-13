@@ -14,55 +14,55 @@
 
 /* Status */
 .pendente {
-  background-color: var(--badge-pendente-bg, #FFF3CD);
-  color: var(--badge-pendente-text, #856404);
+  background-color: var(--badge-pendente-bg, #FEF3C7);
+  color: var(--badge-pendente-text, #78350F);
 }
 
 .atrasada,
 .emAtraso {
-  background-color: var(--badge-atrasada-bg, #F8D7DA);
-  color: var(--badge-atrasada-text, #721C24);
+  background-color: var(--badge-atrasada-bg, #FEE2E2);
+  color: var(--badge-atrasada-text, #991B1B);
 }
 
 .concluida {
-  background-color: var(--badge-concluida-bg, #D4EDDA);
-  color: var(--badge-concluida-text, #155724);
+  background-color: var(--badge-concluida-bg, #D1FAE5);
+  color: var(--badge-concluida-text, #065F46);
 }
 
 /* Prioridades */
 .baixa {
-  background-color: var(--badge-baixa-bg, rgba(52, 152, 219, 0.15));
-  color: var(--badge-baixa-text, #2980b9);
+  background-color: var(--badge-baixa-bg, rgba(59, 130, 246, 0.12));
+  color: var(--badge-baixa-text, #1D4ED8);
 }
 
 .media {
-  background-color: var(--badge-media-bg, rgba(243, 156, 18, 0.15));
-  color: var(--badge-media-text, #b96500);
+  background-color: var(--badge-media-bg, rgba(245, 158, 11, 0.15));
+  color: var(--badge-media-text, #92400E);
 }
 
 .alta {
-  background-color: var(--badge-alta-bg, rgba(230, 126, 34, 0.2));
-  color: var(--badge-alta-text, #c0392b);
+  background-color: var(--badge-alta-bg, rgba(234, 88, 12, 0.15));
+  color: var(--badge-alta-text, #9A3412);
 }
 
 .urgente {
-  background-color: var(--badge-urgente-bg, rgba(214, 49, 49, 0.2));
-  color: var(--badge-urgente-text, #c0392b);
+  background-color: var(--badge-urgente-bg, rgba(220, 38, 38, 0.15));
+  color: var(--badge-urgente-text, #991B1B);
   font-weight: 700;
 }
 
 /* Cargos */
 .dono {
-  background-color: rgba(123, 79, 201, 0.25);
-  color: #c4b5fd;
+  background-color: var(--badge-dono-bg, rgba(123, 79, 201, 0.15));
+  color: var(--badge-dono-text, #5B21B6);
 }
 
 .admin {
-  background-color: rgba(41, 128, 185, 0.25);
-  color: #7dd3fc;
+  background-color: var(--badge-admin-bg, rgba(2, 132, 199, 0.15));
+  color: var(--badge-admin-text, #075985);
 }
 
 .membro {
-  background-color: rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
+  background-color: var(--badge-membro-bg, #F1F5F9);
+  color: var(--badge-membro-text, #334155);
 }

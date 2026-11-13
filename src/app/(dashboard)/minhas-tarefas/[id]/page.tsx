@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/app/Components/Header/header';
@@ -286,16 +286,18 @@ export default function DetalhesTarefaPage() {
   ) || [];
 
   const isMultiResponsavel = (tarefa?.responsaveis?.length ?? 0) > 1;
-  const isConcluida = isMultiResponsavel
+  const isConcluida = tarefa?.status === 'Concluida' || (isMultiResponsavel
     ? respostasDoResponsavel.length > 0
-    : tarefa?.status === 'Concluida';
+    : false);
 
   const isVencida = () => {
     if (!tarefa?.dataVencimento) return false;
     return new Date(tarefa.dataVencimento) < new Date() && !isConcluida;
   };
-  const anexosResposta = (respostasDoResponsavel.length > 0 ? respostasDoResponsavel : (tarefa?.respostas || []))
-    .flatMap((r) => r.anexos || []);
+  const anexosResposta = useMemo(() => {
+    return (respostasDoResponsavel.length > 0 ? respostasDoResponsavel : (tarefa?.respostas || []))
+      .flatMap((r) => r.anexos || []);
+  }, [respostasDoResponsavel, tarefa?.respostas]);
   const respostaAvaliada = respostasDoResponsavel.find(
     (r) => r.nota !== null && r.nota !== undefined
   );
@@ -360,6 +362,17 @@ export default function DetalhesTarefaPage() {
               <>
                 {/* Container Principal da Tarefa */}
                 <div className={styles.detailsCard}>
+                  {tarefa.finalizadaPeloCriador && (
+                    <div className={styles.creatorBanner} role="status">
+                      <div className={styles.creatorBannerContent}>
+                        <span className={styles.creatorBannerTitle}>Tarefa finalizada pelo Criador.</span>
+                        <span className={styles.creatorBannerText}>
+                          O criador da tarefa finalizou e concluiu esta tarefa diretamente. Envios não são mais permitidos.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className={styles.cardHeader}>
                     <div className={styles.titleArea}>
                       <h1 className={styles.taskTitle}>{tarefa.titulo}</h1>
@@ -393,14 +406,16 @@ export default function DetalhesTarefaPage() {
                         Sugerir alteração
                       </button>
                       {isConcluida ? (
-                        <button
-                          type="button"
-                          className={styles.btnCancelDelivery}
-                          disabled={canceling}
-                          onClick={handleCancelarEntrega}
-                        >
-                          {canceling ? 'Cancelando...' : 'Cancelar entrega'}
-                        </button>
+                        tarefa.finalizadaPeloCriador ? null : (
+                          <button
+                            type="button"
+                            className={styles.btnCancelDelivery}
+                            disabled={canceling}
+                            onClick={handleCancelarEntrega}
+                          >
+                            {canceling ? 'Cancelando...' : 'Cancelar entrega'}
+                          </button>
+                        )
                       ) : (
                         <button
                           type="button"
@@ -536,7 +551,9 @@ export default function DetalhesTarefaPage() {
                   ) : (
                     <div className={styles.emptyAttachments}>
                       {isConcluida
-                        ? 'Você finalizou esta tarefa sem anexar arquivos.'
+                        ? (tarefa.finalizadaPeloCriador
+                            ? 'Esta tarefa foi finalizada diretamente pelo criador.'
+                            : 'Você finalizou esta tarefa sem anexar arquivos.')
                         : 'Nenhum arquivo anexado à sua resposta ainda. Use o botão \u201cAnexar arquivo\u201d acima para enviar sua entrega.'}
                     </div>
                   )}

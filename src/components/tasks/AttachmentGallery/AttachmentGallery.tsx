@@ -11,6 +11,9 @@ import {
   PaperclipIcon,
   SpinnerIcon,
   TrashIcon,
+  SearchIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './AttachmentGallery.module.css';
 
@@ -40,9 +43,12 @@ const formatFileSize = (bytes?: number) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
+const EMPTY_FILES: File[] = [];
+const EMPTY_ANEXOS: ConsultaAnexoDTO[] = [];
+
 export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
-  anexos = [],
-  files = [],
+  anexos = EMPTY_ANEXOS,
+  files = EMPTY_FILES,
   podeRemover = false,
   onRemoverAnexo,
   onRemoverFile,
@@ -57,7 +63,7 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
 
   useEffect(() => {
     if (!files || files.length === 0) {
-      setFileUrls([]);
+      setFileUrls((prev) => (prev.length === 0 ? prev : []));
       return;
     }
 
@@ -224,8 +230,213 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
     }
   };
 
+  const LENS_SIZE = 190;
+  const LENS_RADIUS = LENS_SIZE / 2;
+
+  const [isLensActive, setIsLensActive] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(2.5);
+  const [isHovering, setIsHovering] = useState(false);
+  const [lensPosition, setLensPosition] = useState({ x: 0, y: 0, bgX: 0, bgY: 0 });
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+
+  const zoomLevelRef = useRef(zoomLevel);
+  useEffect(() => {
+    zoomLevelRef.current = zoomLevel;
+  }, [zoomLevel]);
+
+  const isLensActiveRef = useRef(isLensActive);
+  useEffect(() => {
+    isLensActiveRef.current = isLensActive;
+  }, [isLensActive]);
+
+  const imageContainerRef = useRef<HTMLDivElement | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+
+  // Atualiza as dimensões reais renderizadas da imagem para cálculo preciso da lente
+  const updateImageDimensions = useCallback(() => {
+    if (imageRef.current) {
+      const rect = imageRef.current.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setImageDimensions((prev) => {
+          if (Math.round(prev.width) === Math.round(rect.width) && Math.round(prev.height) === Math.round(rect.height)) {
+            return prev;
+          }
+          return { width: rect.width, height: rect.height };
+        });
+      }
+    }
+  }, []);
+
+  const handleImageLoad = () => {
+    updateImageDimensions();
+  };
+
+  const activeMediaId = activeMedia?.id;
+  const isCurrentActiveImage = activeMedia ? isImage(activeMedia) : false;
+
+  useEffect(() => {
+    if (!activeMediaId || !isCurrentActiveImage) return;
+
+    window.addEventListener('resize', updateImageDimensions);
+    const timer = setTimeout(updateImageDimensions, 100);
+    return () => {
+      window.removeEventListener('resize', updateImageDimensions);
+      clearTimeout(timer);
+    };
+  }, [activeMediaId, isCurrentActiveImage, updateImageDimensions]);
+
+  const lastCursorRef = useRef<{ clientX: number; clientY: number; isTouch: boolean } | null>(null);
+
+  const updateLensCoordinates = useCallback(
+    (clientX: number, clientY: number, isTouch = false, overrideZoom?: number) => {
+      lastCursorRef.current = { clientX, clientY, isTouch };
+      const img = imageRef.current;
+      if (!img) return;
+
+      const rect = img.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const currentZoom = overrideZoom ?? zoomLevelRef.current;
+      const touchOffsetY = isTouch ? -45 : 0;
+      const clampedX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+      const clampedY = Math.max(0, Math.min(clientY - rect.top, rect.height));
+
+      const lensX = clampedX - LENS_RADIUS;
+      const lensY = clampedY - LENS_RADIUS + touchOffsetY;
+
+      const bgX = -(clampedX * currentZoom - LENS_RADIUS);
+      const bgY = -(clampedY * currentZoom - LENS_RADIUS);
+
+      setLensPosition({ x: lensX, y: lensY, bgX, bgY });
+    },
+    [LENS_RADIUS]
+  );
+
+  const applyZoomDelta = useCallback(
+    (deltaY: number, clientX?: number, clientY?: number) => {
+      const delta = deltaY < 0 ? 0.25 : -0.25;
+      const current = zoomLevelRef.current;
+      const next = Math.max(1.5, Math.min(5, Number((current + delta).toFixed(2))));
+      if (next === current) return;
+
+      zoomLevelRef.current = next;
+      setZoomLevel(next);
+
+      if (clientX !== undefined && clientY !== undefined) {
+        updateLensCoordinates(clientX, clientY, false, next);
+      } else if (lastCursorRef.current) {
+        updateLensCoordinates(
+          lastCursorRef.current.clientX,
+          lastCursorRef.current.clientY,
+          lastCursorRef.current.isTouch,
+          next
+        );
+      }
+    },
+    [updateLensCoordinates]
+  );
+
+  const wheelHandlerRef = useRef<(e: WheelEvent) => void>(() => {});
+  useEffect(() => {
+    wheelHandlerRef.current = (e: WheelEvent) => {
+      if (!isLensActiveRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      applyZoomDelta(e.deltaY, e.clientX, e.clientY);
+    };
+  }, [applyZoomDelta]);
+
+  const handleNativeWheel = useCallback((e: WheelEvent) => {
+    if (wheelHandlerRef.current) {
+      wheelHandlerRef.current(e);
+    }
+  }, []);
+
+  const containerCallbackRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (imageContainerRef.current) {
+        imageContainerRef.current.removeEventListener('wheel', handleNativeWheel);
+      }
+      imageContainerRef.current = node;
+      if (node) {
+        node.addEventListener('wheel', handleNativeWheel, { passive: false });
+      }
+    },
+    [handleNativeWheel]
+  );
+
+  // Fallback quando mouse está sobre a imagem: intercepta wheel no window caso o target seja ligeiramente deslocado
+  useEffect(() => {
+    if (!activeMediaId || !isCurrentActiveImage || !isLensActive || !isHovering) return;
+
+    const onWindowWheel = (e: WheelEvent) => {
+      const imgContainer = imageContainerRef.current;
+      if (!imgContainer) return;
+
+      const rect = imgContainer.getBoundingClientRect();
+      const isInside =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+
+      if (isInside) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyZoomDelta(e.deltaY, e.clientX, e.clientY);
+      }
+    };
+
+    window.addEventListener('wheel', onWindowWheel, { passive: false, capture: true });
+    return () => {
+      window.removeEventListener('wheel', onWindowWheel, { capture: true });
+    };
+  }, [activeMediaId, isCurrentActiveImage, isLensActive, isHovering, applyZoomDelta]);
+
+  const handleSyntheticWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!isLensActive) return;
+    applyZoomDelta(e.deltaY, e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isLensActive) return;
+    if (!isHovering) setIsHovering(true);
+    updateLensCoordinates(e.clientX, e.clientY, false);
+  };
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isLensActive) return;
+    setIsHovering(true);
+    updateLensCoordinates(e.clientX, e.clientY, false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isLensActive) return;
+    setIsHovering(true);
+    if (e.touches.length > 0) {
+      updateLensCoordinates(e.touches[0].clientX, e.touches[0].clientY, true);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isLensActive) return;
+    if (e.touches.length > 0) {
+      updateLensCoordinates(e.touches[0].clientX, e.touches[0].clientY, true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsHovering(false);
+  };
+
   const handleCloseLightbox = useCallback(() => {
     setActiveMedia(null);
+    setIsHovering(false);
+    setZoomLevel(2.5);
   }, []);
 
   const handleRemoverItem = (item: UnifiedAttachmentItem, e?: React.MouseEvent) => {
@@ -468,6 +679,45 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
               </div>
 
               <div className={styles.lightboxControls}>
+                {isImage(activeMedia) && (
+                  <div className={styles.lensControlsGroup}>
+                    <button
+                      type="button"
+                      className={`${styles.lensToggleBtn} ${isLensActive ? styles.lensToggleBtnActive : ''}`}
+                      onClick={() => setIsLensActive((prev) => !prev)}
+                      title={isLensActive ? 'Desativar lente de aumento' : 'Ativar lente de aumento (Lupa)'}
+                      aria-pressed={isLensActive}
+                    >
+                      <SearchIcon size={14} />
+                      <span>{isLensActive ? 'Lente ativa' : 'Lente'}</span>
+                    </button>
+
+                    {isLensActive && (
+                      <div className={styles.zoomControls}>
+                        <button
+                          type="button"
+                          className={styles.zoomStepBtn}
+                          onClick={() => applyZoomDelta(1)}
+                          title="Diminuir zoom (ou use o scroll do mouse)"
+                          disabled={zoomLevel <= 1.5}
+                        >
+                          <ZoomOutIcon size={14} />
+                        </button>
+                        <span className={styles.zoomIndicator}>{zoomLevel.toFixed(1)}x</span>
+                        <button
+                          type="button"
+                          className={styles.zoomStepBtn}
+                          onClick={() => applyZoomDelta(-1)}
+                          title="Aumentar zoom (ou use o scroll do mouse)"
+                          disabled={zoomLevel >= 5}
+                        >
+                          <ZoomInIcon size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {isPdf(activeMedia) && !activeMedia.isLocal && (
                   <button
                     type="button"
@@ -543,12 +793,47 @@ export const AttachmentGallery: React.FC<AttachmentGalleryProps> = ({
                   title={activeMedia.nomeOriginal}
                 />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={getAttachmentUrl(activeMedia.urlCaminho)}
-                  alt={activeMedia.nomeOriginal}
-                  className={styles.lightboxImage}
-                />
+                <div
+                  ref={containerCallbackRef}
+                  className={`${styles.lensImageContainer} ${isLensActive ? styles.lensImageContainerWithLens : ''}`}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  onMouseMove={handleMouseMove}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  onWheel={handleSyntheticWheel}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    ref={imageRef}
+                    src={getAttachmentUrl(activeMedia.urlCaminho)}
+                    alt={activeMedia.nomeOriginal}
+                    className={styles.lightboxImage}
+                    onLoad={handleImageLoad}
+                    draggable={false}
+                  />
+
+                  {isLensActive && isHovering && imageDimensions.width > 0 && (
+                    <div
+                      className={styles.magnifierLens}
+                      style={{
+                        width: `${LENS_SIZE}px`,
+                        height: `${LENS_SIZE}px`,
+                        left: `${lensPosition.x}px`,
+                        top: `${lensPosition.y}px`,
+                        backgroundImage: `url("${getAttachmentUrl(activeMedia.urlCaminho)}")`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: `${imageDimensions.width * zoomLevel}px ${imageDimensions.height * zoomLevel}px`,
+                        backgroundPosition: `${lensPosition.bgX}px ${lensPosition.bgY}px`,
+                      }}
+                      aria-hidden="true"
+                    >
+                      <div className={styles.lensCrosshair} />
+                      <span className={styles.lensZoomPill}>{zoomLevel.toFixed(1)}x</span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
