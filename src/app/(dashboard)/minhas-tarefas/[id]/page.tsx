@@ -20,6 +20,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { SuggestionModal } from '@/components/tasks/SuggestionModal/SuggestionModal';
 import { ReportTicketModal } from '@/components/tasks/ReportTicketModal/ReportTicketModal';
 import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
+import { MarkdownRenderer } from '@/components/common/MarkdownRenderer/MarkdownRenderer';
 import {
   PaperclipIcon,
   FileTextIcon,
@@ -450,7 +451,10 @@ export default function DetalhesTarefaPage() {
                   <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>Instruções & Descrição</h2>
                     <div className={styles.descriptionBox}>
-                      {obterDescricaoLimpa(tarefa.descricao) || 'Nenhuma instrução adicional informada para esta tarefa.'}
+                      <MarkdownRenderer
+                        content={obterDescricaoLimpa(tarefa.descricao)}
+                        emptyFallback="Nenhuma instrução adicional informada para esta tarefa."
+                      />
                     </div>
                   </div>
 

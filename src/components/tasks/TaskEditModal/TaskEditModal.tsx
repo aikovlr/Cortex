@@ -11,6 +11,8 @@ import { tarefaService } from '@/services/tarefaService';
 import { sugestaoService } from '@/services/sugestaoService';
 import { useToast } from '@/contexts/ToastContext';
 import { PaperclipIcon, FileTextIcon, UserIcon } from '@/components/common/Icons/Icons';
+import { MarkdownEditor } from '@/components/common/MarkdownEditor/MarkdownEditor';
+import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
 import {
   CriticalActionDialog,
   useCriticalAction,
@@ -104,6 +106,11 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
     e.preventDefault();
     if (!tarefaId || !titulo || !dataVencimento) {
       showToast('Preencha os campos obrigatórios (*)', 'error');
+      return;
+    }
+
+    if (descricao && descricao.length > 2000) {
+      showToast('A descrição da tarefa ultrapassou o limite de 2000 caracteres.', 'error');
       return;
     }
 
@@ -201,7 +208,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Editar tarefa"
-      maxWidth="680px"
+      maxWidth="800px"
       footer={
         <div className={styles.footerActions}>
           <button
@@ -237,15 +244,13 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
             onChange={(e) => setTitulo(e.target.value)}
           />
 
-          <div className={styles.textareaWrapper}>
-            <label className={styles.textareaLabel}>Descrição</label>
-            <textarea
-              className={styles.textarea}
-              placeholder="Instruções ou descrição da tarefa..."
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-            />
-          </div>
+          <MarkdownEditor
+            label="Descrição & Instruções"
+            value={descricao}
+            onChange={setDescricao}
+            placeholder="Instruções ou descrição da tarefa... (Markdown suportado)"
+            minHeight={120}
+          />
 
           <div className={styles.row}>
             <Input
@@ -292,14 +297,11 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
               />
             </label>
             {novosAnexos.length > 0 && (
-              <div className={styles.existingFiles}>
-                {novosAnexos.map((f, i) => (
-                  <span key={i} className={styles.fileTag} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                    <FileTextIcon size={14} />
-                    <span>{f.name}</span>
-                  </span>
-                ))}
-              </div>
+              <AttachmentGallery
+                files={novosAnexos}
+                podeRemover
+                onRemoverFile={(idx) => setNovosAnexos((prev) => prev.filter((_, i) => i !== idx))}
+              />
             )}
           </div>
 

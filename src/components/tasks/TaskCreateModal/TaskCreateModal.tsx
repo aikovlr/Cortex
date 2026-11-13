@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Image from 'next/image';
 import { Modal } from '@/components/common/Modal/Modal';
 import { Input } from '@/components/common/Input/Input';
 import { Select } from '@/components/common/Select/Select';
 import { Combobox } from '@/components/common/Combobox/Combobox';
 import { Button } from '@/components/common/Button/Button';
+import { MarkdownEditor } from '@/components/common/MarkdownEditor/MarkdownEditor';
+import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
 import { Prioridade, ConsultaUsuarioDTO, ConsultaEquipeDTO } from '@/types/api';
 import { tarefaService } from '@/services/tarefaService';
 import { usuarioService } from '@/services/usuarioService';
@@ -13,7 +16,7 @@ import { equipeService } from '@/services/equipeService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { notificarNovoResponsavelTarefa } from '@/contexts/NotificationContext';
-import { PaperclipIcon, XIcon } from '@/components/common/Icons/Icons';
+import { PaperclipIcon, UsersIcon } from '@/components/common/Icons/Icons';
 import styles from './TaskCreateModal.module.css';
 
 interface TaskCreateModalProps {
@@ -49,6 +52,12 @@ const isPastDateTime = (dateTimeStr: string) => {
   return selectedDate < currentMinute;
 };
 
+const getAvatarUrl = (url?: string | null) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return url.startsWith('/') ? url : `/${url}`;
+};
+
 export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   isOpen,
   onClose,
@@ -63,16 +72,17 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   const [dataVencimento, setDataVencimento] = useState('');
   const [dataErro, setDataErro] = useState('');
   const [responsavelErro, setResponsavelErro] = useState('');
-  const [equipeErro, setEquipeErro] = useState('');
   const [pontuacao, setPontuacao] = useState<number | ''>('');
   const [prioridade, setPrioridade] = useState<Prioridade>('Media');
-  const [tipoAtribuicao, setTipoAtribuicao] = useState<'individual' | 'equipe'>('individual');
-  const [responsavelId, setResponsavelId] = useState<number | ''>('');
-  const [equipeId, setEquipeId] = useState<number | ''>('');
   const [anexos, setAnexos] = useState<File[]>([]);
 
+  // Gestão de Responsáveis (estilo edição de tarefa)
   const [usuarios, setUsuarios] = useState<ConsultaUsuarioDTO[]>([]);
   const [equipes, setEquipes] = useState<ConsultaEquipeDTO[]>([]);
+  const [responsaveis, setResponsaveis] = useState<ConsultaUsuarioDTO[]>([]);
+  const [usuarioSelecionadoId, setUsuarioSelecionadoId] = useState<number | ''>('');
+  const [equipeSelecionadaId, setEquipeSelecionadaId] = useState<number | ''>('');
+
   const [submitting, setSubmitting] = useState(false);
 
   const equipesGerenciaveis = useMemo(() => {
@@ -84,14 +94,38 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
     );
   }, [equipes, usuario]);
 
+  const usuariosDisponiveis = useMemo(() => {
+    const idsJaAdicionados = new Set(responsaveis.map((r) => r.id));
+    return usuarios.filter((u) => !idsJaAdicionados.has(u.id));
+  }, [usuarios, responsaveis]);
+
   useEffect(() => {
     if (isOpen) {
-      usuarioService.listarUsuarios().then(setUsuarios).catch(() => {});
-      equipeService.listarMinhasEquipes().then(setEquipes).catch(() => {});
-      if (initialEquipeId) {
-        setTipoAtribuicao('equipe');
-        setEquipeId(initialEquipeId);
-      }
+      usuarioService
+        .listarUsuarios()
+        .then(setUsuarios)
+        .catch(() => {});
+
+      equipeService
+        .listarMinhasEquipes()
+        .then((dados) => {
+          setEquipes(dados);
+
+          if (initialEquipeId) {
+            const eqEncontrada = dados.find((eq) => eq.id === initialEquipeId);
+            if (eqEncontrada?.membros) {
+              usuarioService.listarUsuarios().then((allUsers) => {
+                const membrosEq = eqEncontrada.membros
+                  ?.map((m) => allUsers.find((u) => u.id === m.usuarioId))
+                  .filter((u): u is ConsultaUsuarioDTO => Boolean(u));
+                if (membrosEq && membrosEq.length > 0) {
+                  setResponsaveis(membrosEq);
+                }
+              });
+            }
+          }
+        })
+        .catch(() => {});
     }
   }, [isOpen, initialEquipeId]);
 
@@ -100,6 +134,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       const filesArray = Array.from(e.target.files);
       setAnexos((prev) => [...prev, ...filesArray]);
     }
+    // Permite selecionar o mesmo arquivo novamente
+    e.target.value = '';
   };
 
   const handleRemoveFile = (index: number) => {
@@ -117,10 +153,41 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
     }
   };
 
-  const handleTipoAtribuicaoChange = (tipo: 'individual' | 'equipe') => {
-    setTipoAtribuicao(tipo);
-    setResponsavelErro('');
-    setEquipeErro('');
+  const handleAdicionarUsuario = () => {
+    if (!usuarioSelecionadoId) return;
+    const user = usuarios.find((u) => u.id === Number(usuarioSelecionadoId));
+    if (user && !responsaveis.some((r) => r.id === user.id)) {
+      setResponsaveis((prev) => [...prev, user]);
+      setUsuarioSelecionadoId('');
+      setResponsavelErro('');
+    }
+  };
+
+  const handleAtribuirEquipeInteira = () => {
+    if (!equipeSelecionadaId) return;
+    const equipe = equipes.find((eq) => eq.id === Number(equipeSelecionadaId));
+    if (!equipe || !equipe.membros) return;
+
+    const novosMembros: ConsultaUsuarioDTO[] = [];
+    equipe.membros.forEach((m) => {
+      const u = usuarios.find((user) => user.id === m.usuarioId);
+      if (u && !responsaveis.some((r) => r.id === u.id) && !novosMembros.some((r) => r.id === u.id)) {
+        novosMembros.push(u);
+      }
+    });
+
+    if (novosMembros.length > 0) {
+      setResponsaveis((prev) => [...prev, ...novosMembros]);
+      showToast(`${novosMembros.length} membros da equipe "${equipe.nome}" adicionados.`, 'success');
+      setResponsavelErro('');
+    } else {
+      showToast('Todos os membros desta equipe já foram adicionados como responsáveis.', 'info');
+    }
+    setEquipeSelecionadaId('');
+  };
+
+  const handleRemoverResponsavel = (id: number) => {
+    setResponsaveis((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,15 +205,14 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       hasError = true;
     }
 
-    if (tipoAtribuicao === 'individual' && !responsavelId) {
-      setResponsavelErro('Selecione um responsável para a tarefa.');
-      showToast('Selecione um responsável para a tarefa.', 'error');
+    if (descricao && descricao.length > 2000) {
+      showToast('A descrição da tarefa ultrapassou o limite de 2000 caracteres.', 'error');
       hasError = true;
     }
 
-    if (tipoAtribuicao === 'equipe' && !equipeId) {
-      setEquipeErro('Selecione uma equipe para a tarefa.');
-      showToast('Selecione uma equipe para a tarefa.', 'error');
+    if (responsaveis.length === 0) {
+      setResponsavelErro('Adicione ao menos um responsável para a tarefa.');
+      showToast('Adicione ao menos um responsável para a tarefa.', 'error');
       hasError = true;
     }
 
@@ -169,30 +235,24 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
 
       const novaTarefa = await tarefaService.criarTarefa(formData);
 
-      // Atribuição individual ou de equipe com proteção contra tarefa órfã
-      try {
-        if (tipoAtribuicao === 'individual' && responsavelId !== '') {
-          await tarefaService.atribuirResponsavel(novaTarefa.id, Number(responsavelId));
-          notificarNovoResponsavelTarefa(Number(responsavelId), novaTarefa.id, titulo.trim(), prioridade);
-        } else if (tipoAtribuicao === 'equipe' && equipeId !== '') {
-          const membrosAtribuidos = await tarefaService.atribuirEquipe(novaTarefa.id, Number(equipeId));
-          if (!membrosAtribuidos || membrosAtribuidos.length === 0) {
-            throw new Error('A equipe selecionada não possui membros elegíveis para atribuição.');
-          }
-          membrosAtribuidos.forEach((m) => {
-            if (m.usuarioId) {
-              notificarNovoResponsavelTarefa(m.usuarioId, novaTarefa.id, titulo.trim(), prioridade);
-            }
-          });
+      // Atribuição de todos os responsáveis selecionados
+      const responsaveisAtribuidosSucesso: number[] = [];
+      for (const resp of responsaveis) {
+        try {
+          await tarefaService.atribuirResponsavel(novaTarefa.id, resp.id);
+          notificarNovoResponsavelTarefa(resp.id, novaTarefa.id, titulo.trim(), prioridade);
+          responsaveisAtribuidosSucesso.push(resp.id);
+        } catch {
+          // Continua para os próximos membros
         }
-      } catch (assignError) {
-        // Rollback da tarefa caso a atribuição falhe, garantindo que não fique sem responsável
+      }
+
+      // Se nenhum responsável pôde ser vinculado, faz rollback da tarefa para não ficar órfã
+      if (responsaveisAtribuidosSucesso.length === 0) {
         try {
           await tarefaService.excluirTarefa(novaTarefa.id);
-        } catch {
-          // ignora falha de exclusão
-        }
-        throw assignError;
+        } catch {}
+        throw new Error('Falha ao atribuir os responsáveis selecionados à tarefa.');
       }
 
       if (typeof window !== 'undefined') {
@@ -203,24 +263,18 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       onSuccess();
       onClose();
 
-      // Reset
+      // Reset dos campos
       setTitulo('');
       setDescricao('');
       setDataVencimento('');
       setDataErro('');
       setResponsavelErro('');
-      setEquipeErro('');
       setPontuacao('');
       setPrioridade('Media');
       setAnexos([]);
-      setResponsavelId('');
-      if (initialEquipeId) {
-        setTipoAtribuicao('equipe');
-        setEquipeId(initialEquipeId);
-      } else {
-        setTipoAtribuicao('individual');
-        setEquipeId('');
-      }
+      setResponsaveis([]);
+      setUsuarioSelecionadoId('');
+      setEquipeSelecionadaId('');
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -235,26 +289,22 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   const handleModalClose = useCallback(() => {
     setDataErro('');
     setResponsavelErro('');
-    setEquipeErro('');
-    if (initialEquipeId) {
-      setTipoAtribuicao('equipe');
-      setEquipeId(initialEquipeId);
-    }
     onClose();
-  }, [initialEquipeId, onClose]);
+  }, [onClose]);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleModalClose}
       title="Criar nova tarefa"
+      maxWidth="1020px"
       footer={
         <>
           <Button variant="secondary" onClick={handleModalClose} disabled={submitting}>
             Cancelar
           </Button>
           <Button variant="primary" onClick={handleSubmit} loading={submitting}>
-            Salvar
+            Salvar tarefa
           </Button>
         </>
       }
@@ -264,22 +314,22 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
           label="Nome da tarefa *"
           required
           autoFocus
-          placeholder="Ex: Desenvolver fluxo de login"
+          placeholder="Ex: Desenvolver fluxo de login e validações"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
         />
 
-        <div className={styles.textareaWrapper}>
-          <label className={styles.textareaLabel}>Descrição</label>
-          <textarea
-            className={styles.textarea}
-            placeholder="Instruções ou detalhes da tarefa..."
-            value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
-          />
-        </div>
+        {/* Editor de Descrição com Toolbar de Markdown e Preview */}
+        <MarkdownEditor
+          label="Descrição & Instruções"
+          value={descricao}
+          onChange={setDescricao}
+          placeholder="Instruções ou detalhes da tarefa... Use a barra de ferramentas para formatar com Markdown."
+          minHeight={140}
+        />
 
-        <div className={styles.row}>
+        {/* Linha com Vencimento, Prioridade e Pontuação */}
+        <div className={styles.row3}>
           <Input
             label="Data de entrega *"
             type="datetime-local"
@@ -289,43 +339,6 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
             error={dataErro}
             onChange={handleDataVencimentoChange}
           />
-
-          <Input
-            label="Pontuação"
-            type="number"
-            min="0"
-            placeholder="Ex: 10"
-            value={pontuacao}
-            onChange={(e) => setPontuacao(e.target.value ? Number(e.target.value) : '')}
-          />
-        </div>
-
-        <div className={styles.row}>
-          <div className={styles.radioGroup}>
-            <label className={styles.radioLabel}>Atribuir tarefa a *</label>
-            <div className={styles.radioOptions}>
-              <label className={styles.radioItem}>
-                <input
-                  type="radio"
-                  name="tipoAtribuicao"
-                  value="individual"
-                  checked={tipoAtribuicao === 'individual'}
-                  onChange={() => handleTipoAtribuicaoChange('individual')}
-                />
-                Individual
-              </label>
-              <label className={styles.radioItem}>
-                <input
-                  type="radio"
-                  name="tipoAtribuicao"
-                  value="equipe"
-                  checked={tipoAtribuicao === 'equipe'}
-                  onChange={() => handleTipoAtribuicaoChange('equipe')}
-                />
-                Equipe
-              </label>
-            </div>
-          </div>
 
           <Select
             label="Prioridade *"
@@ -338,54 +351,159 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
               { value: 'Urgente', label: 'Urgente' },
             ]}
           />
+
+          <Input
+            label="Pontuação"
+            type="number"
+            min="0"
+            placeholder="Ex: 10"
+            value={pontuacao}
+            onChange={(e) => setPontuacao(e.target.value ? Number(e.target.value) : '')}
+          />
         </div>
 
-        {tipoAtribuicao === 'individual' ? (
-          <Combobox
-            label="Selecionar responsável *"
-            required
-            value={responsavelId}
-            error={responsavelErro}
-            placeholder="Selecione um responsável..."
-            searchPlaceholder="Buscar por nome ou email..."
-            clearable
-            onChange={(val) => {
-              const numericVal = val !== '' ? Number(val) : '';
-              setResponsavelId(numericVal);
-              if (numericVal) setResponsavelErro('');
-            }}
-            options={usuarios.map((u) => ({
-              value: u.id,
-              label: u.nome,
-              sublabel: u.email,
-            }))}
-          />
-        ) : (
-          <Combobox
-            label="Selecionar equipe *"
-            required
-            value={equipeId}
-            error={equipeErro}
-            placeholder="Selecione uma equipe..."
-            searchPlaceholder="Buscar equipe..."
-            clearable
-            onChange={(val) => {
-              const numericVal = val !== '' ? Number(val) : '';
-              setEquipeId(numericVal);
-              if (numericVal) setEquipeErro('');
-            }}
-            options={equipesGerenciaveis.map((eq) => ({
-              value: eq.id,
-              label: eq.nome,
-            }))}
-          />
-        )}
+        {/* Seção de Atribuição de Responsáveis (Igual ao componente de edição de tarefas) */}
+        <div className={styles.responsaveisSection}>
+          <div className={styles.sectionHeader}>
+            <h3 className={styles.sectionTitle}>
+              <UsersIcon size={18} color="var(--cortex-purple)" />
+              <span>Pessoas Responsáveis ({responsaveis.length}) *</span>
+            </h3>
+            <p className={styles.sectionSubtitle}>
+              Membros encarregados de realizar a tarefa. Adicione um ou mais usuários ou atribua uma equipe inteira.
+            </p>
+          </div>
 
-        <div className={styles.uploadWrapper}>
-          <label className={styles.textareaLabel}>Anexar arquivos</label>
-          <label className={styles.uploadButton} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <div className={styles.addResponsavelBox}>
+            <span className={styles.addResponsavelBoxHeader}>
+              Atribuir novo responsável ou equipe
+            </span>
+
+            <div className={styles.addResponsavelRow}>
+              {/* Atribuição Individual */}
+              <Combobox
+                value={usuarioSelecionadoId}
+                onChange={(val) => setUsuarioSelecionadoId(val !== '' ? Number(val) : '')}
+                placeholder="Selecione um usuário..."
+                searchPlaceholder="Buscar por nome ou email..."
+                clearable
+                options={usuariosDisponiveis.map((u) => ({
+                  value: u.id,
+                  label: u.nome,
+                  sublabel: u.email,
+                }))}
+                className={styles.comboboxWrapper}
+              />
+
+              <button
+                type="button"
+                className={styles.addRespBtn}
+                disabled={!usuarioSelecionadoId}
+                onClick={handleAdicionarUsuario}
+              >
+                + Adicionar Usuário
+              </button>
+
+              {/* Atribuição por Equipe */}
+              {equipesGerenciaveis.length > 0 && (
+                <>
+                  <div className={styles.divider} />
+
+                  <Combobox
+                    value={equipeSelecionadaId}
+                    onChange={(val) => setEquipeSelecionadaId(val !== '' ? Number(val) : '')}
+                    placeholder="Selecione uma equipe..."
+                    searchPlaceholder="Buscar equipe..."
+                    clearable
+                    options={equipesGerenciaveis.map((eq) => ({
+                      value: eq.id,
+                      label: eq.nome,
+                    }))}
+                    className={styles.comboboxWrapper}
+                  />
+
+                  <button
+                    type="button"
+                    className={styles.addRespBtn}
+                    disabled={!equipeSelecionadaId}
+                    onClick={handleAtribuirEquipeInteira}
+                  >
+                    + Atribuir Equipe Inteira
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {responsavelErro && (
+            <span className={styles.errorText}>{responsavelErro}</span>
+          )}
+
+          {/* Lista de Responsáveis Adicionados */}
+          {responsaveis.length > 0 ? (
+            <div className={styles.responsaveisList}>
+              {responsaveis.map((resp) => {
+                const foto = resp.fotoPerfil?.urlCaminho;
+                return (
+                  <div key={resp.id} className={styles.responsavelCard}>
+                    <div className={styles.responsavelInfo}>
+                      {foto && getAvatarUrl(foto) ? (
+                        <Image
+                          src={getAvatarUrl(foto)}
+                          alt={resp.nome}
+                          width={36}
+                          height={36}
+                          className={styles.avatar}
+                          unoptimized
+                        />
+                      ) : (
+                        <div className={styles.avatar}>
+                          {resp.nome.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+
+                      <div className={styles.responsavelDetails}>
+                        <span className={styles.responsavelName}>{resp.nome}</span>
+                        {resp.email && (
+                          <span className={styles.responsavelEmail}>{resp.email}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={styles.removeRespBtn}
+                      onClick={() => handleRemoverResponsavel(resp.id)}
+                      title={`Remover ${resp.nome}`}
+                    >
+                      Remover
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className={styles.emptyResponsaveisBox}>
+              Nenhum responsável foi adicionado a esta tarefa ainda. Selecione um usuário ou equipe acima.
+            </div>
+          )}
+        </div>
+
+        {/* Seção de Anexos com o mesmo Preview visto nas Tarefas */}
+        <div className={styles.anexosSection}>
+          <div className={styles.sectionHeader}>
+            <h3 className={styles.sectionTitle}>
+              <PaperclipIcon size={18} color="var(--cortex-purple)" />
+              <span>Anexos da Tarefa ({anexos.length})</span>
+            </h3>
+            <p className={styles.sectionSubtitle}>
+              Envie arquivos de referência, especificações, documentos ou imagens para a tarefa.
+            </p>
+          </div>
+
+          <label className={styles.uploadLabelBtn}>
             <PaperclipIcon size={16} />
-            <span>Escolher arquivos para anexar</span>
+            <span>Adicionar arquivos</span>
             <input
               type="file"
               multiple
@@ -395,21 +513,11 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
           </label>
 
           {anexos.length > 0 && (
-            <div className={styles.fileList}>
-              {anexos.map((file, idx) => (
-                <div key={idx} className={styles.fileTag}>
-                  <span>{file.name}</span>
-                  <button
-                    type="button"
-                    className={styles.removeFileBtn}
-                    onClick={() => handleRemoveFile(idx)}
-                    aria-label="Remover anexo"
-                  >
-                    <XIcon size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <AttachmentGallery
+              files={anexos}
+              podeRemover
+              onRemoverFile={handleRemoveFile}
+            />
           )}
         </div>
       </form>

@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SuggestionModal } from '../SuggestionModal/SuggestionModal';
 import { ReportTicketModal } from '../ReportTicketModal/ReportTicketModal';
 import { AttachmentGallery } from '../AttachmentGallery/AttachmentGallery';
+import { MarkdownRenderer } from '@/components/common/MarkdownRenderer/MarkdownRenderer';
 import styles from './TaskDetailsModal.module.css';
 
 interface TaskDetailsModalProps {
@@ -173,7 +174,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>Instruções & Descrição</h3>
               <div className={styles.instructionBox}>
-                {tarefa.descricao || 'Nenhuma instrução adicional informada.'}
+                <MarkdownRenderer content={tarefa.descricao} emptyFallback="Nenhuma instrução adicional informada." />
               </div>
             </div>
 

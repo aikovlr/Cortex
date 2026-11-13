@@ -146,7 +146,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     triggerRef.current?.focus();
   };
 
-  const handleClear = (e: React.MouseEvent) => {
+  const handleClear = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     onChange('');
     triggerRef.current?.focus();
@@ -227,15 +227,23 @@ export const Combobox: React.FC<ComboboxProps> = ({
 
           <div className={styles.triggerIcons}>
             {clearable && selectedOption && !disabled && (
-              <button
-                type="button"
+              <span
+                role="button"
+                tabIndex={0}
                 className={styles.clearButton}
                 onClick={handleClear}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleClear(e);
+                  }
+                }}
                 aria-label="Limpar seleção"
                 title="Limpar seleção"
               >
                 <XIcon size={14} />
-              </button>
+              </span>
             )}
             <span className={`${styles.chevronIcon} ${isOpen ? styles.chevronOpen : ''}`}>
               <ChevronDownIcon size={16} />

@@ -22,6 +22,7 @@ import { sugestaoService } from '@/services/sugestaoService';
 import { ticketService } from '@/services/ticketService';
 import { respostaService } from '@/services/respostaService';
 import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
+import { MarkdownEditor } from '@/components/common/MarkdownEditor/MarkdownEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { notificarNovoResponsavelTarefa } from '@/contexts/NotificationContext';
@@ -297,6 +298,11 @@ export default function TarefaAtribuidaDetalhesPage() {
     }
     if (!dataVencimento) {
       showToast('A data de vencimento é obrigatória.', 'error');
+      return;
+    }
+
+    if (descricao && descricao.trim().length > 2000) {
+      showToast('A descrição da tarefa ultrapassou o limite de 2000 caracteres.', 'error');
       return;
     }
 
@@ -719,12 +725,12 @@ export default function TarefaAtribuidaDetalhesPage() {
                     </div>
 
                     <div className={styles.field}>
-                      <label className={styles.label}>Instruções & Descrição</label>
-                      <textarea
+                      <MarkdownEditor
+                        label="Instruções & Descrição"
                         value={descricao}
-                        onChange={(e) => setDescricao(e.target.value)}
-                        className={styles.textarea}
-                        placeholder="Orientações detalhadas para a execução da tarefa..."
+                        onChange={setDescricao}
+                        placeholder="Orientações detalhadas para a execução da tarefa... (Markdown suportado)"
+                        minHeight={140}
                       />
                     </div>
 
