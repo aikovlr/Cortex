@@ -1219,3 +1219,46 @@ html.reduce-motion *::after {
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
 }
+
+/* ============================================================
+   Transição de Tema com Onda Radial (View Transitions API)
+   ============================================================ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Desativa transições parciais em elementos enquanto o snapshot é capturado */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: none !important;
+}
+
+/* Desativa animação de view transition quando redução de movimento for requisitada */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+html[data-reduce-motion="true"]::view-transition-group(*),
+html[data-reduce-motion="true"]::view-transition-old(*),
+html[data-reduce-motion="true"]::view-transition-new(*),
+html.reduce-motion::view-transition-group(*),
+html.reduce-motion::view-transition-old(*),
+html.reduce-motion::view-transition-new(*) {
+  animation: none !important;
+}

@@ -367,7 +367,7 @@ export default function DetalhesTarefaPage() {
               <>
                 {/* Container Principal da Tarefa */}
                 <div className={styles.detailsCard}>
-                  {tarefa.finalizadaPeloCriador && (
+                  {tarefa.ativo && (
                     <div className={styles.creatorBanner} role="status">
                       <div className={styles.creatorBannerContent}>
                         <span className={styles.creatorBannerTitle}>Tarefa finalizada pelo Criador.</span>
@@ -411,7 +411,7 @@ export default function DetalhesTarefaPage() {
                         Sugerir alteração
                       </button>
                       {isConcluida ? (
-                        tarefa.finalizadaPeloCriador ? null : (
+                        tarefa.ativo ? null : (
                           <button
                             type="button"
                             className={styles.btnCancelDelivery}
@@ -583,7 +583,7 @@ export default function DetalhesTarefaPage() {
                   ) : (
                     <div className={styles.emptyAttachments}>
                       {isConcluida
-                        ? (tarefa.finalizadaPeloCriador
+                        ? (tarefa.ativo
                             ? 'Esta tarefa foi finalizada diretamente pelo criador.'
                             : 'Você finalizou esta tarefa sem anexar arquivos.')
                         : 'Nenhum arquivo anexado à sua resposta ainda. Use o botão \u201cAnexar arquivo\u201d acima para enviar sua entrega.'}

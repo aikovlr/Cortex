@@ -6,6 +6,7 @@ import Header from '@/app/Components/Header/header';
 import { Badge } from '@/components/common/Badge/Badge';
 import { AddMemberModal } from '@/components/teams/AddMemberModal/AddMemberModal';
 import { AssignTeamGoalModal } from '@/components/teams/AssignTeamGoalModal/AssignTeamGoalModal';
+import { UserLevelAvatar } from '@/components/gamification/UserLevelAvatar/UserLevelAvatar';
 import {
   TrashIcon,
   UserIcon,
@@ -28,6 +29,7 @@ import {
 import { equipeService } from '@/services/equipeService';
 import { ticketService } from '@/services/ticketService';
 import { metaService } from '@/services/metaService';
+import { tarefaService } from '@/services/tarefaService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import {
@@ -73,11 +75,86 @@ export default function EquipeDetalhesPage({
   const [isAssignGoalOpen, setIsAssignGoalOpen] = useState(false);
   const [deletingTeam, setDeletingTeam] = useState(false);
   const [expandedMemberIds, setExpandedMemberIds] = useState<number[]>([]);
+  const [memberStats, setMemberStats] = useState<
+    Record<number, { tarefasConcluidas: number; metasConcluidas: number; loading?: boolean }>
+  >({});
+
+  const carregarEstatisticasMembro = useCallback(
+    async (usuarioId: number) => {
+      setMemberStats((prev) => ({
+        ...prev,
+        [usuarioId]: {
+          tarefasConcluidas: prev[usuarioId]?.tarefasConcluidas ?? 0,
+          metasConcluidas: prev[usuarioId]?.metasConcluidas ?? 0,
+          loading: true,
+        },
+      }));
+
+      try {
+        const promessaTarefas = tarefaService
+          .listarTarefas({ status: 'Concluida', responsavelId: usuarioId })
+          .then((res) => (Array.isArray(res) ? res.length : 0))
+          .catch(() => 0);
+
+        const promessaMetas = metaService
+          .listar(usuarioId)
+          .then((res) => {
+            if (Array.isArray(res)) {
+              return res.filter(
+                (m) =>
+                  m.concluida ||
+                  (m.tarefas && m.tarefas.length > 0 && m.tarefas.every((t) => t.status === 'Concluida')) ||
+                  m.tarefa?.status === 'Concluida'
+              ).length;
+            }
+            return 0;
+          })
+          .catch(() => {
+            return metas.filter((m) => {
+              const isConcluida =
+                m.concluida ||
+                (m.tarefas && m.tarefas.length > 0 && m.tarefas.every((t) => t.status === 'Concluida')) ||
+                m.tarefa?.status === 'Concluida';
+              if (!isConcluida) return false;
+              return !m.usuarioId || m.usuarioId === usuarioId || m.usuario?.id === usuarioId;
+            }).length;
+          });
+
+        const [tarefasCount, metasCount] = await Promise.all([promessaTarefas, promessaMetas]);
+
+        setMemberStats((prev) => ({
+          ...prev,
+          [usuarioId]: {
+            tarefasConcluidas: tarefasCount,
+            metasConcluidas: metasCount,
+            loading: false,
+          },
+        }));
+      } catch {
+        setMemberStats((prev) => ({
+          ...prev,
+          [usuarioId]: {
+            tarefasConcluidas: prev[usuarioId]?.tarefasConcluidas ?? 0,
+            metasConcluidas: prev[usuarioId]?.metasConcluidas ?? 0,
+            loading: false,
+          },
+        }));
+      }
+    },
+    [metas]
+  );
 
   const toggleMemberExpand = (membroId: number) => {
-    setExpandedMemberIds((prev) =>
-      prev.includes(membroId) ? prev.filter((id) => id !== membroId) : [...prev, membroId]
-    );
+    setExpandedMemberIds((prev) => {
+      const willExpand = !prev.includes(membroId);
+      if (willExpand) {
+        const mem = membros.find((m) => m.id === membroId);
+        if (mem && mem.tarefasConcluidas === undefined && !memberStats[mem.usuarioId]) {
+          carregarEstatisticasMembro(mem.usuarioId);
+        }
+      }
+      return willExpand ? [...prev, membroId] : prev.filter((id) => id !== membroId);
+    });
   };
 
   // Permissões do usuário atual nesta equipe
@@ -467,10 +544,27 @@ export default function EquipeDetalhesPage({
               </thead>
               <tbody>
                 {membrosOrdenados.map((membro) => {
-                  const nome = membro.usuario?.nome || 'Colaborador';
-                  const email = membro.usuario?.email || '';
+                  const isCurrentUser = membro.usuarioId === usuario?.id || membro.usuario?.id === usuario?.id;
+                  const nivelMembro = isCurrentUser ? (usuario?.nivel ?? membro.usuario?.nivel ?? 1) : (membro.usuario?.nivel ?? 1);
+                  const xpMembro = isCurrentUser ? (usuario?.experiencia ?? membro.usuario?.experiencia ?? 0) : (membro.usuario?.experiencia ?? 0);
+                  const fotoMembro = isCurrentUser
+                    ? (getAvatarUrl(usuario?.fotoPerfil?.urlCaminho) || getAvatarUrl(membro.usuario?.fotoPerfil?.urlCaminho))
+                    : getAvatarUrl(membro.usuario?.fotoPerfil?.urlCaminho);
+                  const nome = (isCurrentUser ? usuario?.nome : null) || membro.usuario?.nome || 'Colaborador';
+                  const email = (isCurrentUser ? usuario?.email : null) || membro.usuario?.email || '';
                   const telefone = membro.usuario?.telefone || '';
                   const isExpanded = expandedMemberIds.includes(membro.id);
+                  const tarefasConcluidas =
+                    membro.tarefasConcluidas !== undefined
+                      ? membro.tarefasConcluidas
+                      : (memberStats[membro.usuarioId]?.tarefasConcluidas ?? 0);
+                  const metasConcluidas =
+                    membro.metasConcluidas !== undefined
+                      ? membro.metasConcluidas
+                      : (memberStats[membro.usuarioId]?.metasConcluidas ?? 0);
+                  const statsLoading =
+                    membro.tarefasConcluidas === undefined &&
+                    Boolean(memberStats[membro.usuarioId]?.loading);
 
                   return (
                     <React.Fragment key={membro.id}>
@@ -509,18 +603,13 @@ export default function EquipeDetalhesPage({
                             </button>
 
                             <div className={styles.memberInfo}>
-                              {membro.usuario?.fotoPerfil?.urlCaminho ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={getAvatarUrl(membro.usuario.fotoPerfil.urlCaminho)}
-                                  alt={nome}
-                                  className={styles.avatar}
-                                />
-                              ) : (
-                                <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cortex-purple)' }}>
-                                  <UserIcon size={16} />
-                                </div>
-                              )}
+                              <UserLevelAvatar
+                                fotoUrl={fotoMembro}
+                                nome={nome}
+                                nivel={nivelMembro}
+                                experiencia={xpMembro}
+                                size={36}
+                              />
                               <div className={styles.memberText}>
                                 <span className={styles.memberName}>{nome}</span>
                                 <span className={styles.memberEmail}>{email}</span>
@@ -591,11 +680,6 @@ export default function EquipeDetalhesPage({
                               <div className={styles.memberDetailsCard}>
                                 <div className={styles.memberDetailsGrid}>
                                   <div className={styles.detailItem}>
-                                    <span className={styles.detailLabel}>Nome Completo</span>
-                                    <span className={styles.detailValue}>{nome}</span>
-                                  </div>
-
-                                  <div className={styles.detailItem}>
                                     <span className={styles.detailLabel}>E-mail</span>
                                     <span className={styles.detailValue}>
                                       {email ? (
@@ -622,22 +706,19 @@ export default function EquipeDetalhesPage({
                                   </div>
 
                                   <div className={styles.detailItem}>
-                                    <span className={styles.detailLabel}>Cargo na Equipe</span>
+                                    <span className={styles.detailLabel}>Tarefas Concluídas</span>
                                     <span className={styles.detailValue}>
-                                      <Badge type="cargo" value={membro.cargo} />
+                                      <CheckIcon size={14} color="var(--cortex-success, #10b981)" />
+                                      {statsLoading ? 'Carregando...' : `${tarefasConcluidas} concluída${tarefasConcluidas === 1 ? '' : 's'}`}
                                     </span>
                                   </div>
 
                                   <div className={styles.detailItem}>
-                                    <span className={styles.detailLabel}>Integrante Desde</span>
-                                    <span className={styles.detailValue} suppressHydrationWarning>
-                                      {formatarData(membro.dataEntrada)}
+                                    <span className={styles.detailLabel}>Metas Concluídas</span>
+                                    <span className={styles.detailValue}>
+                                      <TargetIcon size={14} color="var(--cortex-purple, #6366f1)" />
+                                      {statsLoading ? 'Carregando...' : `${metasConcluidas} concluída${metasConcluidas === 1 ? '' : 's'}`}
                                     </span>
-                                  </div>
-
-                                  <div className={styles.detailItem}>
-                                    <span className={styles.detailLabel}>ID do Usuário</span>
-                                    <span className={styles.detailValue}>#{membro.usuarioId}</span>
                                   </div>
                                 </div>
                               </div>
@@ -653,35 +734,39 @@ export default function EquipeDetalhesPage({
 
             <div className={styles.mobileCardsList}>
               {membrosOrdenados.map((membro) => {
-                const nome = membro.usuario?.nome || 'Colaborador';
-                const email = membro.usuario?.email || '';
+                const isCurrentUser = membro.usuarioId === usuario?.id || membro.usuario?.id === usuario?.id;
+                const nivelMembro = isCurrentUser ? (usuario?.nivel ?? membro.usuario?.nivel ?? 1) : (membro.usuario?.nivel ?? 1);
+                const xpMembro = isCurrentUser ? (usuario?.experiencia ?? membro.usuario?.experiencia ?? 0) : (membro.usuario?.experiencia ?? 0);
+                const fotoMembro = isCurrentUser
+                  ? (getAvatarUrl(usuario?.fotoPerfil?.urlCaminho) || getAvatarUrl(membro.usuario?.fotoPerfil?.urlCaminho))
+                  : getAvatarUrl(membro.usuario?.fotoPerfil?.urlCaminho);
+                const nome = (isCurrentUser ? usuario?.nome : null) || membro.usuario?.nome || 'Colaborador';
+                const email = (isCurrentUser ? usuario?.email : null) || membro.usuario?.email || '';
                 const telefone = membro.usuario?.telefone || '';
                 const isExpanded = expandedMemberIds.includes(membro.id);
+                const tarefasConcluidas =
+                  membro.tarefasConcluidas !== undefined
+                    ? membro.tarefasConcluidas
+                    : (memberStats[membro.usuarioId]?.tarefasConcluidas ?? 0);
+                const metasConcluidas =
+                  membro.metasConcluidas !== undefined
+                    ? membro.metasConcluidas
+                    : (memberStats[membro.usuarioId]?.metasConcluidas ?? 0);
+                const statsLoading =
+                  membro.tarefasConcluidas === undefined &&
+                  Boolean(memberStats[membro.usuarioId]?.loading);
 
                 return (
                   <div key={membro.id} className={styles.memberMobileCard}>
                     <div className={styles.memberCardTop}>
                       <div className={styles.memberInfo}>
-                        {membro.usuario?.fotoPerfil?.urlCaminho ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={getAvatarUrl(membro.usuario.fotoPerfil.urlCaminho)}
-                            alt={nome}
-                            className={styles.avatar}
-                          />
-                        ) : (
-                          <div
-                            className={styles.avatar}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'var(--cortex-purple)',
-                            }}
-                          >
-                            <UserIcon size={16} />
-                          </div>
-                        )}
+                        <UserLevelAvatar
+                          fotoUrl={fotoMembro}
+                          nome={nome}
+                          nivel={nivelMembro}
+                          experiencia={xpMembro}
+                          size={36}
+                        />
                         <div className={styles.memberText}>
                           <span className={styles.memberName}>{nome}</span>
                           <span className={styles.memberEmail}>{email}</span>
@@ -756,11 +841,6 @@ export default function EquipeDetalhesPage({
                         <div className={styles.memberMobileExpanded}>
                           <div className={styles.memberDetailsGrid}>
                             <div className={styles.detailItem}>
-                              <span className={styles.detailLabel}>Nome Completo</span>
-                              <span className={styles.detailValue}>{nome}</span>
-                            </div>
-
-                            <div className={styles.detailItem}>
                               <span className={styles.detailLabel}>E-mail</span>
                               <span className={styles.detailValue}>
                                 {email ? (
@@ -787,8 +867,19 @@ export default function EquipeDetalhesPage({
                             </div>
 
                             <div className={styles.detailItem}>
-                              <span className={styles.detailLabel}>ID do Usuário</span>
-                              <span className={styles.detailValue}>#{membro.usuarioId}</span>
+                              <span className={styles.detailLabel}>Tarefas Concluídas</span>
+                              <span className={styles.detailValue}>
+                                <CheckIcon size={14} color="var(--cortex-success, #10b981)" />
+                                {statsLoading ? 'Carregando...' : `${tarefasConcluidas} concluída${tarefasConcluidas === 1 ? '' : 's'}`}
+                              </span>
+                            </div>
+
+                            <div className={styles.detailItem}>
+                              <span className={styles.detailLabel}>Metas Concluídas</span>
+                              <span className={styles.detailValue}>
+                                <TargetIcon size={14} color="var(--cortex-purple, #6366f1)" />
+                                {statsLoading ? 'Carregando...' : `${metasConcluidas} concluída${metasConcluidas === 1 ? '' : 's'}`}
+                              </span>
                             </div>
                           </div>
                         </div>

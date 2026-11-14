@@ -1,12 +1,21 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { preferenciaService } from '@/services/preferenciaService';
 
 export const AVAILABLE_FONT_SIZES = [12, 14, 16, 18, 20, 22, 24] as const;
 export type FontSizeNumber = (typeof AVAILABLE_FONT_SIZES)[number];
 export type FontSize = FontSizeNumber | 'small' | 'medium' | 'large' | string;
 export type Theme = 'light' | 'dark';
+
+export type ThemeTransitionOrigin =
+  | React.MouseEvent
+  | MouseEvent
+  | { clientX: number; clientY: number }
+  | HTMLElement
+  | null
+  | undefined;
 
 export interface FontSizeOptionItem {
   value: FontSizeNumber;
@@ -47,8 +56,8 @@ interface AccessibilityContextType {
   highContrast: boolean;
   setHighContrast: (enabled: boolean) => void;
   theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
+  setTheme: (theme: Theme, origin?: ThemeTransitionOrigin) => void;
+  toggleTheme: (origin?: ThemeTransitionOrigin) => void;
   reduceMotion: boolean;
   setReduceMotion: (enabled: boolean) => void;
   sincronizar: () => Promise<void>;
@@ -56,6 +65,65 @@ interface AccessibilityContextType {
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
+
+function getOriginCoordinates(origin?: ThemeTransitionOrigin): { x: number; y: number } {
+  if (typeof window === 'undefined') {
+    return { x: 0, y: 0 };
+  }
+
+  // 1. Se foi passado elemento ou evento sintético/nativo com alvo
+  if (origin && typeof origin === 'object') {
+    if ('getBoundingClientRect' in origin && typeof (origin as HTMLElement).getBoundingClientRect === 'function') {
+      const rect = (origin as HTMLElement).getBoundingClientRect();
+      if (rect.width > 0 || rect.height > 0) {
+        return {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        };
+      }
+    }
+
+    const eventTarget =
+      ('currentTarget' in origin ? origin.currentTarget : null) ||
+      ('target' in origin ? origin.target : null);
+
+    if (eventTarget && typeof (eventTarget as HTMLElement).getBoundingClientRect === 'function') {
+      const rect = (eventTarget as HTMLElement).getBoundingClientRect();
+      if (rect.width > 0 || rect.height > 0) {
+        return {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        };
+      }
+    }
+
+    if ('clientX' in origin && typeof origin.clientX === 'number' && (origin.clientX !== 0 || origin.clientY !== 0)) {
+      return { x: origin.clientX, y: origin.clientY };
+    }
+  }
+
+  // 2. Busca botão de alternância de tema no cabeçalho
+  if (typeof document !== 'undefined') {
+    const themeBtn =
+      document.querySelector('[data-theme-toggle="true"]') ||
+      document.querySelector('button[aria-label*="modo escuro"], button[aria-label*="modo claro"], button[aria-label*="tema"]');
+    if (themeBtn && typeof themeBtn.getBoundingClientRect === 'function') {
+      const rect = themeBtn.getBoundingClientRect();
+      if (rect.width > 0 || rect.height > 0) {
+        return {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        };
+      }
+    }
+  }
+
+  // 3. Fallback: centro da tela
+  return {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+  };
+}
 
 function applyAccessibilityToDOM(size: FontSizeNumber, contrast: boolean, theme: Theme, reduceMotion?: boolean) {
   if (typeof document === 'undefined') return;
@@ -92,6 +160,15 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const themeRef = useRef<Theme>(theme);
+  themeRef.current = theme;
+  const fontSizeRef = useRef<FontSizeNumber>(fontSize);
+  fontSizeRef.current = fontSize;
+  const highContrastRef = useRef<boolean>(highContrast);
+  highContrastRef.current = highContrast;
+  const reduceMotionRef = useRef<boolean>(reduceMotion);
+  reduceMotionRef.current = reduceMotion;
+  const isTransitioningRef = useRef<boolean>(false);
 
   // Dispara a sincronização de preferências com o backend no banco de dados
   const syncWithBackend = useCallback((newTheme: Theme, newContrast: boolean, newSize: FontSizeNumber) => {
@@ -320,45 +397,114 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     });
   }, [syncWithBackend]);
 
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
-
-    try {
-      localStorage.removeItem('theme');
-      localStorage.removeItem('cortex_theme');
-    } catch {}
-
-    setFontSizeState((currSize) => {
-      setHighContrastState((currContrast) => {
-        applyAccessibilityToDOM(currSize, currContrast, newTheme);
-        syncWithBackend(newTheme, currContrast, currSize);
-        return currContrast;
-      });
-      return currSize;
-    });
-  }, [syncWithBackend]);
-
-  const toggleTheme = useCallback(() => {
-    setThemeState((currTheme) => {
-      const nextTheme: Theme = currTheme === 'dark' ? 'light' : 'dark';
+  const changeThemeWithTransition = useCallback(
+    async (nextTheme: Theme, origin?: ThemeTransitionOrigin) => {
+      const currentTheme = themeRef.current;
+      if (nextTheme === currentTheme) return;
 
       try {
         localStorage.removeItem('theme');
         localStorage.removeItem('cortex_theme');
       } catch {}
 
-      setFontSizeState((currSize) => {
-        setHighContrastState((currContrast) => {
-          applyAccessibilityToDOM(currSize, currContrast, nextTheme);
-          syncWithBackend(nextTheme, currContrast, currSize);
-          return currContrast;
-        });
-        return currSize;
-      });
+      const currentSize = fontSizeRef.current;
+      const currentContrast = highContrastRef.current;
+      const isReduced =
+        reduceMotionRef.current ||
+        (typeof window !== 'undefined' &&
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-      return nextTheme;
-    });
-  }, [syncWithBackend]);
+      const doc = typeof document !== 'undefined'
+        ? (document as Document & {
+            startViewTransition?: (callback: () => void | Promise<void>) => {
+              ready: Promise<void>;
+              finished: Promise<void>;
+              skipTransition: () => void;
+            };
+          })
+        : null;
+
+      if (!doc || !doc.startViewTransition || isReduced) {
+        setThemeState(nextTheme);
+        themeRef.current = nextTheme;
+        applyAccessibilityToDOM(currentSize, currentContrast, nextTheme, isReduced);
+        syncWithBackend(nextTheme, currentContrast, currentSize);
+        return;
+      }
+
+      if (isTransitioningRef.current) return;
+      isTransitioningRef.current = true;
+
+      const { x, y } = getOriginCoordinates(origin);
+      const endRadius = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y)
+      );
+
+      // Desativa temporariamente transições CSS individuais para snapshot imediato e limpo
+      document.documentElement.classList.add('theme-transitioning');
+
+      try {
+        const transition = doc.startViewTransition(() => {
+          try {
+            flushSync(() => {
+              setThemeState(nextTheme);
+              themeRef.current = nextTheme;
+            });
+          } catch {
+            setThemeState(nextTheme);
+            themeRef.current = nextTheme;
+          }
+          applyAccessibilityToDOM(currentSize, currentContrast, nextTheme, isReduced);
+          syncWithBackend(nextTheme, currentContrast, currentSize);
+        });
+
+        await transition.ready;
+
+        const animation = document.documentElement.animate(
+          {
+            clipPath: [
+              `circle(0px at ${x}px ${y}px)`,
+              `circle(${endRadius}px at ${x}px ${y}px)`,
+            ],
+          },
+          {
+            duration: 500,
+            easing: 'ease-in-out',
+            pseudoElement: '::view-transition-new(root)',
+          }
+        );
+
+        await animation.finished;
+      } catch {
+        // Fallback garantindo aplicação caso a transição seja abortada
+        setThemeState(nextTheme);
+        themeRef.current = nextTheme;
+        applyAccessibilityToDOM(currentSize, currentContrast, nextTheme, isReduced);
+        syncWithBackend(nextTheme, currentContrast, currentSize);
+      } finally {
+        document.documentElement.classList.remove('theme-transitioning');
+        isTransitioningRef.current = false;
+      }
+    },
+    [syncWithBackend]
+  );
+
+  const setTheme = useCallback(
+    (newTheme: Theme, origin?: ThemeTransitionOrigin) => {
+      changeThemeWithTransition(newTheme, origin);
+    },
+    [changeThemeWithTransition]
+  );
+
+  const toggleTheme = useCallback(
+    (origin?: ThemeTransitionOrigin) => {
+      const nextTheme: Theme = themeRef.current === 'dark' ? 'light' : 'dark';
+      changeThemeWithTransition(nextTheme, origin);
+    },
+    [changeThemeWithTransition]
+  );
 
   return (
     <AccessibilityContext.Provider

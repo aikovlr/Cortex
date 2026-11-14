@@ -687,7 +687,7 @@ export default function TarefaAtribuidaDetalhesPage() {
               <>
                 {/* CONTAINER 1: DETALHES ALTERÁVEIS DA TAREFA */}
                 <div className={styles.detailsCard}>
-                  {tarefa.finalizadaPeloCriador && (
+                  {tarefa.ativo && (
                     <div className={styles.creatorBanner} role="status">
                       <div className={styles.creatorBannerContent}>
                         <span className={styles.creatorBannerTitle}>Tarefa Finalizada Diretamente</span>

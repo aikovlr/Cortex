@@ -13,6 +13,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { PhoneInput } from '@/components/ui/PhoneInput/PhoneInput';
 import { parseStoredPhone, buildFullPhone } from '@/utils/phoneAndEmail';
 import { AccountLevelWidget } from '@/components/gamification/AccountLevelWidget/AccountLevelWidget';
+import { UserLevelAvatar } from '@/components/gamification/UserLevelAvatar/UserLevelAvatar';
 import {
   CriticalActionDialog,
   useCriticalAction,
@@ -399,8 +400,9 @@ export default function ConfiguracoesPage() {
     showToast(`Tamanho de fonte atualizado para ${num}px!`, 'success');
   };
 
-  const handleSelectTheme = (selectedTheme: Theme) => {
-    setTheme(selectedTheme);
+  const handleSelectTheme = (selectedTheme: Theme, origin?: React.MouseEvent | React.KeyboardEvent) => {
+    if (selectedTheme === theme) return;
+    setTheme(selectedTheme, origin as React.MouseEvent);
     showToast(
       selectedTheme === 'dark' ? 'Tema escuro ativado!' : 'Tema claro ativado!',
       'info'
@@ -651,21 +653,14 @@ export default function ConfiguracoesPage() {
 
               <form onSubmit={handleSalvarPerfil} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className={styles.avatarSection}>
-                  <div className={styles.avatarWrapper}>
-                    {fotoPreview && !fotoError ? (
-                      <Image
-                        src={getAvatarUrl(fotoPreview)}
-                        alt="Foto de Perfil"
-                        width={76}
-                        height={76}
-                        className={styles.avatarImage}
-                        unoptimized
-                        onError={() => setFotoError(true)}
-                      />
-                    ) : (
-                      <span>{usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'U'}</span>
-                    )}
-                  </div>
+                  <UserLevelAvatar
+                    fotoUrl={fotoPreview ? getAvatarUrl(fotoPreview) : null}
+                    nome={usuario?.nome}
+                    nivel={usuario?.nivel}
+                    experiencia={usuario?.experiencia}
+                    size={76}
+                    onClick={() => fileInputRef.current?.click()}
+                  />
 
                   <div className={styles.avatarActions}>
                     <input
@@ -861,12 +856,12 @@ export default function ConfiguracoesPage() {
 
               <div className={styles.fontSizeGrid}>
                 <div
-                  onClick={() => handleSelectTheme('light')}
+                  onClick={(e) => handleSelectTheme('light', e)}
                   className={`${styles.fontSizeOption} ${theme === 'light' ? styles.fontSizeOptionActive : ''}`}
                   role="button"
                   tabIndex={0}
                   aria-pressed={theme === 'light'}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSelectTheme('light')}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSelectTheme('light', e)}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
                     <Image
@@ -881,12 +876,12 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 <div
-                  onClick={() => handleSelectTheme('dark')}
+                  onClick={(e) => handleSelectTheme('dark', e)}
                   className={`${styles.fontSizeOption} ${theme === 'dark' ? styles.fontSizeOptionActive : ''}`}
                   role="button"
                   tabIndex={0}
                   aria-pressed={theme === 'dark'}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSelectTheme('dark')}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSelectTheme('dark', e)}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
                     <Image

@@ -79,7 +79,7 @@ export interface ConsultaTarefaDTO {
   prioridade: Prioridade;
   criadorId: number;
   dataCriacao?: string;
-  finalizadaPeloCriador?: boolean;
+  ativo?: boolean;
 }
 
 export interface ConsultaResponsavelTarefaDTO {
@@ -122,6 +122,8 @@ export interface ConsultaMembroEquipeDTO {
   cargo: CargoEquipe;
   dataEntrada: string;
   usuario?: ConsultaUsuarioDTO | null;
+  tarefasConcluidas?: number;
+  metasConcluidas?: number;
 }
 
 export interface ConsultaEquipeDTO {
