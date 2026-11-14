@@ -49,13 +49,15 @@ interface AccessibilityContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  reduceMotion: boolean;
+  setReduceMotion: (enabled: boolean) => void;
   sincronizar: () => Promise<void>;
   isSyncing: boolean;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
 
-function applyAccessibilityToDOM(size: FontSizeNumber, contrast: boolean, theme: Theme) {
+function applyAccessibilityToDOM(size: FontSizeNumber, contrast: boolean, theme: Theme, reduceMotion?: boolean) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
 
@@ -74,12 +76,19 @@ function applyAccessibilityToDOM(size: FontSizeNumber, contrast: boolean, theme:
   // Aplica tema
   root.setAttribute('data-theme', theme);
   root.classList.toggle('dark', theme === 'dark');
+
+  // Aplica redução de animações e movimentos
+  if (typeof reduceMotion === 'boolean') {
+    root.setAttribute('data-reduce-motion', String(reduceMotion));
+    root.classList.toggle('reduce-motion', reduceMotion);
+  }
 }
 
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
   const [fontSize, setFontSizeState] = useState<FontSizeNumber>(16);
   const [highContrast, setHighContrastState] = useState<boolean>(false);
   const [theme, setThemeState] = useState<Theme>('light');
+  const [reduceMotion, setReduceMotionState] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -115,9 +124,20 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         const remoteContrast = Boolean(remotas.altoContraste);
         const remoteTheme: Theme = remotas.tema === 'dark' ? 'dark' : 'light';
 
+        let isReduced = false;
+        try {
+          const savedMotion = localStorage.getItem('cortex_reduce_motion');
+          if (savedMotion !== null) {
+            isReduced = savedMotion === 'true';
+          } else if (typeof window !== 'undefined' && window.matchMedia) {
+            isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          }
+        } catch {}
+
         setFontSizeState(remoteSize);
         setHighContrastState(remoteContrast);
         setThemeState(remoteTheme);
+        setReduceMotionState(isReduced);
 
         try {
           localStorage.removeItem('cortex_font_size');
@@ -126,7 +146,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
           localStorage.removeItem('theme');
         } catch {}
 
-        applyAccessibilityToDOM(remoteSize, remoteContrast, remoteTheme);
+        applyAccessibilityToDOM(remoteSize, remoteContrast, remoteTheme, isReduced);
       }
     } catch {
       // Ignora falha de autenticação inicial / modo visitante
@@ -150,12 +170,23 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       await Promise.resolve();
       if (ignore) return;
 
-      // 1. Aplica tema do sistema se usuário não autenticado estiver em dark mode
+      // 1. Aplica preferências locais imediatas (tema e redução de movimento do sistema / cache)
+      let initialMotion = false;
       try {
+        const savedMotion = localStorage.getItem('cortex_reduce_motion');
+        if (savedMotion !== null) {
+          initialMotion = savedMotion === 'true';
+        } else if (typeof window !== 'undefined' && window.matchMedia) {
+          initialMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+        setReduceMotionState(initialMotion);
+
         const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (prefersDark) {
           setThemeState('dark');
-          applyAccessibilityToDOM(16, false, 'dark');
+          applyAccessibilityToDOM(16, false, 'dark', initialMotion);
+        } else {
+          applyAccessibilityToDOM(16, false, 'light', initialMotion);
         }
       } catch {}
 
@@ -178,37 +209,80 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
             localStorage.removeItem('theme');
           } catch {}
 
-          applyAccessibilityToDOM(remoteSize, remoteContrast, remoteTheme);
+          applyAccessibilityToDOM(remoteSize, remoteContrast, remoteTheme, initialMotion);
         }
       } catch {}
     }
 
     carregarPreferencias();
 
-    // Monitora alterações dinâmicas na preferência de sistema do usuário
+    // Monitora alterações dinâmicas no tema e preferência de movimento do sistema
     if (typeof window !== 'undefined' && window.matchMedia) {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleSystemThemeChange = (e: MediaQueryListEvent) => {
         const systemTheme: Theme = e.matches ? 'dark' : 'light';
         setThemeState(systemTheme);
         setFontSizeState((currSize) => {
           setHighContrastState((currContrast) => {
-            applyAccessibilityToDOM(currSize, currContrast, systemTheme);
+            setReduceMotionState((currMotion) => {
+              applyAccessibilityToDOM(currSize, currContrast, systemTheme, currMotion);
+              return currMotion;
+            });
             return currContrast;
           });
           return currSize;
         });
       };
-      mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+      const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const handleSystemMotionChange = (e: MediaQueryListEvent) => {
+        // Se o usuário não definiu uma preferência manual explícita, acompanha o sistema
+        if (localStorage.getItem('cortex_reduce_motion') === null) {
+          setReduceMotionState(e.matches);
+          setFontSizeState((currSize) => {
+            setHighContrastState((currContrast) => {
+              setThemeState((currTheme) => {
+                applyAccessibilityToDOM(currSize, currContrast, currTheme, e.matches);
+                return currTheme;
+              });
+              return currContrast;
+            });
+            return currSize;
+          });
+        }
+      };
+
+      themeQuery.addEventListener('change', handleSystemThemeChange);
+      motionQuery.addEventListener('change', handleSystemMotionChange);
+
       return () => {
         ignore = true;
-        mediaQuery.removeEventListener('change', handleSystemThemeChange);
+        themeQuery.removeEventListener('change', handleSystemThemeChange);
+        motionQuery.removeEventListener('change', handleSystemMotionChange);
       };
     }
 
     return () => {
       ignore = true;
     };
+  }, []);
+
+  const setReduceMotion = useCallback((enabled: boolean) => {
+    setReduceMotionState(enabled);
+    try {
+      localStorage.setItem('cortex_reduce_motion', String(enabled));
+    } catch {}
+
+    setFontSizeState((currSize) => {
+      setHighContrastState((currContrast) => {
+        setThemeState((currTheme) => {
+          applyAccessibilityToDOM(currSize, currContrast, currTheme, enabled);
+          return currTheme;
+        });
+        return currContrast;
+      });
+      return currSize;
+    });
   }, []);
 
   const setFontSize = useCallback((newSizeInput: FontSize) => {
@@ -296,6 +370,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         theme,
         setTheme,
         toggleTheme,
+        reduceMotion,
+        setReduceMotion,
         sincronizar,
         isSyncing,
       }}

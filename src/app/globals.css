@@ -1193,3 +1193,29 @@ html.dark[data-high-contrast="true"] :is(input, select, textarea) {
   font-weight: 500 !important;
   border-color: rgba(255, 255, 255, 0.5) !important;
 }
+
+/* ============================================================
+   Acessibilidade: Redução de Movimento e Animações (WCAG 2.2.2 / 2.3.1)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-reduce-motion="false"]) *,
+  html:not([data-reduce-motion="false"]) *::before,
+  html:not([data-reduce-motion="false"]) *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after,
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

@@ -96,6 +96,7 @@ export default function TarefaAtribuidaDetalhesPage() {
   const [respostasAbertas, setRespostasAbertas] = useState<Record<number, boolean>>({});
   const [notasRespostas, setNotasRespostas] = useState<Record<number, number | ''>>({});
   const [salvandoNotaId, setSalvandoNotaId] = useState<number | null>(null);
+  const [notaSalvaFeedbackId, setNotaSalvaFeedbackId] = useState<number | null>(null);
   const [sugestoes, setSugestoes] = useState<ConsultaSugestaoDTO[]>([]);
   const [tickets, setTickets] = useState<ConsultaTicketReporteDTO[]>([]);
   const [processandoSugestaoId, setProcessandoSugestaoId] = useState<number | null>(null);
@@ -241,6 +242,10 @@ export default function TarefaAtribuidaDetalhesPage() {
       setRespostas((prev) =>
         prev.map((r) => (r.id === respostaId ? { ...r, nota: respAtualizada.nota } : r))
       );
+      setNotaSalvaFeedbackId(respostaId);
+      setTimeout(() => {
+        setNotaSalvaFeedbackId((current) => (current === respostaId ? null : current));
+      }, 3000);
       showToast(`Nota ${notaFinal} atribuída com sucesso!`, 'success');
       await carregarTarefa();
     } catch (err: unknown) {
@@ -675,8 +680,10 @@ export default function TarefaAtribuidaDetalhesPage() {
               </button>
             </div>
 
-            {/* ABA 1: DETALHES E RESPONSÁVEIS DA TAREFA */}
-            {activeTab === 'detalhes' && (
+            {/* CONTEÚDO DA ABA ATIVA COM TRANSIÇÃO */}
+            <div key={activeTab} className={styles.tabContentPane}>
+              {/* ABA 1: DETALHES E RESPONSÁVEIS DA TAREFA */}
+              {activeTab === 'detalhes' && (
               <>
                 {/* CONTAINER 1: DETALHES ALTERÁVEIS DA TAREFA */}
                 <div className={styles.detailsCard}>
@@ -1085,7 +1092,14 @@ export default function TarefaAtribuidaDetalhesPage() {
                                 </span>
                               )}
                               {jaAvaliada ? (
-                                <span className={`${styles.gradeBadge} ${styles.gradeBadgeGraded}`}>
+                                <span
+                                  className={`${styles.gradeBadge} ${styles.gradeBadgeGraded} ${
+                                    notaSalvaFeedbackId === resp.id ? styles.gradeBadgeFeedback : ''
+                                  }`}
+                                >
+                                  {notaSalvaFeedbackId === resp.id && (
+                                    <CheckIcon size={13} className={styles.gradeBadgeCheck} />
+                                  )}
                                   Nota: {resp.nota} / {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? `${tarefa.pontuacao} pts` : `${maxNota} pts`}
                                 </span>
                               ) : (
@@ -1099,57 +1113,70 @@ export default function TarefaAtribuidaDetalhesPage() {
                             </div>
                           </button>
 
-                          {/* Conteúdo expandido: mostra o anexo e a opção de atribuir nota */}
-                          {isAberta && (
-                            <div className={styles.collapsibleBody}>
-                              {/* Seção de Anexos da resposta */}
-                              <div className={styles.collapsibleSection}>
-                                <h4 className={styles.collapsibleSectionTitle}>
-                                  Arquivos Anexados ({resp.anexos?.length || 0}):
-                                </h4>
-                                {resp.anexos && resp.anexos.length > 0 ? (
-                                  <AttachmentGallery anexos={resp.anexos} />
-                                ) : (
-                                  <div className={styles.emptyAttachments}>
-                                    Nenhum arquivo anexado nesta resposta.
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Opção de Atribuição de Nota para esta resposta */}
-                              <div className={styles.gradeContainer}>
-                                <div className={styles.gradeContainerHeader}>
-                                  <span className={styles.gradeContainerTitle}>
-                                    Atribuir Nota para a resposta de {autorNome}
-                                  </span>
-                                  <span className={styles.gradeHint}>
-                                    {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined
-                                      ? `Nota permitida: 0 a ${tarefa.pontuacao} pontos (com base na pontuação da tarefa)`
-                                      : 'Defina a pontuação correspondente da entrega'}
-                                  </span>
+                          {/* Conteúdo colapsável animado via CSS Grid: mostra o anexo e a opção de atribuir nota */}
+                          <div
+                            className={`${styles.collapsibleWrapper} ${isAberta ? styles.collapsibleOpen : ''}`}
+                            aria-hidden={!isAberta}
+                          >
+                            <div className={styles.collapsibleInner}>
+                              <div className={styles.collapsibleBody}>
+                                {/* Seção de Anexos da resposta */}
+                                <div className={styles.collapsibleSection}>
+                                  <h4 className={styles.collapsibleSectionTitle}>
+                                    Arquivos Anexados ({resp.anexos?.length || 0}):
+                                  </h4>
+                                  {resp.anexos && resp.anexos.length > 0 ? (
+                                    <AttachmentGallery anexos={resp.anexos} />
+                                  ) : (
+                                    <div className={styles.emptyAttachments}>
+                                      Nenhum arquivo anexado nesta resposta.
+                                    </div>
+                                  )}
                                 </div>
 
-                                <form onSubmit={(e) => handleSalvarNotaResposta(e, resp.id)} className={styles.gradeFormRow}>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    max={tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? tarefa.pontuacao : undefined}
-                                    placeholder={tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? `0 - ${tarefa.pontuacao}` : 'Nota'}
-                                    value={notaAtual}
-                                    onChange={(e) => handleNotaChange(resp.id, e.target.value)}
-                                    className={styles.gradeInput}
-                                  />
-                                  <button
-                                    type="submit"
-                                    disabled={salvandoNotaId === resp.id}
-                                    className={styles.gradeSubmitBtn}
-                                  >
-                                    {salvandoNotaId === resp.id ? 'Salvando...' : jaAvaliada ? 'Atualizar Nota' : 'Atribuir Nota'}
-                                  </button>
-                                </form>
+                                {/* Opção de Atribuição de Nota para esta resposta */}
+                                <div className={styles.gradeContainer}>
+                                  <div className={styles.gradeContainerHeader}>
+                                    <span className={styles.gradeContainerTitle}>
+                                      Atribuir Nota para a resposta de {autorNome}
+                                    </span>
+                                    <span className={styles.gradeHint}>
+                                      {tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined
+                                        ? `Nota permitida: 0 a ${tarefa.pontuacao} pontos (com base na pontuação da tarefa)`
+                                        : 'Defina a pontuação correspondente da entrega'}
+                                    </span>
+                                  </div>
+
+                                  <form onSubmit={(e) => handleSalvarNotaResposta(e, resp.id)} className={styles.gradeFormRow}>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max={tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? tarefa.pontuacao : undefined}
+                                      placeholder={tarefa?.pontuacao !== null && tarefa?.pontuacao !== undefined ? `0 - ${tarefa.pontuacao}` : 'Nota'}
+                                      value={notaAtual}
+                                      onChange={(e) => handleNotaChange(resp.id, e.target.value)}
+                                      className={styles.gradeInput}
+                                    />
+                                    <button
+                                      type="submit"
+                                      disabled={salvandoNotaId === resp.id}
+                                      className={`${styles.gradeSubmitBtn} ${
+                                        notaSalvaFeedbackId === resp.id ? styles.gradeSubmitBtnSuccess : ''
+                                      }`}
+                                    >
+                                      {salvandoNotaId === resp.id
+                                        ? 'Salvando...'
+                                        : notaSalvaFeedbackId === resp.id
+                                        ? 'Nota Salva!'
+                                        : jaAvaliada
+                                        ? 'Atualizar Nota'
+                                        : 'Atribuir Nota'}
+                                    </button>
+                                  </form>
+                                </div>
                               </div>
                             </div>
-                          )}
+                          </div>
                         </div>
                       );
                     })}
@@ -1313,6 +1340,7 @@ export default function TarefaAtribuidaDetalhesPage() {
                 )}
               </div>
             )}
+            </div>
           </>
         )}
       </main>

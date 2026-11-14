@@ -330,13 +330,125 @@
 .compactBar::-webkit-progress-value {
   background: var(--cortex-purple);
   border-radius: var(--progress-bar-radius);
-  transition: inline-size 0.3s ease;
+  transition: inline-size 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .compactBar::-moz-progress-bar {
   background: var(--cortex-purple);
   border-radius: var(--progress-bar-radius);
-  transition: inline-size 0.3s ease;
+  transition: inline-size 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================
+   Animações de Gamificação: Aumento de XP e Nível
+   ============================================================ */
+.xpFloatBadge {
+  position: absolute;
+  top: -22px;
+  right: 4px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.45);
+  pointer-events: none;
+  z-index: 50;
+  animation: xpFloatUp 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sidebarXpFloat {
+  display: inline-block;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  margin-left: 6px;
+  animation: xpFloatUp 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes xpFloatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.9);
+  }
+}
+
+.levelUpPulse {
+  animation: levelUpCelebration 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate !important;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.8), 0 0 28px rgba(234, 179, 8, 0.5) !important;
+}
+
+.levelUpEmblemPulse {
+  animation: emblemPulse 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+  box-shadow: 0 0 24px rgba(123, 79, 201, 0.7), 0 0 40px rgba(234, 179, 8, 0.4);
+}
+
+@keyframes levelUpCelebration {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+    filter: brightness(1.25);
+  }
+  100% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes emblemPulse {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08);
+    filter: brightness(1.2);
+  }
+}
+
+.levelUpBanner {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 250px;
+  background: linear-gradient(135deg, #7B4FC9 0%, #4c1d95 100%);
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(76, 29, 149, 0.5), 0 0 0 1.5px rgba(216, 180, 254, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  z-index: 100;
+  animation: bannerPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes bannerPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Popover flutuante no modo compacto */

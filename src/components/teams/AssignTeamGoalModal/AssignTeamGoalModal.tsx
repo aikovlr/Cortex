@@ -147,12 +147,20 @@ export const AssignTeamGoalModal: React.FC<AssignTeamGoalModalProps> = ({
     setLoadingTarefas(true);
 
     tarefaService
-      .listarTarefas()
+      .listarTarefas({ status: 'Pendente' })
       .then((res) => {
         if (isMounted) {
-          setTarefas(res);
-          if (res.length > 0 && selectedTaskIds.length === 0) {
-            setSelectedTaskIds([res[0].id]);
+          const pendentes = res.filter((t) => {
+            if (t.status !== 'Pendente') return false;
+            if (t.dataVencimento) {
+              const dataVenc = new Date(t.dataVencimento);
+              if (dataVenc < new Date()) return false;
+            }
+            return true;
+          });
+          setTarefas(pendentes);
+          if (pendentes.length > 0 && selectedTaskIds.length === 0) {
+            setSelectedTaskIds([pendentes[0].id]);
           }
         }
       })

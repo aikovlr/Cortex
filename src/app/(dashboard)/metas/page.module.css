@@ -26,17 +26,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .tabBtn:hover {
   color: var(--text-primary);
   background: var(--bg-surface-secondary);
+  transform: translateY(-1px);
 }
 
 .tabBtnActive {
   color: var(--cortex-purple);
-  background: rgba(123, 79, 201, 0.12);
+  background: rgba(123, 79, 201, 0.14);
+  box-shadow: 0 1px 4px rgba(123, 79, 201, 0.18);
   font-weight: 600;
 }
 
@@ -211,6 +214,18 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  animation: tabPaneFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes tabPaneFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .taskGroupCard {
@@ -369,6 +384,22 @@
   color: var(--text-primary);
   min-width: 38px;
   text-align: right;
+}
+
+/* Transição de Sanfona / Colapsável de Tarefas Vinculadas via CSS Grid */
+.collapsibleWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsibleWrapper.collapsibleOpen {
+  grid-template-rows: 1fr;
+}
+
+.collapsibleInner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .goalsList {
@@ -881,11 +912,36 @@
 }
 
 .collapseIcon {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .collapseIconRotated {
   transform: rotate(-180deg);
+}
+
+/* Reduced motion overrides */
+:global([data-reduce-motion="true"]) .groupsContainer {
+  animation: none !important;
+}
+
+:global([data-reduce-motion="true"]) .collapsibleWrapper {
+  transition-duration: 0.01ms !important;
+}
+
+:global([data-reduce-motion="true"]) .collapseIcon {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .groupsContainer {
+    animation: none !important;
+  }
+  .collapsibleWrapper {
+    transition-duration: 0.01ms !important;
+  }
+  .collapseIcon {
+    transition: none !important;
+  }
 }
 
 .searchBarFlex {

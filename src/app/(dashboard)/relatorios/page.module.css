@@ -34,18 +34,40 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .tabBtn:hover {
   color: var(--text-primary);
   background: var(--bg-surface-hover);
+  transform: translateY(-1px);
 }
 
 .tabBtnActive {
   color: var(--cortex-purple);
-  background: rgba(123, 79, 201, 0.12);
+  background: rgba(123, 79, 201, 0.14);
+  box-shadow: 0 1px 4px rgba(123, 79, 201, 0.2);
   font-weight: 600;
+}
+
+/* Transição suave e fluida entre abas de navegação */
+.tabContentPane {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: tabPaneFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes tabPaneFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .filtersBar {
@@ -151,6 +173,18 @@
   transition: background-color 0.25s, border-color 0.25s, box-shadow 0.25s;
   display: flex;
   flex-direction: column;
+  animation: cardFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes cardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .chartCardHeader {
@@ -228,8 +262,21 @@
   overflow: visible;
 }
 
+.donutMaskSweep {
+  animation: sweepDonutFromZero 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sweepDonutFromZero {
+  from {
+    stroke-dashoffset: 427.26;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 .donutSlice {
-  transition: stroke-width 0.2s ease, opacity 0.2s ease;
+  transition: stroke-width 0.25s ease, opacity 0.25s ease;
   cursor: pointer;
 }
 
@@ -257,6 +304,21 @@
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.1;
+  animation: donutNumPop 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
+}
+
+@keyframes donutNumPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .donutCenterLabel {
@@ -423,8 +485,20 @@
   max-width: 16px;
   min-width: 8px;
   border-radius: 4px 4px 0 0;
-  min-height: 3px;
-  transition: height 0.4s ease;
+  min-height: 2px;
+  transform-origin: bottom;
+  animation: pillarRiseFromZero 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pillarRiseFromZero {
+  from {
+    transform: scaleY(0);
+    opacity: 0.2;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 
 .towerMemberLabel {
@@ -980,5 +1054,42 @@
     width: 100%;
     display: flex;
     gap: 8px;
+  }
+}
+
+/* Reduced motion overrides */
+:global([data-reduce-motion="true"]) .tabContentPane,
+:global([data-reduce-motion="true"]) .chartCard,
+:global([data-reduce-motion="true"]) .donutSvg,
+:global([data-reduce-motion="true"]) .donutCenterNumber,
+:global([data-reduce-motion="true"]) .donutMaskSweep {
+  animation: none !important;
+}
+
+:global([data-reduce-motion="true"]) .donutMaskSweep {
+  stroke-dashoffset: 0 !important;
+}
+
+:global([data-reduce-motion="true"]) .singlePillar {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabContentPane,
+  .chartCard,
+  .donutSvg,
+  .donutCenterNumber,
+  .donutMaskSweep {
+    animation: none !important;
+  }
+  .donutMaskSweep {
+    stroke-dashoffset: 0 !important;
+  }
+  .singlePillar {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
   }
 }

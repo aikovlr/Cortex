@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '@/components/common/Modal/Modal';
 import { Input } from '@/components/common/Input/Input';
 import { Button } from '@/components/common/Button/Button';
+import { Combobox } from '@/components/common/Combobox/Combobox';
 import { metaService } from '@/services/metaService';
 import { tarefaService } from '@/services/tarefaService';
 import { ConsultaTarefaDTO } from '@/types/api';
@@ -33,10 +34,11 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
   const [selectedTaskIds, setSelectedTaskIds] = useState<number[]>(
     tarefaIdPredefinida ? [tarefaIdPredefinida] : []
   );
+  const [tarefaSelecionadaId, setTarefaSelecionadaId] = useState<number | ''>('');
   const [dataFechamento, setDataFechamento] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>(tarefasDisponiveis || []);
+  const [tarefas, setTarefas] = useState<ConsultaTarefaDTO[]>([]);
   const [loadingTarefas, setLoadingTarefas] = useState(false);
 
   // Calcula a data máxima permitida: 12 meses a partir de hoje (RN15)
@@ -48,30 +50,54 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
   const minDateString = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setNome('');
+      setDataFechamento('');
+      setSelectedTaskIds(tarefaIdPredefinida ? [tarefaIdPredefinida] : []);
+      setTarefaSelecionadaId('');
+      return;
+    }
 
     let isMounted = true;
 
     async function carregar() {
       if (tarefasDisponiveis && tarefasDisponiveis.length > 0) {
         if (isMounted) {
-          setTarefas(tarefasDisponiveis);
+          const pendentes = tarefasDisponiveis.filter((t) => {
+            if (t.status !== 'Pendente') return false;
+            if (t.dataVencimento) {
+              const dataVenc = new Date(t.dataVencimento);
+              if (dataVenc < new Date()) return false;
+            }
+            return true;
+          });
+          setTarefas(pendentes);
+          if (tarefaIdPredefinida && pendentes.some((t) => t.id === tarefaIdPredefinida)) {
+            setSelectedTaskIds([tarefaIdPredefinida]);
+          }
         }
         return;
       }
 
       try {
         setLoadingTarefas(true);
-        // Exibir somente as tarefas nas quais o usuário autenticado é responsável
+        // Exibir somente tarefas nas quais o usuário autenticado é responsável e com status Pendente
         const res = await tarefaService.listarTarefas({
           responsavelId: usuario?.id,
+          status: 'Pendente',
         });
         if (isMounted) {
-          setTarefas(res);
-          if (tarefaIdPredefinida) {
+          const pendentes = res.filter((t) => {
+            if (t.status !== 'Pendente') return false;
+            if (t.dataVencimento) {
+              const dataVenc = new Date(t.dataVencimento);
+              if (dataVenc < new Date()) return false;
+            }
+            return true;
+          });
+          setTarefas(pendentes);
+          if (tarefaIdPredefinida && pendentes.some((t) => t.id === tarefaIdPredefinida)) {
             setSelectedTaskIds([tarefaIdPredefinida]);
-          } else if (res.length > 0 && selectedTaskIds.length === 0) {
-            setSelectedTaskIds([res[0].id]);
           }
         }
       } catch {
@@ -88,20 +114,40 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, tarefaIdPredefinida, tarefasDisponiveis]);
+  }, [isOpen, tarefaIdPredefinida, tarefasDisponiveis, usuario?.id]);
 
-  const toggleTask = (id: number) => {
-    setSelectedTaskIds((prev) =>
-      prev.includes(id) ? prev.filter((tId) => tId !== id) : [...prev, id]
-    );
+  // Opções para o Combobox: tarefas pendentes que ainda não foram adicionadas
+  const opcoesCombobox = useMemo(() => {
+    const jaAdicionadas = new Set(selectedTaskIds);
+    return tarefas
+      .filter((t) => !jaAdicionadas.has(t.id))
+      .map((t) => ({
+        value: t.id,
+        label: t.titulo,
+        sublabel: t.dataVencimento
+          ? `Prazo: ${new Date(t.dataVencimento).toLocaleDateString('pt-BR')}`
+          : undefined,
+      }));
+  }, [tarefas, selectedTaskIds]);
+
+  // Lista de tarefas adicionadas para exibição no card com botão de remoção
+  const tarefasAdicionadas = useMemo(() => {
+    return selectedTaskIds
+      .map((id) => tarefas.find((t) => t.id === id))
+      .filter((t): t is ConsultaTarefaDTO => Boolean(t));
+  }, [tarefas, selectedTaskIds]);
+
+  const handleAdicionarTarefa = () => {
+    if (!tarefaSelecionadaId) return;
+    const id = Number(tarefaSelecionadaId);
+    if (!selectedTaskIds.includes(id)) {
+      setSelectedTaskIds((prev) => [...prev, id]);
+    }
+    setTarefaSelecionadaId('');
   };
 
-  const toggleSelectAll = () => {
-    if (selectedTaskIds.length === tarefas.length) {
-      setSelectedTaskIds([]);
-    } else {
-      setSelectedTaskIds(tarefas.map((t) => t.id));
-    }
+  const handleRemoverTarefa = (id: number) => {
+    setSelectedTaskIds((prev) => prev.filter((tId) => tId !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,6 +188,7 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
       setNome('');
       setDataFechamento('');
       setSelectedTaskIds([]);
+      setTarefaSelecionadaId('');
       onSuccess();
       onClose();
     } catch (err: unknown) {
@@ -188,55 +235,77 @@ export const GoalCreateModal: React.FC<GoalCreateModalProps> = ({
         <div className={styles.field}>
           <div className={styles.selectionHeader}>
             <label className={styles.label}>
-              Tarefas Vinculadas ({selectedTaskIds.length} selecionada{selectedTaskIds.length !== 1 ? 's' : ''}) <span className={styles.required}>*</span>
+              Tarefas Vinculadas ({selectedTaskIds.length} adicionada{selectedTaskIds.length !== 1 ? 's' : ''}) <span className={styles.required}>*</span>
             </label>
-            {tarefas.length > 1 && (
+          </div>
+
+          <div className={styles.addTarefaBox}>
+            <div className={styles.addTarefaRow}>
+              <Combobox
+                value={tarefaSelecionadaId}
+                onChange={(val) => setTarefaSelecionadaId(val !== '' ? Number(val) : '')}
+                placeholder={
+                  loadingTarefas
+                    ? 'Carregando tarefas...'
+                    : opcoesCombobox.length === 0
+                    ? 'Nenhuma tarefa pendente disponível'
+                    : 'Selecione uma tarefa pendente...'
+                }
+                searchPlaceholder="Buscar tarefa por título..."
+                clearable
+                disabled={loadingTarefas || (opcoesCombobox.length === 0 && !tarefaSelecionadaId)}
+                options={opcoesCombobox}
+                className={styles.comboboxWrapper}
+              />
+
               <button
                 type="button"
-                className={styles.toggleAllBtn}
-                onClick={toggleSelectAll}
+                className={styles.addBtn}
+                disabled={!tarefaSelecionadaId}
+                onClick={handleAdicionarTarefa}
               >
-                {selectedTaskIds.length === tarefas.length ? 'Desmarcar todas' : 'Selecionar todas'}
+                + Adicionar Tarefa
               </button>
+            </div>
+
+            {tarefasAdicionadas.length > 0 ? (
+              <div className={styles.selectedTasksList}>
+                {tarefasAdicionadas.map((t) => (
+                  <div key={t.id} className={styles.selectedTaskCard}>
+                    <div className={styles.selectedTaskInfo}>
+                      <span className={styles.selectedTaskTitle}>{t.titulo}</span>
+                      <div className={styles.selectedTaskMeta}>
+                        <span className={styles.statusBadgePendente}>Pendente</span>
+                        {t.dataVencimento && (
+                          <span className={styles.taskPrazo}>
+                            Prazo: {new Date(t.dataVencimento).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={styles.removeBtn}
+                      onClick={() => handleRemoverTarefa(t.id)}
+                      title={`Remover tarefa ${t.titulo}`}
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyNotice}>
+                {loadingTarefas
+                  ? 'Carregando tarefas pendentes...'
+                  : 'Nenhuma tarefa vinculada. Selecione uma tarefa pendente no combobox acima e clique em "+ Adicionar Tarefa".'}
+              </div>
             )}
           </div>
 
-          <div className={styles.taskListContainer}>
-            {loadingTarefas ? (
-              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
-                Carregando tarefas disponíveis...
-              </div>
-            ) : tarefas.length === 0 ? (
-              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--cortex-gray-text)', fontSize: '13px' }}>
-                Nenhuma tarefa disponível para vinculação.
-              </div>
-            ) : (
-              tarefas.map((t) => {
-                const isSelected = selectedTaskIds.includes(t.id);
-                return (
-                  <div
-                    key={t.id}
-                    className={`${styles.taskItem} ${isSelected ? styles.taskItemSelected : ''}`}
-                    onClick={() => toggleTask(t.id)}
-                  >
-                    <input
-                      type="checkbox"
-                      className={styles.taskCheckbox}
-                      checked={isSelected}
-                      onChange={() => {}} // tratado no onClick do container
-                      aria-label={`Selecionar tarefa ${t.titulo}`}
-                    />
-                    <div className={styles.taskInfo}>
-                      <span className={styles.taskTitle}>{t.titulo}</span>
-                      <span className={styles.taskBadge}>{t.status}</span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
           <span className={styles.helpText}>
-            Toda meta deve obrigatoriamente estar associada a pelo menos uma tarefa existente. Você pode selecionar múltiplas tarefas.
+            Toda meta deve obrigatoriamente estar associada a pelo menos uma tarefa pendente existente. Você pode vincular múltiplas tarefas.
           </span>
         </div>
 

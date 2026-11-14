@@ -811,7 +811,7 @@ export default function MetasPage() {
             </button>
           </div>
         ) : (
-          <div className={styles.groupsContainer}>
+          <div key={activeTab} className={styles.groupsContainer}>
             {metasFiltradas.map((meta, index) => {
               const tarefas = getTarefasDaMeta(meta);
               const tarefasOrdenadas = [...tarefas].sort((a, b) => {
@@ -1052,61 +1052,66 @@ export default function MetasPage() {
                     </div>
                   </div>
 
-                  {!isCollapsed && (
-                    <div className={styles.goalsList}>
-                      <div className={styles.tasksSectionHeader}>
-                        <span className={styles.tasksSectionTitle}>Tarefas Vinculadas</span>
-                      </div>
-
-                      {tarefasOrdenadas.length === 0 ? (
-                        <div className={styles.emptyTasksMessage}>
-                          Nenhuma tarefa vinculada a esta meta.
+                  <div
+                    className={`${styles.collapsibleWrapper} ${!isCollapsed ? styles.collapsibleOpen : ''}`}
+                    aria-hidden={isCollapsed}
+                  >
+                    <div className={styles.collapsibleInner}>
+                      <div className={styles.goalsList}>
+                        <div className={styles.tasksSectionHeader}>
+                          <span className={styles.tasksSectionTitle}>Tarefas Vinculadas</span>
                         </div>
-                      ) : (
-                        tarefasOrdenadas.map((tarefa) => {
-                          const statusTarefa = getStatusRealTarefa(tarefa);
-                          const tarefaConcluida = statusTarefa === 'Concluida';
-                          return (
-                            <div
-                              key={tarefa.id}
-                              className={`${styles.taskItemCard} ${tarefaConcluida ? styles.goalItemCompleted : ''}`}
-                            >
-                              {/* Linha 1: titulo */}
-                              <div className={styles.taskItemTitleRow}>
-                                <span
-                                  className={`${styles.goalName} ${
-                                    tarefaConcluida ? styles.goalNameCompleted : ''
-                                  }`}
-                                >
-                                  {tarefa.titulo}
-                                </span>
-                              </div>
 
-                              {/* Linha 2: tag de status - prioridade - data de entrega */}
-                              <div className={styles.taskItemMetaRow}>
-                                <Badge
-                                  type="status"
-                                  value={statusTarefa}
-                                  className={styles.taskStatusBadge}
-                                />
-                                <Badge
-                                  type="prioridade"
-                                  value={tarefa.prioridade}
-                                  className={styles.taskPriorityBadge}
-                                />
-                                {tarefa.dataVencimento && (
-                                  <span className={styles.taskDueDate} suppressHydrationWarning>
-                                    <CalendarIcon size={12} />
-                                    <span>Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}</span>
+                        {tarefasOrdenadas.length === 0 ? (
+                          <div className={styles.emptyTasksMessage}>
+                            Nenhuma tarefa vinculada a esta meta.
+                          </div>
+                        ) : (
+                          tarefasOrdenadas.map((tarefa) => {
+                            const statusTarefa = getStatusRealTarefa(tarefa);
+                            const tarefaConcluida = statusTarefa === 'Concluida';
+                            return (
+                              <div
+                                key={tarefa.id}
+                                className={`${styles.taskItemCard} ${tarefaConcluida ? styles.goalItemCompleted : ''}`}
+                              >
+                                {/* Linha 1: titulo */}
+                                <div className={styles.taskItemTitleRow}>
+                                  <span
+                                    className={`${styles.goalName} ${
+                                      tarefaConcluida ? styles.goalNameCompleted : ''
+                                    }`}
+                                  >
+                                    {tarefa.titulo}
                                   </span>
-                                )}
+                                </div>
+
+                                {/* Linha 2: tag de status - prioridade - data de entrega */}
+                                <div className={styles.taskItemMetaRow}>
+                                  <Badge
+                                    type="status"
+                                    value={statusTarefa}
+                                    className={styles.taskStatusBadge}
+                                  />
+                                  <Badge
+                                    type="prioridade"
+                                    value={tarefa.prioridade}
+                                    className={styles.taskPriorityBadge}
+                                  />
+                                  {tarefa.dataVencimento && (
+                                    <span className={styles.taskDueDate} suppressHydrationWarning>
+                                      <CalendarIcon size={12} />
+                                      <span>Entrega: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}</span>
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })
-                      )}
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })}

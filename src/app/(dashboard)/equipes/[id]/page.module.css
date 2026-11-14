@@ -230,7 +230,7 @@
 }
 
 .memberExpandIcon {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .memberExpandIconRotated {
@@ -244,11 +244,35 @@
 
 .memberDetailsRow {
   background-color: var(--bg-surface-secondary);
+}
+
+.memberDetailsRow.memberDetailsRowOpen {
   border-bottom: 1px solid var(--border-light);
 }
 
 .memberDetailsTd {
+  padding: 0 20px 0 52px;
+  transition: padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.memberDetailsRow.memberDetailsRowOpen .memberDetailsTd {
   padding: 0 20px 18px 52px;
+}
+
+/* Transição de Sanfona / Colapsável via CSS Grid */
+.collapsibleWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsibleWrapper.collapsibleOpen {
+  grid-template-rows: 1fr;
+}
+
+.collapsibleInner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .memberDetailsCard {
@@ -1040,6 +1064,26 @@
 
   .ticketGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Reduced motion overrides */
+:global([data-reduce-motion="true"]) .collapsibleWrapper {
+  transition-duration: 0.01ms !important;
+}
+
+:global([data-reduce-motion="true"]) .memberExpandIcon,
+:global([data-reduce-motion="true"]) .memberDetailsTd {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapsibleWrapper {
+    transition-duration: 0.01ms !important;
+  }
+  .memberExpandIcon,
+  .memberDetailsTd {
+    transition: none !important;
   }
 }
 

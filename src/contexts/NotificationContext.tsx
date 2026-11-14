@@ -13,7 +13,8 @@ export type TipoNotificacao =
   | 'ticket'
   | 'sugestao'
   | 'equipe'
-  | 'meta';
+  | 'meta'
+  | 'meta_expirada';
 
 export interface NotificacaoItem {
   id: string;
@@ -102,10 +103,25 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             (n.titulo?.toLowerCase().includes('resolvido') ||
               n.titulo?.toLowerCase().includes('resposta')));
 
+        const isMetaExpirada =
+          n.tipo === 'meta_expirada' ||
+          Boolean(n.titulo && (n.titulo.toLowerCase().includes('penalidade') || n.titulo.toLowerCase().includes('meta expirada'))) ||
+          Boolean(n.mensagem && (n.mensagem.toLowerCase().includes('penalidade') || n.mensagem.toLowerCase().includes('deduzidos')));
+
+        const isMeta =
+          isMetaExpirada ||
+          n.tipo === 'meta' ||
+          Boolean(n.titulo && n.titulo.toLowerCase().includes('meta')) ||
+          Boolean(n.link && n.link.startsWith('/metas'));
+
         if (isReporteAberto) {
           tipo = 'ticket_criador';
         } else if (isRespostaTicket) {
           tipo = 'resposta_ticket';
+        } else if (isMetaExpirada) {
+          tipo = 'meta_expirada';
+        } else if (isMeta) {
+          tipo = 'meta';
         }
 
         return {
@@ -115,9 +131,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           mensagem: n.mensagem,
           dataCriacao: n.dataCriacao,
           lida: Boolean(n.lida),
-          destaque: isReporteAberto ? true : Boolean(n.destaque),
+          destaque: isReporteAberto ? true : (isMetaExpirada ? false : Boolean(n.destaque)),
           tarefaId: n.tarefaId || undefined,
-          link: n.link || '/minhas-tarefas',
+          link: n.link || (isMeta ? '/metas' : '/minhas-tarefas'),
         };
       });
 

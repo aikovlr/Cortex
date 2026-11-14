@@ -575,65 +575,76 @@ export default function EquipeDetalhesPage({
                         )}
                       </tr>
 
-                      {isExpanded && (
-                        <tr className={styles.memberDetailsRow}>
-                          <td colSpan={isAdminOrOwner ? 4 : 3} className={styles.memberDetailsTd}>
-                            <div className={styles.memberDetailsCard}>
-                              <div className={styles.memberDetailsGrid}>
-                                <div className={styles.detailItem}>
-                                  <span className={styles.detailLabel}>Nome Completo</span>
-                                  <span className={styles.detailValue}>{nome}</span>
-                                </div>
+                      <tr
+                        className={`${styles.memberDetailsRow} ${
+                          isExpanded ? styles.memberDetailsRowOpen : ''
+                        }`}
+                        aria-hidden={!isExpanded}
+                      >
+                        <td colSpan={isAdminOrOwner ? 4 : 3} className={styles.memberDetailsTd}>
+                          <div
+                            className={`${styles.collapsibleWrapper} ${
+                              isExpanded ? styles.collapsibleOpen : ''
+                            }`}
+                          >
+                            <div className={styles.collapsibleInner}>
+                              <div className={styles.memberDetailsCard}>
+                                <div className={styles.memberDetailsGrid}>
+                                  <div className={styles.detailItem}>
+                                    <span className={styles.detailLabel}>Nome Completo</span>
+                                    <span className={styles.detailValue}>{nome}</span>
+                                  </div>
 
-                                <div className={styles.detailItem}>
-                                  <span className={styles.detailLabel}>E-mail</span>
-                                  <span className={styles.detailValue}>
-                                    {email ? (
-                                      <a href={`mailto:${email}`} className={styles.detailLink}>
-                                        {email}
-                                      </a>
-                                    ) : (
-                                      <span className={styles.detailEmpty}>Não informado</span>
-                                    )}
-                                  </span>
-                                </div>
+                                  <div className={styles.detailItem}>
+                                    <span className={styles.detailLabel}>E-mail</span>
+                                    <span className={styles.detailValue}>
+                                      {email ? (
+                                        <a href={`mailto:${email}`} className={styles.detailLink}>
+                                          {email}
+                                        </a>
+                                      ) : (
+                                        <span className={styles.detailEmpty}>Não informado</span>
+                                      )}
+                                    </span>
+                                  </div>
 
-                                <div className={styles.detailItem}>
-                                  <span className={styles.detailLabel}>Telefone / Contato</span>
-                                  <span className={styles.detailValue}>
-                                    {telefone ? (
-                                      <a href={`tel:${telefone}`} className={styles.detailLink}>
-                                        {telefone}
-                                      </a>
-                                    ) : (
-                                      <span className={styles.detailEmpty}>Não cadastrado</span>
-                                    )}
-                                  </span>
-                                </div>
+                                  <div className={styles.detailItem}>
+                                    <span className={styles.detailLabel}>Telefone / Contato</span>
+                                    <span className={styles.detailValue}>
+                                      {telefone ? (
+                                        <a href={`tel:${telefone}`} className={styles.detailLink}>
+                                          {telefone}
+                                        </a>
+                                      ) : (
+                                        <span className={styles.detailEmpty}>Não cadastrado</span>
+                                      )}
+                                    </span>
+                                  </div>
 
-                                <div className={styles.detailItem}>
-                                  <span className={styles.detailLabel}>Cargo na Equipe</span>
-                                  <span className={styles.detailValue}>
-                                    <Badge type="cargo" value={membro.cargo} />
-                                  </span>
-                                </div>
+                                  <div className={styles.detailItem}>
+                                    <span className={styles.detailLabel}>Cargo na Equipe</span>
+                                    <span className={styles.detailValue}>
+                                      <Badge type="cargo" value={membro.cargo} />
+                                    </span>
+                                  </div>
 
-                                <div className={styles.detailItem}>
-                                  <span className={styles.detailLabel}>Integrante Desde</span>
-                                  <span className={styles.detailValue} suppressHydrationWarning>
-                                    {formatarData(membro.dataEntrada)}
-                                  </span>
-                                </div>
+                                  <div className={styles.detailItem}>
+                                    <span className={styles.detailLabel}>Integrante Desde</span>
+                                    <span className={styles.detailValue} suppressHydrationWarning>
+                                      {formatarData(membro.dataEntrada)}
+                                    </span>
+                                  </div>
 
-                                <div className={styles.detailItem}>
-                                  <span className={styles.detailLabel}>ID do Usuário</span>
-                                  <span className={styles.detailValue}>#{membro.usuarioId}</span>
+                                  <div className={styles.detailItem}>
+                                    <span className={styles.detailLabel}>ID do Usuário</span>
+                                    <span className={styles.detailValue}>#{membro.usuarioId}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </td>
-                        </tr>
-                      )}
+                          </div>
+                        </td>
+                      </tr>
                     </React.Fragment>
                   );
                 })}
@@ -735,47 +746,54 @@ export default function EquipeDetalhesPage({
                       </div>
                     </div>
 
-                    {isExpanded && (
-                      <div className={styles.memberMobileExpanded}>
-                        <div className={styles.memberDetailsGrid}>
-                          <div className={styles.detailItem}>
-                            <span className={styles.detailLabel}>Nome Completo</span>
-                            <span className={styles.detailValue}>{nome}</span>
-                          </div>
+                    <div
+                      className={`${styles.collapsibleWrapper} ${
+                        isExpanded ? styles.collapsibleOpen : ''
+                      }`}
+                      aria-hidden={!isExpanded}
+                    >
+                      <div className={styles.collapsibleInner}>
+                        <div className={styles.memberMobileExpanded}>
+                          <div className={styles.memberDetailsGrid}>
+                            <div className={styles.detailItem}>
+                              <span className={styles.detailLabel}>Nome Completo</span>
+                              <span className={styles.detailValue}>{nome}</span>
+                            </div>
 
-                          <div className={styles.detailItem}>
-                            <span className={styles.detailLabel}>E-mail</span>
-                            <span className={styles.detailValue}>
-                              {email ? (
-                                <a href={`mailto:${email}`} className={styles.detailLink}>
-                                  {email}
-                                </a>
-                              ) : (
-                                <span className={styles.detailEmpty}>Não informado</span>
-                              )}
-                            </span>
-                          </div>
+                            <div className={styles.detailItem}>
+                              <span className={styles.detailLabel}>E-mail</span>
+                              <span className={styles.detailValue}>
+                                {email ? (
+                                  <a href={`mailto:${email}`} className={styles.detailLink}>
+                                    {email}
+                                  </a>
+                                ) : (
+                                  <span className={styles.detailEmpty}>Não informado</span>
+                                )}
+                              </span>
+                            </div>
 
-                          <div className={styles.detailItem}>
-                            <span className={styles.detailLabel}>Telefone / Contato</span>
-                            <span className={styles.detailValue}>
-                              {telefone ? (
-                                <a href={`tel:${telefone}`} className={styles.detailLink}>
-                                  {telefone}
-                                </a>
-                              ) : (
-                                <span className={styles.detailEmpty}>Não cadastrado</span>
-                              )}
-                            </span>
-                          </div>
+                            <div className={styles.detailItem}>
+                              <span className={styles.detailLabel}>Telefone / Contato</span>
+                              <span className={styles.detailValue}>
+                                {telefone ? (
+                                  <a href={`tel:${telefone}`} className={styles.detailLink}>
+                                    {telefone}
+                                  </a>
+                                ) : (
+                                  <span className={styles.detailEmpty}>Não cadastrado</span>
+                                )}
+                              </span>
+                            </div>
 
-                          <div className={styles.detailItem}>
-                            <span className={styles.detailLabel}>ID do Usuário</span>
-                            <span className={styles.detailValue}>#{membro.usuarioId}</span>
+                            <div className={styles.detailItem}>
+                              <span className={styles.detailLabel}>ID do Usuário</span>
+                              <span className={styles.detailValue}>#{membro.usuarioId}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}

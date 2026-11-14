@@ -74,7 +74,16 @@ const TIPOS_NOTIFICACAO_CONFIG = [
 
 export default function ConfiguracoesPage() {
   const { usuario, recarregarPerfil, logout } = useAuth();
-  const { fontSize, setFontSize, highContrast, setHighContrast, theme, setTheme } = useAccessibility();
+  const {
+    fontSize,
+    setFontSize,
+    highContrast,
+    setHighContrast,
+    theme,
+    setTheme,
+    reduceMotion,
+    setReduceMotion,
+  } = useAccessibility();
   const { showToast } = useToast();
   const { openAction, dialogProps } = useCriticalAction();
 
@@ -402,6 +411,14 @@ export default function ConfiguracoesPage() {
     setHighContrast(checked);
     showToast(
       checked ? 'Texto em alto contraste ativado!' : 'Texto em alto contraste desativado!',
+      'info'
+    );
+  };
+
+  const handleToggleReduceMotion = (checked: boolean) => {
+    setReduceMotion(checked);
+    showToast(
+      checked ? 'Redução de animações ativada!' : 'Animações completas ativadas!',
       'info'
     );
   };
@@ -906,6 +923,33 @@ export default function ConfiguracoesPage() {
                     type="checkbox"
                     checked={highContrast}
                     onChange={(e) => handleToggleHighContrast(e.target.checked)}
+                  />
+                  <span className={styles.slider}></span>
+                </label>
+              </div>
+            </div>
+
+            {/* Opção de Redução de Animações (Acessibilidade) */}
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Movimento e Animações</h2>
+                <p className={styles.cardSubtitle}>
+                  Personalize a intensidade de efeitos visuais, transições e contadores animados na interface
+                </p>
+              </div>
+
+              <div className={styles.toggleRow} style={{ borderBottom: 'none', padding: '6px 0' }}>
+                <div className={styles.toggleLabel}>
+                  <span className={styles.toggleTitle}>Reduzir animações</span>
+                  <span className={styles.toggleDesc}>
+                    Diminui efeitos de movimento, contadores animados e transições espaciais para maior conforto e acessibilidade
+                  </span>
+                </div>
+                <label className={styles.switch}>
+                  <input
+                    type="checkbox"
+                    checked={reduceMotion}
+                    onChange={(e) => handleToggleReduceMotion(e.target.checked)}
                   />
                   <span className={styles.slider}></span>
                 </label>

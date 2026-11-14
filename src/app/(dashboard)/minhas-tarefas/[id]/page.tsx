@@ -21,6 +21,7 @@ import { SuggestionModal } from '@/components/tasks/SuggestionModal/SuggestionMo
 import { ReportTicketModal } from '@/components/tasks/ReportTicketModal/ReportTicketModal';
 import { AttachmentGallery } from '@/components/tasks/AttachmentGallery/AttachmentGallery';
 import { MarkdownRenderer } from '@/components/common/MarkdownRenderer/MarkdownRenderer';
+import { AnimatedCounter } from '@/components/common/AnimatedCounter/AnimatedCounter';
 import {
   PaperclipIcon,
   FileTextIcon,
@@ -30,6 +31,8 @@ import {
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
+  TrophyIcon,
+  SparklesIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './page.module.css';
 
@@ -357,8 +360,10 @@ export default function DetalhesTarefaPage() {
               </div>
             )}
 
-            {/* ABA 1: DETALHES DA TAREFA */}
-            {activeTab === 'detalhes' && (
+            {/* CONTEÚDO DA ABA ATIVA COM TRANSIÇÃO */}
+            <div key={activeTab} className={styles.tabContentPane}>
+              {/* ABA 1: DETALHES DA TAREFA */}
+              {activeTab === 'detalhes' && (
               <>
                 {/* Container Principal da Tarefa */}
                 <div className={styles.detailsCard}>
@@ -499,18 +504,45 @@ export default function DetalhesTarefaPage() {
                         Anexe aqui os arquivos de resposta para entregar a tarefa.
                       </span>
                       {respostaAvaliada && (
-                        <div style={{ marginTop: '8px' }}>
-                          <span style={{
-                            display: 'inline-block',
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            backgroundColor: 'var(--cortex-green-badge-bg, #D4EDDA)',
-                            color: 'var(--cortex-green-badge-text, #155724)',
-                            fontWeight: 600,
-                            fontSize: '13px'
-                          }}>
-                            Avaliação da entrega: {respostaAvaliada.nota} / {tarefa.pontuacao !== null && tarefa.pontuacao !== undefined ? `${tarefa.pontuacao} pts` : '100 pts'}
-                          </span>
+                        <div className={styles.gradeShowcaseCard}>
+                          <div className={styles.gradeShowcaseHeader}>
+                            <div className={styles.gradeShowcaseTitleGroup}>
+                              <div className={styles.gradeShowcaseIconWrapper}>
+                                <TrophyIcon size={18} className={styles.gradeTrophyIcon} />
+                              </div>
+                              <div>
+                                <span className={styles.gradeShowcaseLabel}>Avaliação da Entrega</span>
+                                <span className={styles.gradeShowcaseHint}>Nota atribuída pelo responsável</span>
+                              </div>
+                            </div>
+
+                            <div className={styles.gradeShowcaseScoreBox}>
+                              <span className={styles.gradeShowcaseScoreValue}>
+                                <AnimatedCounter value={respostaAvaliada.nota ?? 0} duration={1200} />
+                              </span>
+                              <span className={styles.gradeShowcaseScoreMax}>
+                                / {tarefa.pontuacao !== null && tarefa.pontuacao !== undefined ? `${tarefa.pontuacao} pts` : '100 pts'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className={styles.gradeMeterTrack}>
+                            <div
+                              className={styles.gradeMeterFill}
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  Math.round(
+                                    ((respostaAvaliada.nota ?? 0) /
+                                      (tarefa.pontuacao !== null && tarefa.pontuacao !== undefined && tarefa.pontuacao > 0
+                                        ? tarefa.pontuacao
+                                        : 100)) *
+                                      100
+                                  )
+                                )}%`,
+                              }}
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -705,6 +737,7 @@ export default function DetalhesTarefaPage() {
                 </div>
               </div>
             )}
+            </div>
           </>
         )}
       </main>

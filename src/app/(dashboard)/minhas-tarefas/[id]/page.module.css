@@ -230,6 +230,146 @@
   color: var(--cortex-gray-text);
 }
 
+/* Showcase e animação da visualização de nota atribuída */
+.gradeShowcaseCard {
+  margin-top: 14px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(124, 58, 237, 0.1) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.1);
+  animation: gradeCardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes gradeCardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gradeShowcaseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gradeShowcaseTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gradeShowcaseIconWrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34d399;
+}
+
+.gradeTrophyIcon {
+  animation: gradeTrophyFloat 2.5s ease-in-out infinite;
+}
+
+@keyframes gradeTrophyFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.08);
+  }
+}
+
+.gradeShowcaseLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #a7f3d0;
+  letter-spacing: -0.01em;
+}
+
+.gradeShowcaseHint {
+  display: block;
+  font-size: 11.5px;
+  color: var(--cortex-gray-text);
+}
+
+.gradeShowcaseScoreBox {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gradeShowcaseScoreValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #6ee7b7;
+  letter-spacing: -0.02em;
+}
+
+.gradeShowcaseScoreMax {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cortex-gray-text);
+}
+
+.gradeMeterTrack {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.gradeMeterFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #a78bfa 100%);
+  border-radius: 999px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reduced motion overrides */
+:global([data-reduce-motion="true"]) .tabContentPane,
+:global([data-reduce-motion="true"]) .gradeShowcaseCard,
+:global([data-reduce-motion="true"]) .gradeTrophyIcon {
+  animation: none !important;
+}
+
+:global([data-reduce-motion="true"]) .gradeMeterFill {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabContentPane,
+  .gradeShowcaseCard,
+  .gradeTrophyIcon {
+    animation: none !important;
+  }
+  .gradeMeterFill {
+    transition: none !important;
+  }
+}
+
 .metaGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -350,18 +490,40 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .tabBtn:hover {
   color: var(--text-primary, #ffffff);
   background: var(--bg-surface-hover, rgba(255, 255, 255, 0.04));
+  transform: translateY(-1px);
 }
 
 .tabBtnActive {
   color: var(--cortex-purple);
-  background: rgba(123, 79, 201, 0.12);
+  background: rgba(123, 79, 201, 0.14);
+  box-shadow: 0 1px 4px rgba(123, 79, 201, 0.18);
   font-weight: 600;
+}
+
+/* Transição suave entre abas */
+.tabContentPane {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: tabPaneFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes tabPaneFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tabCount {

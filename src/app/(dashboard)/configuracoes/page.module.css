@@ -26,17 +26,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .tabBtn:hover {
   color: var(--text-primary);
   background: var(--bg-surface-hover);
+  transform: translateY(-1px);
 }
 
 .tabBtnActive {
   color: var(--cortex-purple);
-  background: rgba(123, 79, 201, 0.12);
+  background: rgba(123, 79, 201, 0.14);
+  box-shadow: 0 1px 4px rgba(123, 79, 201, 0.18);
   font-weight: 600;
 }
 
@@ -44,6 +47,18 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  animation: tabPaneFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes tabPaneFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card {
@@ -806,5 +821,16 @@ input:checked + .slider:before {
   font-size: 11px;
   color: var(--cortex-gray-text);
   font-weight: 600;
+}
+
+/* Reduced motion overrides */
+:global([data-reduce-motion="true"]) .tabContent {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabContent {
+    animation: none !important;
+  }
 }
 

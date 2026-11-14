@@ -533,18 +533,40 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .tabBtn:hover {
   color: var(--text-primary);
   background: var(--bg-surface-hover);
+  transform: translateY(-1px);
 }
 
 .tabBtnActive {
   color: var(--cortex-purple);
-  background: rgba(123, 79, 201, 0.1);
+  background: rgba(123, 79, 201, 0.14);
+  box-shadow: 0 1px 4px rgba(123, 79, 201, 0.18);
   font-weight: 600;
+}
+
+/* Transição de conteúdo entre abas */
+.tabContentPane {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: tabPaneFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes tabPaneFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tabCount {
@@ -861,13 +883,29 @@
 
 .chevronIcon {
   color: var(--cortex-gray-text);
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
 }
 
 .chevronOpen {
   transform: rotate(180deg);
+}
+
+/* Transição de Sanfona / Colapsável via CSS Grid */
+.collapsibleWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsibleWrapper.collapsibleOpen {
+  grid-template-rows: 1fr;
+}
+
+.collapsibleInner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .collapsibleBody {
@@ -971,6 +1009,91 @@
 .gradeSubmitBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Animações de Atribuição de Nota e Sucesso */
+.gradeBadgeFeedback {
+  background-color: rgba(16, 185, 129, 0.35) !important;
+  border-color: #10b981 !important;
+  color: #a7f3d0 !important;
+  animation: gradeBadgePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes gradeBadgePop {
+  0% {
+    transform: scale(0.92);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+.gradeBadgeCheck {
+  color: #34d399;
+  margin-right: 4px;
+  animation: checkPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.gradeSubmitBtnSuccess {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  animation: btnSuccessPulse 0.4s ease-out;
+}
+
+@keyframes btnSuccessPulse {
+  0% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Reduced motion overrides */
+:global([data-reduce-motion="true"]) .collapsibleWrapper {
+  transition-duration: 0.01ms !important;
+}
+
+:global([data-reduce-motion="true"]) .tabContentPane,
+:global([data-reduce-motion="true"]) .gradeBadgeFeedback,
+:global([data-reduce-motion="true"]) .gradeBadgeCheck,
+:global([data-reduce-motion="true"]) .gradeSubmitBtnSuccess {
+  animation: none !important;
+}
+
+:global([data-reduce-motion="true"]) .chevronIcon {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapsibleWrapper {
+    transition-duration: 0.01ms !important;
+  }
+  .gradeBadgeFeedback,
+  .gradeBadgeCheck,
+  .gradeSubmitBtnSuccess {
+    animation: none !important;
+  }
+  .chevronIcon {
+    transition: none !important;
+  }
 }
 
 @media (max-width: 768px) {

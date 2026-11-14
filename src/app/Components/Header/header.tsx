@@ -18,6 +18,9 @@ import {
   LightbulbIcon,
   TrashIcon,
   UsersIcon,
+  TargetIcon,
+  ClipboardTextIcon,
+  ClipboardDataIcon,
   ChevronDownIcon,
 } from '@/components/common/Icons/Icons';
 import styles from './header.module.css';
@@ -246,7 +249,7 @@ export default function Header({
       let finalLink = item.link;
 
       // Se for notificação de meta, adiciona parâmetros de metaNome/metaId/tab e highlight
-      if (item.tipo === 'meta') {
+      if (item.tipo === 'meta' || (item.tipo as string) === 'meta_expirada' || item.link?.includes('/metas') || item.titulo?.toLowerCase().includes('meta')) {
         if (!finalLink.includes('metaId=') && !finalLink.includes('metaNome=')) {
           const match =
             item.mensagem.match(/["'“]([^"'”]+)["'”]/) ||
@@ -307,7 +310,43 @@ export default function Header({
     );
   };
 
+  const isPenalidadeXpMetaItem = (item: NotificacaoItem) => {
+    return (
+      item.tipo === 'meta_expirada' ||
+      Boolean(item.titulo?.toLowerCase().includes('penalidade')) ||
+      Boolean(item.titulo?.toLowerCase().includes('meta expirada')) ||
+      Boolean(item.mensagem?.toLowerCase().includes('deduzidos')) ||
+      Boolean(item.mensagem?.toLowerCase().includes('penalidade'))
+    );
+  };
+
+  const isMetaNotificationItem = (item: NotificacaoItem) => {
+    return (
+      isPenalidadeXpMetaItem(item) ||
+      item.tipo === 'meta' ||
+      (item.tipo as string) === 'meta_expirada' ||
+      Boolean(item.titulo?.toLowerCase().includes('meta')) ||
+      Boolean(item.link?.includes('/metas'))
+    );
+  };
+
   const renderIcon = (item: NotificacaoItem) => {
+    if (isPenalidadeXpMetaItem(item)) {
+      return (
+        <div className={`${styles.notificationIcon} ${styles.iconMetaPenalidade}`} title="Meta">
+          <TargetIcon size={18} />
+        </div>
+      );
+    }
+
+    if (isMetaNotificationItem(item)) {
+      return (
+        <div className={`${styles.notificationIcon} ${styles.iconMeta}`} title="Meta">
+          <TargetIcon size={18} />
+        </div>
+      );
+    }
+
     if (isTicketReporteItem(item)) {
       return (
         <div className={`${styles.notificationIcon} ${styles.iconDestaque}`} title="Ticket de Reporte">
@@ -320,7 +359,7 @@ export default function Header({
       case 'tarefa_vencida':
         return (
           <div className={`${styles.notificationIcon} ${styles.iconDestaque}`} title="Tarefa Vencida">
-            <AlertCircleIcon size={18} />
+            <ClipboardTextIcon size={18} />
           </div>
         );
       case 'ticket_criador':
@@ -336,7 +375,11 @@ export default function Header({
             className={`${styles.notificationIcon} ${styles.iconTarefa}`}
             title={item.tipo === 'tarefa_urgente' ? 'Tarefa Urgente' : 'Tarefa'}
           >
-            <FileTextIcon size={18} />
+            {item.link?.includes('tarefas-atribuidas') ? (
+              <ClipboardDataIcon size={18} />
+            ) : (
+              <ClipboardTextIcon size={18} />
+            )}
           </div>
         );
       case 'resposta_ticket':
@@ -361,19 +404,27 @@ export default function Header({
       case 'meta':
         return (
           <div className={`${styles.notificationIcon} ${styles.iconMeta}`} title="Meta">
-            <CheckCircleIcon size={18} />
+            <TargetIcon size={18} />
           </div>
         );
       default:
         return (
           <div className={`${styles.notificationIcon} ${styles.iconTarefa}`}>
-            <FileTextIcon size={18} />
+            <ClipboardTextIcon size={18} />
           </div>
         );
     }
   };
 
   const renderTag = (item: NotificacaoItem) => {
+    if (isPenalidadeXpMetaItem(item)) {
+      return <span className={`${styles.notificationTag} ${styles.tagMetaPenalidade}`}>Meta</span>;
+    }
+
+    if (isMetaNotificationItem(item)) {
+      return <span className={`${styles.notificationTag} ${styles.tagMeta}`}>Meta</span>;
+    }
+
     if (isTicketReporteItem(item)) {
       return <span className={`${styles.notificationTag} ${styles.tagDestaque}`}>Reporte Urgente</span>;
     }
@@ -702,10 +753,12 @@ export default function Header({
               ) : (
                 <div className={styles.notificationsList}>
                   {(filtro === 'naoLidas' ? notificacoes.filter((n) => !n.lida) : notificacoes).map((item) => {
+                    const isPenalidade = isPenalidadeXpMetaItem(item);
                     const isVencidaOuReporte =
-                      item.tipo === 'tarefa_vencida' ||
-                      isTicketReporteItem(item) ||
-                      Boolean(item.destaque);
+                      !isPenalidade &&
+                      (item.tipo === 'tarefa_vencida' ||
+                        isTicketReporteItem(item) ||
+                        Boolean(item.destaque));
                     const isUrgente = item.tipo === 'tarefa_urgente';
                     const stackMatch = item.titulo.match(/\((\d+)\)$/);
                     const stackCount = stackMatch ? stackMatch[1] : null;

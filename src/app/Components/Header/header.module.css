@@ -646,6 +646,11 @@
   color: #059669;
 }
 
+.iconMetaPenalidade {
+  background-color: rgba(239, 68, 68, 0.16);
+  color: #dc2626;
+}
+
 .notificationBody {
   display: flex;
   flex-direction: column;
@@ -701,6 +706,11 @@
   color: #059669;
 }
 
+.tagMetaPenalidade {
+  background-color: rgba(239, 68, 68, 0.16);
+  color: #dc2626;
+}
+
 .notificationTime {
   font-size: 11px;
   color: var(--cortex-gray-text);
@@ -733,9 +743,7 @@
   color: var(--text-primary);
   line-height: 1.3;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .titleTarefaVencida,
@@ -752,11 +760,7 @@
   color: var(--cortex-gray-text);
   line-height: 1.4;
   margin: 0;
-  line-clamp: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  word-break: break-word;
 }
 
 .unreadDot {

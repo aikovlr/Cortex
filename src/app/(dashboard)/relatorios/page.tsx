@@ -18,8 +18,10 @@ import { Badge } from '@/components/common/Badge/Badge';
 import { Modal } from '@/components/common/Modal/Modal';
 import { Button } from '@/components/common/Button/Button';
 import { DownloadIcon } from '@/components/common/Icons/Icons';
+import { AnimatedCounter } from '@/components/common/AnimatedCounter/AnimatedCounter';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useAccessibility } from '@/contexts/AccessibilityContext';
 import styles from './page.module.css';
 
 type ReportView = 'personal' | 'created' | 'team';
@@ -27,6 +29,7 @@ type ReportView = 'personal' | 'created' | 'team';
 export default function RelatoriosPage() {
   const { usuario } = useAuth();
   const { showToast } = useToast();
+  const { reduceMotion } = useAccessibility();
 
   const [view, setView] = useState<ReportView>('personal');
   const [loading, setLoading] = useState(true);
@@ -1804,7 +1807,7 @@ export default function RelatoriosPage() {
             Nenhum dado encontrado para os filtros informados.
           </div>
         ) : (
-          <>
+          <div key={view} className={styles.tabContentPane}>
             {/* Seção dos Gráficos de Pizza Lado a Lado: Tarefas e Conclusão de Metas */}
             <div className={styles.pieChartsGrid}>
               {/* Gráfico 1: Pizza só com borda externa contendo o número de tarefas e total central */}
@@ -1814,15 +1817,15 @@ export default function RelatoriosPage() {
                   <div className={styles.chartHeaderLegend}>
                     <span className={styles.legendPill}>
                       <span className={styles.legendDot} style={{ backgroundColor: '#10b981' }} />
-                      Concluídas ({metricas.concluidas})
+                      Concluídas (<AnimatedCounter value={metricas.concluidas} duration={2200} />)
                     </span>
                     <span className={styles.legendPill}>
                       <span className={styles.legendDot} style={{ backgroundColor: '#f59e0b' }} />
-                      Pendentes ({metricas.pendentes})
+                      Pendentes (<AnimatedCounter value={metricas.pendentes} duration={2200} />)
                     </span>
                     <span className={styles.legendPill}>
                       <span className={styles.legendDot} style={{ backgroundColor: '#ef4444' }} />
-                      Atrasadas ({metricas.atrasadas})
+                      Atrasadas (<AnimatedCounter value={metricas.atrasadas} duration={2200} />)
                     </span>
                   </div>
                 </div>
@@ -1830,12 +1833,31 @@ export default function RelatoriosPage() {
                 <div className={styles.donutBodyCentered}>
                   <div className={styles.donutChartWrapper}>
                     <svg
+                      key={`donut-tasks-${view}-${metricas.totalTarefas}-${metricas.concluidas}-${metricas.pendentes}`}
                       width="190"
                       height="190"
                       viewBox="0 0 190 190"
                       className={styles.donutSvg}
                       aria-label="Gráfico de pizza com borda externa fina do número de tarefas por status"
                     >
+                      <defs>
+                        <mask id="donutSweepMaskTasks" maskUnits="userSpaceOnUse">
+                          <rect x="0" y="0" width="190" height="190" fill="black" />
+                          <circle
+                            cx="95"
+                            cy="95"
+                            r="68"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="12"
+                            strokeDasharray="427.26"
+                            strokeDashoffset="427.26"
+                            transform="rotate(-90 95 95)"
+                            className={styles.donutMaskSweep}
+                          />
+                        </mask>
+                      </defs>
+
                       {/* Borda externa fina de trilho base (fundo sutil) */}
                       <circle
                         cx="95"
@@ -1846,32 +1868,36 @@ export default function RelatoriosPage() {
                         strokeWidth="8"
                         opacity="0.35"
                       />
-                      {/* Segmentos coloridos da borda externa fina */}
-                      {donutSlices.map((slice) => {
-                        if (slice.count === 0) return null;
-                        return (
-                          <circle
-                            key={slice.id}
-                            cx="95"
-                            cy="95"
-                            r="68"
-                            fill="none"
-                            stroke={slice.color}
-                            strokeWidth="8"
-                            strokeDasharray={`${slice.length} ${2 * Math.PI * 68 - slice.length}`}
-                            strokeDashoffset={-slice.offset}
-                            transform="rotate(-90 95 95)"
-                            className={styles.donutSlice}
-                          >
-                            <title>{`${slice.label}: ${slice.count} tarefas (${slice.percent.toFixed(1)}%)`}</title>
-                          </circle>
-                        );
-                      })}
+                      {/* Segmentos coloridos da borda externa fina revelados do 0 via máscara na GPU */}
+                      <g mask="url(#donutSweepMaskTasks)">
+                        {donutSlices.map((slice) => {
+                          if (slice.count === 0) return null;
+                          return (
+                            <circle
+                              key={slice.id}
+                              cx="95"
+                              cy="95"
+                              r="68"
+                              fill="none"
+                              stroke={slice.color}
+                              strokeWidth="8"
+                              strokeDasharray={`${slice.length} ${2 * Math.PI * 68 - slice.length}`}
+                              strokeDashoffset={-slice.offset}
+                              transform="rotate(-90 95 95)"
+                              className={styles.donutSlice}
+                            >
+                              <title>{`${slice.label}: ${slice.count} tarefas (${slice.percent.toFixed(1)}%)`}</title>
+                            </circle>
+                          );
+                        })}
+                      </g>
                     </svg>
 
                     {/* Texto interno com o Total de Tarefas */}
                     <div className={styles.donutCenter}>
-                      <span className={styles.donutCenterNumber}>{metricas.totalTarefas}</span>
+                      <span className={styles.donutCenterNumber}>
+                        <AnimatedCounter value={metricas.totalTarefas} duration={2400} />
+                      </span>
                       <span className={styles.donutCenterLabel}>Total de Tarefas</span>
                     </div>
                   </div>
@@ -1880,15 +1906,19 @@ export default function RelatoriosPage() {
                 {/* Nota de rodapé: Taxa de Conclusão e Média de Notas */}
                 <div className={styles.chartFooter}>
                   <span className={styles.footerNoteText}>
-                    * Taxa de Conclusão: <strong>{metricas.taxaConclusaoPercentual}%</strong> ({metricas.concluidas} de {metricas.totalTarefas} tarefas concluídas)
+                    * Taxa de Conclusão: <strong><AnimatedCounter value={metricas.taxaConclusaoPercentual} duration={2200} />%</strong> ({metricas.concluidas} de {metricas.totalTarefas} tarefas concluídas)
                     {view === 'personal' && (
                       <>
                         {' • '}
                         Média de Notas:{' '}
                         <strong>
-                          {metricas.mediaNotas !== null && metricas.mediaNotas !== undefined
-                            ? `${metricas.mediaNotas} pts`
-                            : 'Sem avaliações'}
+                          {metricas.mediaNotas !== null && metricas.mediaNotas !== undefined ? (
+                            <>
+                              <AnimatedCounter value={metricas.mediaNotas} duration={2200} /> pts
+                            </>
+                          ) : (
+                            'Sem avaliações'
+                          )}
                         </strong>
                       </>
                     )}
@@ -1903,15 +1933,15 @@ export default function RelatoriosPage() {
                   <div className={styles.chartHeaderLegend}>
                     <span className={styles.legendPill}>
                       <span className={styles.legendDot} style={{ backgroundColor: '#10b981' }} />
-                      Concluídas ({metricasMetas.concluidas})
+                      Concluídas (<AnimatedCounter value={metricasMetas.concluidas} duration={2200} />)
                     </span>
                     <span className={styles.legendPill}>
                       <span className={styles.legendDot} style={{ backgroundColor: '#f59e0b' }} />
-                      Pendentes ({metricasMetas.pendentes})
+                      Pendentes (<AnimatedCounter value={metricasMetas.pendentes} duration={2200} />)
                     </span>
                     <span className={styles.legendPill}>
                       <span className={styles.legendDot} style={{ backgroundColor: '#ef4444' }} />
-                      Atrasadas ({metricasMetas.atrasadas})
+                      Atrasadas (<AnimatedCounter value={metricasMetas.atrasadas} duration={2200} />)
                     </span>
                   </div>
                 </div>
@@ -1919,12 +1949,31 @@ export default function RelatoriosPage() {
                 <div className={styles.donutBodyCentered}>
                   <div className={styles.donutChartWrapper}>
                     <svg
+                      key={`donut-metas-${view}-${metricasMetas.total}-${metricasMetas.concluidas}-${metricasMetas.pendentes}`}
                       width="190"
                       height="190"
                       viewBox="0 0 190 190"
                       className={styles.donutSvg}
                       aria-label="Gráfico de pizza com borda externa fina do número de metas por status"
                     >
+                      <defs>
+                        <mask id="donutSweepMaskGoals" maskUnits="userSpaceOnUse">
+                          <rect x="0" y="0" width="190" height="190" fill="black" />
+                          <circle
+                            cx="95"
+                            cy="95"
+                            r="68"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="12"
+                            strokeDasharray="427.26"
+                            strokeDashoffset="427.26"
+                            transform="rotate(-90 95 95)"
+                            className={styles.donutMaskSweep}
+                          />
+                        </mask>
+                      </defs>
+
                       <circle
                         cx="95"
                         cy="95"
@@ -1934,31 +1983,35 @@ export default function RelatoriosPage() {
                         strokeWidth="8"
                         opacity="0.35"
                       />
-                      {donutSlicesMetas.map((slice) => {
-                        if (slice.count === 0) return null;
-                        return (
-                          <circle
-                            key={slice.id}
-                            cx="95"
-                            cy="95"
-                            r="68"
-                            fill="none"
-                            stroke={slice.color}
-                            strokeWidth="8"
-                            strokeDasharray={`${slice.length} ${2 * Math.PI * 68 - slice.length}`}
-                            strokeDashoffset={-slice.offset}
-                            transform="rotate(-90 95 95)"
-                            className={styles.donutSlice}
-                          >
-                            <title>{`${slice.label}: ${slice.count} metas (${slice.percent.toFixed(1)}%)`}</title>
-                          </circle>
-                        );
-                      })}
+                      <g mask="url(#donutSweepMaskGoals)">
+                        {donutSlicesMetas.map((slice) => {
+                          if (slice.count === 0) return null;
+                          return (
+                            <circle
+                              key={slice.id}
+                              cx="95"
+                              cy="95"
+                              r="68"
+                              fill="none"
+                              stroke={slice.color}
+                              strokeWidth="8"
+                              strokeDasharray={`${slice.length} ${2 * Math.PI * 68 - slice.length}`}
+                              strokeDashoffset={-slice.offset}
+                              transform="rotate(-90 95 95)"
+                              className={styles.donutSlice}
+                            >
+                              <title>{`${slice.label}: ${slice.count} metas (${slice.percent.toFixed(1)}%)`}</title>
+                            </circle>
+                          );
+                        })}
+                      </g>
                     </svg>
 
                     {/* Texto interno com o Total de Metas */}
                     <div className={styles.donutCenter}>
-                      <span className={styles.donutCenterNumber}>{metricasMetas.total}</span>
+                      <span className={styles.donutCenterNumber}>
+                        <AnimatedCounter value={metricasMetas.total} duration={2400} />
+                      </span>
                       <span className={styles.donutCenterLabel}>Total de Metas</span>
                     </div>
                   </div>
@@ -1969,7 +2022,7 @@ export default function RelatoriosPage() {
                   <span className={styles.footerNoteText}>
                     {metricasMetas.total > 0 ? (
                       <>
-                        * Taxa de Conclusão: <strong>{metricasMetas.taxaConclusaoPercentual}%</strong> ({metricasMetas.concluidas} de {metricasMetas.total} metas concluídas)
+                        * Taxa de Conclusão: <strong><AnimatedCounter value={metricasMetas.taxaConclusaoPercentual} duration={2200} />%</strong> ({metricasMetas.concluidas} de {metricasMetas.total} metas concluídas)
                       </>
                     ) : (
                       <>* Nenhuma meta vinculada para os filtros selecionados.</>
@@ -2011,7 +2064,10 @@ export default function RelatoriosPage() {
                       <span>{Math.round(maxTorresGeral / 2)}</span>
                       <span>0</span>
                     </div>
-                    <div className={styles.towerPlotArea}>
+                    <div
+                      key={`tower-plot-${view}-${membrosGraficoTorres.length}-${maxTorresGeral}`}
+                      className={styles.towerPlotArea}
+                    >
                       {membrosGraficoTorres.length === 0 ? (
                         <div className={styles.towerEmpty}>
                           {view === 'team'
@@ -2027,7 +2083,9 @@ export default function RelatoriosPage() {
                             <div key={m.usuarioId} className={styles.towerBarItem} style={{ maxWidth: '85px' }}>
                               <div className={styles.groupedBarsWrapper}>
                                 <div className={styles.singlePillarGroup}>
-                                  <span className={styles.pillarNum} style={{ color: '#10b981' }}>{m.concluidas}</span>
+                                  <span className={styles.pillarNum} style={{ color: '#10b981' }}>
+                                    <AnimatedCounter value={m.concluidas} duration={2200} />
+                                  </span>
                                   <div
                                     className={styles.singlePillar}
                                     style={{ height: `${hConcluidas}%`, backgroundColor: '#10b981' }}
@@ -2035,7 +2093,9 @@ export default function RelatoriosPage() {
                                   />
                                 </div>
                                 <div className={styles.singlePillarGroup}>
-                                  <span className={styles.pillarNum} style={{ color: '#f59e0b' }}>{m.pendentes}</span>
+                                  <span className={styles.pillarNum} style={{ color: '#f59e0b' }}>
+                                    <AnimatedCounter value={m.pendentes} duration={2200} />
+                                  </span>
                                   <div
                                     className={styles.singlePillar}
                                     style={{ height: `${hPendentes}%`, backgroundColor: '#f59e0b' }}
@@ -2043,7 +2103,9 @@ export default function RelatoriosPage() {
                                   />
                                 </div>
                                 <div className={styles.singlePillarGroup}>
-                                  <span className={styles.pillarNum} style={{ color: '#ef4444' }}>{m.atrasadas}</span>
+                                  <span className={styles.pillarNum} style={{ color: '#ef4444' }}>
+                                    <AnimatedCounter value={m.atrasadas} duration={2200} />
+                                  </span>
                                   <div
                                     className={styles.singlePillar}
                                     style={{ height: `${hAtrasadas}%`, backgroundColor: '#ef4444' }}
@@ -2248,7 +2310,7 @@ export default function RelatoriosPage() {
                       : `Tarefas da Equipe (${relatorioEquipe?.equipeNome || 'Consolidado'})`}
                   </h3>
                   <span style={{ fontSize: '13px', color: 'var(--cortex-gray-text)' }}>
-                    Total: {metricas.tarefas.length} tarefas
+                    Total: <AnimatedCounter value={metricas.tarefas.length} /> tarefas
                   </span>
                 </div>
 
@@ -2298,7 +2360,7 @@ export default function RelatoriosPage() {
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
 

@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { calcularProgressoXp, TipoIconeNivel } from '@/utils/gamification';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { useAccessibility } from '@/contexts/AccessibilityContext';
+import { AnimatedCounter } from '@/components/common/AnimatedCounter/AnimatedCounter';
 import {
   SproutIcon,
   StarIcon,
@@ -52,10 +54,39 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
   showPopover = true,
 }) => {
   const { isMobileOpen, closeMobile } = useSidebar();
+  const { reduceMotion } = useAccessibility();
   const [isOpen, setIsOpen] = useState(false);
   const [showMobileToast, setShowMobileToast] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const sidebarContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const prevXpRef = useRef<number | null>(null);
+  const prevNivelRef = useRef<number | null>(null);
+  const [xpGain, setXpGain] = useState<{ amount: number; id: number } | null>(null);
+  const [isLevelUp, setIsLevelUp] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (prevXpRef.current !== null && experiencia > prevXpRef.current) {
+      const ganho = experiencia - prevXpRef.current;
+      setXpGain({ amount: ganho, id: Date.now() });
+      const timer = setTimeout(() => {
+        setXpGain(null);
+      }, 2400);
+      return () => clearTimeout(timer);
+    }
+    prevXpRef.current = experiencia;
+  }, [experiencia]);
+
+  useEffect(() => {
+    if (prevNivelRef.current !== null && nivel > prevNivelRef.current) {
+      setIsLevelUp(true);
+      const timer = setTimeout(() => {
+        setIsLevelUp(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+    prevNivelRef.current = nivel;
+  }, [nivel]);
 
   const progresso = calcularProgressoXp(nivel, experiencia);
 
@@ -131,7 +162,7 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
       >
         <div className={styles.sidebarHeader}>
           <span
-            className={styles.levelBadge}
+            className={`${styles.levelBadge} ${isLevelUp && !reduceMotion ? styles.levelUpPulse : ''}`}
             style={{
               backgroundColor: progresso.info.corFundo,
               color: progresso.info.cor,
@@ -143,6 +174,9 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
           <span className={styles.levelTitle} title={progresso.info.nome}>
             {progresso.info.nome}
           </span>
+          {xpGain && !reduceMotion && (
+            <span className={styles.sidebarXpFloat}>+{xpGain.amount} XP</span>
+          )}
           <button
             type="button"
             className={styles.sidebarInfoBtn}
@@ -164,10 +198,10 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
 
         <div className={styles.xpTextRow}>
           <span className={styles.xpNumbers}>
-            {progresso.experiencia} / {progresso.limiteXp} XP
+            <AnimatedCounter value={progresso.experiencia} /> / {progresso.limiteXp} XP
           </span>
           <span className={styles.xpPercent}>
-            {progresso.progressoPercentual}%
+            <AnimatedCounter value={progresso.progressoPercentual} suffix="%" />
           </span>
         </div>
 
@@ -227,7 +261,7 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
         <div className={styles.cardHeaderRow}>
           <div className={styles.cardEmblemGroup}>
             <div
-              className={styles.cardEmblem}
+              className={`${styles.cardEmblem} ${isLevelUp && !reduceMotion ? styles.levelUpEmblemPulse : ''}`}
               style={{
                 backgroundColor: progresso.info.corFundo,
                 color: progresso.info.cor,
@@ -255,11 +289,14 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
           </div>
         </div>
 
-        <div className={styles.cardProgressSection}>
+        <div className={styles.cardProgressSection} style={{ position: 'relative' }}>
+          {xpGain && !reduceMotion && (
+            <span className={styles.xpFloatBadge}>+{xpGain.amount} XP</span>
+          )}
           <div className={styles.cardProgressStats}>
             <span>Progresso para o Nível {progresso.nivel + 1}</span>
             <span className={styles.cardProgressHighlight}>
-              {progresso.experiencia} / {progresso.limiteXp} XP ({progresso.progressoPercentual}%)
+              <AnimatedCounter value={progresso.experiencia} /> / {progresso.limiteXp} XP (<AnimatedCounter value={progresso.progressoPercentual} suffix="%" />)
             </span>
           </div>
 
@@ -312,6 +349,22 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
   // Modo COMPACT (Padrão para Header)
   return (
     <div className={styles.compactWrapper} ref={wrapperRef}>
+      {xpGain && !reduceMotion && (
+        <span className={styles.xpFloatBadge}>+{xpGain.amount} XP</span>
+      )}
+
+      {isLevelUp && !reduceMotion && (
+        <div className={styles.levelUpBanner} role="status" aria-live="polite">
+          <span style={{ fontSize: '18px' }}>🎉</span>
+          <div>
+            <div style={{ fontWeight: 700 }}>Subiu de Nível!</div>
+            <div style={{ fontSize: '11px', opacity: 0.9 }}>
+              Você alcançou o Nível {progresso.nivel} — {progresso.info.nome}
+            </div>
+          </div>
+        </div>
+      )}
+
       <button
         type="button"
         className={styles.compactBtn}
@@ -326,7 +379,7 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
         aria-label={`Nível ${progresso.nivel}, ${progresso.info.nome}. ${progresso.experiencia} de ${progresso.limiteXp} pontos de experiência.`}
       >
         <span
-          className={styles.compactLevelChip}
+          className={`${styles.compactLevelChip} ${isLevelUp && !reduceMotion ? styles.levelUpPulse : ''}`}
           style={{
             backgroundColor: progresso.info.corFundo,
             color: progresso.info.cor,
@@ -344,7 +397,7 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
         />
 
         <span className={styles.compactXpText}>
-          {progresso.experiencia}/{progresso.limiteXp} XP
+          <AnimatedCounter value={progresso.experiencia} />/{progresso.limiteXp} XP
         </span>
       </button>
 
