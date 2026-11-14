@@ -68,6 +68,7 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
   useEffect(() => {
     if (prevXpRef.current !== null && experiencia > prevXpRef.current) {
       const ganho = experiencia - prevXpRef.current;
+      prevXpRef.current = experiencia;
       setXpGain({ amount: ganho, id: Date.now() });
       const timer = setTimeout(() => {
         setXpGain(null);
@@ -79,6 +80,7 @@ export const AccountLevelWidget: React.FC<AccountLevelWidgetProps> = ({
 
   useEffect(() => {
     if (prevNivelRef.current !== null && nivel > prevNivelRef.current) {
+      prevNivelRef.current = nivel;
       setIsLevelUp(true);
       const timer = setTimeout(() => {
         setIsLevelUp(false);
