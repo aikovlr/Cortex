@@ -640,7 +640,8 @@ export default function Header({
         {/* Botão de Tema Claro / Escuro */}
         <button
           type="button"
-          className={styles.iconButton}
+          data-theme-toggle="true"
+          className={`${styles.iconButton} ${styles.themeToggleButton}`}
           onClick={toggleTheme}
           title={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
           aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
@@ -650,6 +651,7 @@ export default function Header({
             alt={isDark ? 'Ícone de sol para ativar modo claro' : 'Ícone de lua para ativar modo escuro'}
             width={20}
             height={20}
+            className={styles.themeIcon}
           />
         </button>
 

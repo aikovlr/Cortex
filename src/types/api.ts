@@ -122,6 +122,8 @@ export interface ConsultaMembroEquipeDTO {
   cargo: CargoEquipe;
   dataEntrada: string;
   usuario?: ConsultaUsuarioDTO | null;
+  tarefasConcluidas?: number;
+  metasConcluidas?: number;
 }
 
 export interface ConsultaEquipeDTO {

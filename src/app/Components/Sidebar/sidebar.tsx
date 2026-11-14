@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { AccountLevelWidget } from '@/components/gamification/AccountLevelWidget/AccountLevelWidget';
+import { UserLevelAvatar } from '@/components/gamification/UserLevelAvatar/UserLevelAvatar';
 import styles from './sidebar.module.css';
 
 const Sidebar = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
@@ -126,23 +127,13 @@ const Sidebar = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>
       )}
 
       <div className={styles.footer}>
-        {fotoUrl && failedUrl !== fotoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={fotoUrl}
-            src={fotoUrl}
-            alt={usuario?.nome || 'Usuário'}
-            className={styles.avatar}
-            onError={() => setFailedUrl(fotoUrl)}
-          />
-        ) : (
-          <div
-            className={styles.avatarFallback}
-            aria-label={usuario?.nome || 'Usuário'}
-          >
-            {usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'U'}
-          </div>
-        )}
+        <UserLevelAvatar
+          fotoUrl={fotoUrl}
+          nome={usuario?.nome}
+          nivel={usuario?.nivel}
+          experiencia={usuario?.experiencia}
+          size={36}
+        />
 
         <div className={styles.userInfo}>
           <span className={styles.userName}>

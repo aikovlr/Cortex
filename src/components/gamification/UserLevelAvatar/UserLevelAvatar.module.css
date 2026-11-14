@@ -1,0 +1,224 @@
+.avatarWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  user-select: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  background-color: var(--bg-surface, #18223B);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  outline-offset: 3px;
+}
+
+.avatarWrapper:hover {
+  transform: scale(1.06);
+}
+
+.avatarWrapper:focus-visible {
+  outline: 2px solid var(--cortex-purple);
+}
+
+.avatarCircle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--cortex-dark-input, #101626);
+  box-sizing: border-box;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+.avatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  color: #ffffff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(123, 79, 201, 0.85), rgba(79, 70, 229, 0.85));
+}
+
+.avatarIconFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--cortex-purple);
+  border-radius: 50%;
+  background-color: var(--cortex-dark-input, #101626);
+}
+
+/* Tooltip flutuante */
+.tooltipOverlay {
+  position: absolute;
+  z-index: 99999;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+  will-change: transform, opacity;
+}
+
+.tooltipOverlayTop {
+  transform: translate(-50%, -100%);
+}
+
+.tooltipOverlayBottom {
+  transform: translate(-50%, 0);
+}
+
+.tooltipCard {
+  background-color: var(--bg-surface, #18223B);
+  border: 1px solid var(--border-main, rgba(255, 255, 255, 0.15));
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-width: 220px;
+  max-width: 270px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary, #ffffff);
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.tooltipOverlayBottom .tooltipCard {
+  transform: translateY(-6px);
+}
+
+.tooltipCardVisible {
+  opacity: 1;
+  transform: translateY(0) !important;
+}
+
+.tooltipArrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tooltipArrowVisible {
+  opacity: 1;
+}
+
+.tooltipArrowTop {
+  bottom: -6px;
+  border-top: 6px solid var(--border-main, rgba(255, 255, 255, 0.15));
+}
+
+.tooltipArrowBottom {
+  top: -6px;
+  border-bottom: 6px solid var(--border-main, rgba(255, 255, 255, 0.15));
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tooltipLevelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tooltipLevelNumber {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tooltipTierTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  line-height: 1.2;
+}
+
+.tooltipUserName {
+  font-size: 11.5px;
+  color: var(--text-muted, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: -3px;
+}
+
+.tooltipProgressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.tooltipProgressStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.tooltipXpLabel {
+  color: var(--text-secondary, #94a3b8);
+  font-weight: 500;
+}
+
+.tooltipXpValues {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tooltipProgressBar {
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: var(--border-input, rgba(255, 255, 255, 0.1));
+  overflow: hidden;
+}
+
+.tooltipProgressFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.tooltipFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  color: var(--text-muted, #94a3b8);
+  border-top: 1px solid var(--border-light, rgba(255, 255, 255, 0.08));
+  padding-top: 6px;
+  margin-top: 2px;
+}
