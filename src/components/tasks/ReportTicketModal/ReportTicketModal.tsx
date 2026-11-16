@@ -72,7 +72,7 @@ export const ReportTicketModal: React.FC<ReportTicketModalProps> = ({
       }
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <p style={{ fontSize: '13px', color: '#ff9999', lineHeight: '1.4' }}>
+        <p style={{ fontSize: '13px', color: 'var(--cortex-gray-text)', lineHeight: '1.4' }}>
           Você está abrindo um chamado de alerta para a tarefa <strong>{tarefaTitulo}</strong>. Esse ticket será enviado com prioridade máxima aos gestores e superiores da equipe.
         </p>
 
@@ -81,7 +81,7 @@ export const ReportTicketModal: React.FC<ReportTicketModalProps> = ({
             width: '100%',
             minHeight: '120px',
             backgroundColor: 'var(--cortex-dark-input)',
-            border: '1px solid rgba(214, 49, 49, 0.4)',
+            border: '1px solid var(--cortex-border)',
             borderRadius: '8px',
             padding: '12px',
             color: 'var(--cortex-white)',

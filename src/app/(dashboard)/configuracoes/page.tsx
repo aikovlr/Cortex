@@ -19,6 +19,7 @@ import {
   CriticalActionDialog,
   useCriticalAction,
   createDeleteDialogConfig,
+  createChangeEmailDialogConfig,
 } from '@/components/common/CriticalActionDialog';
 import styles from './page.module.css';
 
@@ -143,6 +144,7 @@ export default function ConfiguracoesPage() {
 
   // Estados da Aba Minha Conta
   const [nome, setNome] = useState(usuario?.nome || '');
+  const [email, setEmail] = useState(usuario?.email || '');
   const [phoneCountry, setPhoneCountry] = useState('+55');
   const [phoneLocal, setPhoneLocal] = useState('');
   const [fotoFile, setFotoFile] = useState<File | null>(null);
@@ -161,6 +163,7 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     if (usuario) {
       setNome(usuario.nome);
+      setEmail(usuario.email || '');
       const parsed = parseStoredPhone(usuario.telefone);
       setPhoneCountry(parsed.countryCode);
       setPhoneLocal(parsed.localNumber);
@@ -516,14 +519,8 @@ export default function ConfiguracoesPage() {
     );
   };
 
-  // Salvar dados do Perfil
-  const handleSalvarPerfil = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nome.trim()) {
-      showToast('O nome é obrigatório.', 'error');
-      return;
-    }
-
+  // Executa o envio dos dados atualizados do perfil ao backend
+  const executarSalvarPerfil = async (emailParaSalvar?: string) => {
     try {
       setSavingPerfil(true);
       const fullPhone = buildFullPhone(phoneCountry, phoneLocal);
@@ -531,6 +528,12 @@ export default function ConfiguracoesPage() {
       const formData = new FormData();
       formData.append('Nome', nome.trim());
       if (fullPhone) formData.append('Telefone', fullPhone);
+
+      const emailFinal = (emailParaSalvar ?? email).trim();
+      if (emailFinal) {
+        formData.append('Email', emailFinal);
+      }
+
       if (fotoFile) formData.append('FotoPerfil', fotoFile);
 
       const usuarioAtualizado = await usuarioService.atualizarPerfil(formData);
@@ -540,7 +543,11 @@ export default function ConfiguracoesPage() {
         setFotoPreview(usuarioAtualizado.fotoPerfil.urlCaminho);
         setFotoError(false);
       }
-      showToast('Perfil atualizado com sucesso!', 'success');
+      if (emailParaSalvar && usuario?.email && emailParaSalvar.toLowerCase() !== usuario.email.toLowerCase()) {
+        showToast('E-mail e perfil atualizados com sucesso!', 'success');
+      } else {
+        showToast('Perfil atualizado com sucesso!', 'success');
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message, 'error');
@@ -550,6 +557,74 @@ export default function ConfiguracoesPage() {
     } finally {
       setSavingPerfil(false);
     }
+  };
+
+  // Abre diálogo de confirmação textual para alteração de e-mail
+  const handleConfirmarAlteracaoEmail = () => {
+    const emailTrimmed = email.trim();
+    if (!emailTrimmed) {
+      showToast('O e-mail é obrigatório.', 'error');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailTrimmed)) {
+      showToast('Por favor, informe um endereço de e-mail válido.', 'error');
+      return;
+    }
+    if (usuario?.email && emailTrimmed.toLowerCase() === usuario.email.toLowerCase()) {
+      showToast('O novo e-mail informado é idêntico ao e-mail atual.', 'info');
+      return;
+    }
+
+    openAction(
+      createChangeEmailDialogConfig({
+        currentEmail: usuario?.email || '',
+        newEmail: emailTrimmed,
+        onConfirm: async () => {
+          await executarSalvarPerfil(emailTrimmed);
+        },
+      })
+    );
+  };
+
+  // Salvar dados do Perfil (se e-mail foi modificado, exige confirmação textual)
+  const handleSalvarPerfil = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nome.trim()) {
+      showToast('O nome é obrigatório.', 'error');
+      return;
+    }
+
+    const emailTrimmed = email.trim();
+    if (!emailTrimmed) {
+      showToast('O e-mail é obrigatório.', 'error');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailTrimmed)) {
+      showToast('Por favor, informe um endereço de e-mail válido.', 'error');
+      return;
+    }
+
+    const emailFoiAlterado = Boolean(
+      usuario?.email && emailTrimmed.toLowerCase() !== usuario.email.toLowerCase()
+    );
+
+    if (emailFoiAlterado) {
+      openAction(
+        createChangeEmailDialogConfig({
+          currentEmail: usuario!.email,
+          newEmail: emailTrimmed,
+          onConfirm: async () => {
+            await executarSalvarPerfil(emailTrimmed);
+          },
+        })
+      );
+      return;
+    }
+
+    await executarSalvarPerfil();
   };
 
   // Alterar Senha
@@ -768,13 +843,62 @@ export default function ConfiguracoesPage() {
                   </div>
 
                   <div className={styles.field}>
-                    <label className={styles.label}>E-mail</label>
-                    <input
-                      type="email"
-                      value={usuario?.email || ''}
-                      disabled
-                      className={styles.input}
-                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label htmlFor="email-config" className={styles.label}>E-mail</label>
+                      {usuario?.email && email.trim() !== usuario.email && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 500 }}>
+                            * Alteração pendente
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setEmail(usuario.email)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--cortex-gray-text)',
+                              fontSize: '11px',
+                              textDecoration: 'underline',
+                              cursor: 'pointer',
+                              padding: 0,
+                            }}
+                            title="Reverter para o e-mail cadastrado"
+                          >
+                            Desfazer
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input
+                        id="email-config"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder="seu.email@exemplo.com"
+                        className={styles.input}
+                        style={{ flex: 1, minWidth: 0 }}
+                      />
+                      {usuario?.email && email.trim() !== usuario.email && (
+                        <button
+                          type="button"
+                          onClick={handleConfirmarAlteracaoEmail}
+                          disabled={savingPerfil}
+                          className={styles.uploadBtn}
+                          style={{
+                            whiteSpace: 'nowrap',
+                            height: '44px',
+                            padding: '0 14px',
+                            borderColor: 'var(--cortex-purple)',
+                            color: 'var(--cortex-purple)',
+                          }}
+                          title="Confirmar alteração de e-mail via diálogo textual"
+                        >
+                          Confirmar E-mail
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 

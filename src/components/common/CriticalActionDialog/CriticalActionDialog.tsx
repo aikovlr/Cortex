@@ -34,8 +34,8 @@ export interface CriticalActionDialogProps {
   details?: React.ReactNode;
   /** Ícone customizado para o cabeçalho (substitui o ícone padrão da variante) */
   icon?: React.ReactNode;
-  /** Texto que o usuário é obrigado a digitar para liberar a confirmação (ex: "EXCLUIR" ou o nome do recurso) */
-  confirmTextMatch?: string;
+  /** Texto que o usuário é obrigado a digitar para liberar a confirmação (ex: "EXCLUIR", "CONFIRMAR" ou o nome do recurso) */
+  confirmTextMatch?: string | string[];
   /** Placeholder do campo de texto de confirmação */
   confirmTextPlaceholder?: string;
   /** Instrução personalizada acima do campo de digitação */
@@ -97,7 +97,12 @@ export const CriticalActionDialog: React.FC<CriticalActionDialogProps> = ({
   }, [isOpen]);
 
   // Validação do texto de confirmação caso exigido
-  const isMatchValid = !confirmTextMatch || typedConfirmation.trim() === confirmTextMatch.trim();
+  const isMatchValid =
+    !confirmTextMatch ||
+    (Array.isArray(confirmTextMatch)
+      ? confirmTextMatch.some((match) => match.trim().toLowerCase() === typedConfirmation.trim().toLowerCase())
+      : typedConfirmation.trim().toLowerCase() === confirmTextMatch.trim().toLowerCase());
+  const primaryMatchText = Array.isArray(confirmTextMatch) ? confirmTextMatch[0] : confirmTextMatch;
   const isConfirmDisabled = disabled || isLoading || !isMatchValid;
 
   const handleConfirm = async () => {
@@ -344,7 +349,7 @@ export const CriticalActionDialog: React.FC<CriticalActionDialogProps> = ({
               <label htmlFor="critical-confirm-input" className={styles.confirmInputLabel}>
                 {confirmTextLabel || (
                   <>
-                    Para confirmar, digite <span className={styles.codeMatch}>{confirmTextMatch}</span> abaixo:
+                    Para confirmar, digite <span className={styles.codeMatch}>{primaryMatchText}</span> abaixo:
                   </>
                 )}
               </label>
@@ -354,12 +359,12 @@ export const CriticalActionDialog: React.FC<CriticalActionDialogProps> = ({
                 type="text"
                 autoComplete="off"
                 spellCheck="false"
-                placeholder={confirmTextPlaceholder || confirmTextMatch}
+                placeholder={confirmTextPlaceholder || primaryMatchText}
                 value={typedConfirmation}
                 onChange={(e) => setTypedConfirmation(e.target.value)}
                 disabled={isLoading}
                 className={`${styles.confirmInput} ${
-                  typedConfirmation.trim() === confirmTextMatch.trim() ? styles.confirmInputMatched : ''
+                  isMatchValid && typedConfirmation.trim() ? styles.confirmInputMatched : ''
                 }`}
               />
             </div>

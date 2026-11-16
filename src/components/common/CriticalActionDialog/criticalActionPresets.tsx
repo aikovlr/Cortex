@@ -1,6 +1,6 @@
 import React from 'react';
 import { CriticalActionDialogProps } from './CriticalActionDialog';
-import { TrashIcon, ShieldIcon, CheckCircleIcon, AlertCircleIcon } from '@/components/common/Icons/Icons';
+import { TrashIcon, ShieldIcon, CheckCircleIcon, AlertCircleIcon, AlertTriangleIcon } from '@/components/common/Icons/Icons';
 
 export interface DeleteActionOptions {
   title?: string;
@@ -133,6 +133,46 @@ export function createChangeRoleDialogConfig({
     confirmLabel: 'Confirmar alteração',
     cancelLabel: 'Cancelar',
     icon: <ShieldIcon size={24} strokeWidth={2} />,
+    onConfirm,
+  };
+}
+
+export interface ChangeEmailOptions {
+  currentEmail: string;
+  newEmail: string;
+  onConfirm: () => void | Promise<void>;
+  requireTextMatch?: boolean;
+  matchText?: string;
+}
+
+/**
+ * Cria a configuração para alteração de e-mail com confirmação textual
+ */
+export function createChangeEmailDialogConfig({
+  currentEmail,
+  newEmail,
+  onConfirm,
+  requireTextMatch = true,
+  matchText = 'CONFIRMAR',
+}: ChangeEmailOptions): Omit<CriticalActionDialogProps, 'isOpen' | 'onClose'> {
+  const matchValues = Array.from(new Set([matchText, 'ALTERAR', newEmail.trim()])).filter(Boolean);
+
+  return {
+    variant: 'warning',
+    title: 'Alterar endereço de e-mail',
+    description: (
+      <>
+        Você está prestes a alterar seu e-mail de <strong>&quot;{currentEmail}&quot;</strong> para <strong>&quot;{newEmail}&quot;</strong>. Esta alteração atualizará suas credenciais de acesso ao Cortex e o recebimento de notificações.
+      </>
+    ),
+    confirmLabel: 'Confirmar alteração',
+    cancelLabel: 'Cancelar',
+    icon: <AlertTriangleIcon size={24} strokeWidth={2} />,
+    confirmTextMatch: requireTextMatch ? matchValues : undefined,
+    confirmTextLabel: requireTextMatch
+      ? `Para confirmar a alteração do e-mail, digite "${matchText}" abaixo:`
+      : undefined,
+    confirmTextPlaceholder: matchText,
     onConfirm,
   };
 }

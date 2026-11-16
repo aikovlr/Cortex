@@ -7,11 +7,13 @@ export {
   createRejectSuggestionDialogConfig,
   createResolveTicketDialogConfig,
   createChangeRoleDialogConfig,
+  createChangeEmailDialogConfig,
 } from './criticalActionPresets';
 export type {
   DeleteActionOptions,
   RejectSuggestionOptions,
   ResolveTicketOptions,
   ChangeUserRoleOptions,
+  ChangeEmailOptions,
 } from './criticalActionPresets';
 
