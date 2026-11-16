@@ -470,15 +470,6 @@
   margin: 0;
 }
 
-.dropdownCountBadge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background-color: rgba(123, 79, 201, 0.12);
-  color: var(--cortex-purple);
-}
-
 .markAllReadBtn {
   background: none;
   border: none;
@@ -1073,4 +1064,74 @@
     border-radius: 10px;
   }
 }
+
+.pushPromptBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin: 10px 14px 4px;
+  background: rgba(123, 79, 201, 0.08);
+  border: 1px solid rgba(123, 79, 201, 0.22);
+  border-radius: 10px;
+}
+
+.pushPromptText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11.5px;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.pushPromptText strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cortex-purple);
+}
+
+.pushPromptActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pushPromptBtn {
+  background: var(--cortex-purple);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.pushPromptBtn:hover {
+  opacity: 0.9;
+}
+
+.pushPromptDismissBtn {
+  background: none;
+  border: none;
+  color: var(--cortex-gray-text);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.pushPromptDismissBtn:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.06);
+}
+
 

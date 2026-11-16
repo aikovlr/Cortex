@@ -1,8 +1,18 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { notificationService, NotificacaoBackendDTO } from '@/services/notificationService';
+import {
+  isPushSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  registerServiceWorker,
+  showPushNotification,
+  testPushNotification,
+  PushPermissionStatus,
+  TestPushResult,
+} from '@/services/pushNotificationService';
 
 export type TipoNotificacao =
   | 'tarefa'
@@ -29,6 +39,7 @@ export interface NotificacaoItem {
   destaque?: boolean;
 }
 
+
 interface NotificationContextData {
   notificacoes: NotificacaoItem[];
   naoLidasCount: number;
@@ -37,7 +48,12 @@ interface NotificationContextData {
   limparNotificacoes: () => Promise<void>;
   removerNotificacao: (id: string) => Promise<void>;
   adicionarNotificacao: (item: Omit<NotificacaoItem, 'id' | 'dataCriacao' | 'lida'>) => void;
+  dispararNotificacaoVisualTeste: (custom?: Partial<NotificacaoItem>) => NotificacaoItem;
   buscarNovasNotificacoes: () => Promise<void>;
+  pushPermission: PushPermissionStatus;
+  solicitarPermissaoPush: () => Promise<PushPermissionStatus>;
+  testarNotificacaoPush: () => Promise<TestPushResult>;
+  atualizarPermissaoPush: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextData>({} as NotificationContextData);
@@ -70,6 +86,25 @@ export function notificarCriadorSugestaoEnviada(
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { usuario } = useAuth();
   const [notificacoes, setNotificacoes] = useState<NotificacaoItem[]>([]);
+  const [pushPermission, setPushPermission] = useState<PushPermissionStatus>('default');
+
+  const notificacoesConhecidasRef = useRef<Set<string>>(new Set());
+  const primeiraCargaRef = useRef<boolean>(true);
+  const visualNotificacoesRef = useRef<NotificacaoItem[]>([]);
+
+  // Inicializa o Service Worker e obtém o status inicial da permissão no cliente
+  useEffect(() => {
+    registerServiceWorker();
+    setPushPermission(getNotificationPermission());
+  }, []);
+
+  // Reseta referências de rastreamento ao trocar de usuário ou deslogar
+  useEffect(() => {
+    if (!usuario) {
+      notificacoesConhecidasRef.current.clear();
+      primeiraCargaRef.current = true;
+    }
+  }, [usuario]);
 
   // Busca notificações persistidas no banco de dados para o usuário autenticado
   const buscarNovasNotificacoes = useCallback(async () => {
@@ -142,7 +177,45 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         (a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()
       );
 
-      setNotificacoes(mapeadas);
+      // Tratamento de notificações push nativas em tempo real
+      if (primeiraCargaRef.current) {
+        // Na primeira leitura após carregamento, registra IDs conhecidos sem disparar push em massa
+        mapeadas.forEach((item) => notificacoesConhecidasRef.current.add(item.id));
+        primeiraCargaRef.current = false;
+      } else {
+        // Em leituras subsequentes (polling / foco da janela / evento), dispara push para novos itens não lidos
+        const novasNotificacoes = mapeadas.filter(
+          (item) => !notificacoesConhecidasRef.current.has(item.id) && !item.lida
+        );
+
+        mapeadas.forEach((item) => notificacoesConhecidasRef.current.add(item.id));
+
+        if (novasNotificacoes.length > 0 && isPushSupported() && Notification.permission === 'granted') {
+          if (novasNotificacoes.length <= 3) {
+            novasNotificacoes.forEach((item) => {
+              showPushNotification({
+                title: item.titulo,
+                body: item.mensagem,
+                link: item.link,
+                tag: `cortex-${item.id}`,
+              });
+            });
+          } else {
+            showPushNotification({
+              title: `Cortex — ${novasNotificacoes.length} novas notificações`,
+              body: `Você possui ${novasNotificacoes.length} novas atualizações pendentes no Cortex.`,
+              link: '/minhas-tarefas',
+              tag: 'cortex-batch-notif',
+            });
+          }
+        }
+      }
+
+      // Preserva notificações visuais locais
+      const visualAtivas = visualNotificacoesRef.current.filter(
+        (v) => !listaDb.some((db) => String(db.id) === v.id)
+      );
+      setNotificacoes([...visualAtivas, ...mapeadas]);
     } catch {
       // Falha silenciosa em caso de indisponibilidade momentânea da API
     }
@@ -174,6 +247,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Marca uma notificação individual como lida
   const marcarComoLida = useCallback(
     async (id: string) => {
+      visualNotificacoesRef.current = visualNotificacoesRef.current.map((item) =>
+        item.id === id ? { ...item, lida: true } : item
+      );
       setNotificacoes((prev) =>
         prev.map((item) => (item.id === id ? { ...item, lida: true } : item))
       );
@@ -190,6 +266,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Marca todas as notificações como lidas
   const marcarTodasComoLidas = useCallback(async () => {
+    visualNotificacoesRef.current = visualNotificacoesRef.current.map((item) => ({ ...item, lida: true }));
     setNotificacoes((prev) => prev.map((item) => ({ ...item, lida: true })));
 
     try {
@@ -199,6 +276,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Limpa todas as notificações do usuário no banco de dados
   const limparNotificacoes = useCallback(async () => {
+    visualNotificacoesRef.current = [];
     setNotificacoes([]);
 
     try {
@@ -208,6 +286,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Remove uma notificação individual no banco de dados
   const removerNotificacao = useCallback(async (id: string) => {
+    visualNotificacoesRef.current = visualNotificacoesRef.current.filter((item) => item.id !== id);
     setNotificacoes((prev) => prev.filter((item) => item.id !== id));
 
     const numId = Number(id);
@@ -225,6 +304,83 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     [buscarNovasNotificacoes]
   );
 
+  const dispararNotificacaoVisualTeste = useCallback((custom?: Partial<NotificacaoItem>): NotificacaoItem => {
+    const exemplos: Array<Omit<NotificacaoItem, 'id' | 'dataCriacao' | 'lida'>> = [
+      {
+        tipo: 'tarefa',
+        titulo: 'Nova Tarefa Atribuída',
+        mensagem: 'Você recebeu a tarefa "Refatorar componentes de acessibilidade".',
+        link: '/minhas-tarefas',
+        destaque: true,
+      },
+      {
+        tipo: 'equipe',
+        titulo: 'Entrada na Equipe',
+        mensagem: 'Você agora faz parte da equipe "Desenvolvimento Core".',
+        link: '/equipes',
+        destaque: false,
+      },
+      {
+        tipo: 'meta',
+        titulo: 'Meta Atualizada',
+        mensagem: 'Sua meta "Concluir 10 sprints no trimestre" alcançou 80% do objetivo.',
+        link: '/metas',
+        destaque: false,
+      },
+      {
+        tipo: 'ticket',
+        titulo: 'Ticket Respondido',
+        mensagem: 'O ticket #42 aberto na tarefa recebeu uma nova resposta da equipe.',
+        link: '/minhas-tarefas',
+        destaque: false,
+      },
+      {
+        tipo: 'sugestao',
+        titulo: 'Nova Sugestão de Melhoria',
+        mensagem: 'Um membro da sua equipe adicionou uma sugestão para revisão.',
+        link: '/minhas-tarefas',
+        destaque: false,
+      },
+    ];
+
+    const exemploSorteado = exemplos[Math.floor(Math.random() * exemplos.length)];
+    const id = `visual-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const novaNotificacao: NotificacaoItem = {
+      id,
+      tipo: custom?.tipo || exemploSorteado.tipo,
+      titulo: custom?.titulo || exemploSorteado.titulo,
+      mensagem: custom?.mensagem || exemploSorteado.mensagem,
+      link: custom?.link || exemploSorteado.link,
+      destaque: custom?.destaque ?? exemploSorteado.destaque,
+      dataCriacao: new Date().toISOString(),
+      lida: false,
+      ...custom,
+    };
+
+    visualNotificacoesRef.current = [novaNotificacao, ...visualNotificacoesRef.current];
+    notificacoesConhecidasRef.current.add(id);
+
+    setNotificacoes((prev) => [novaNotificacao, ...prev.filter((p) => p.id !== id)]);
+
+    return novaNotificacao;
+  }, []);
+
+  const solicitarPermissaoPush = useCallback(async () => {
+    const perm = await requestNotificationPermission();
+    setPushPermission(perm);
+    return perm;
+  }, []);
+
+  const testarNotificacaoPush = useCallback(async () => {
+    const resultado = await testPushNotification();
+    setPushPermission(resultado.status);
+    return resultado;
+  }, []);
+
+  const atualizarPermissaoPush = useCallback(() => {
+    setPushPermission(getNotificationPermission());
+  }, []);
+
   const naoLidasCount = notificacoes.filter((n) => !n.lida).length;
 
   return (
@@ -237,7 +393,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         limparNotificacoes,
         removerNotificacao,
         adicionarNotificacao,
+        dispararNotificacaoVisualTeste,
         buscarNovasNotificacoes,
+        pushPermission,
+        solicitarPermissaoPush,
+        testarNotificacaoPush,
+        atualizarPermissaoPush,
       }}
     >
       {children}

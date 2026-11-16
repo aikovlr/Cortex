@@ -102,7 +102,11 @@ export default function Header({
     limparNotificacoes,
     removerNotificacao,
     buscarNovasNotificacoes,
+    pushPermission,
+    solicitarPermissaoPush,
+    testarNotificacaoPush,
   } = useNotifications();
+  const [pushBannerDismissed, setPushBannerDismissed] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -692,11 +696,6 @@ export default function Header({
               <div className={styles.dropdownHeader}>
                 <div className={styles.dropdownTitleRow}>
                   <h3 className={styles.dropdownTitle}>Notificações</h3>
-                  {naoLidasCount > 0 && (
-                    <span className={styles.dropdownCountBadge}>
-                      {naoLidasCount} {naoLidasCount === 1 ? 'não lida' : 'não lidas'}
-                    </span>
-                  )}
                 </div>
 
                 <button
@@ -710,6 +709,39 @@ export default function Header({
                   Marcar todas como lidas
                 </button>
               </div>
+
+              {/* Banner de Ativação de Notificações Push no Navegador */}
+              {pushPermission === 'default' && !pushBannerDismissed && (
+                <div className={styles.pushPromptBanner} role="alert">
+                  <div className={styles.pushPromptText}>
+                    <strong>Ativar notificações push</strong>
+                    <span>Receba alertas no navegador sobre tarefas e prazos em tempo real.</span>
+                  </div>
+                  <div className={styles.pushPromptActions}>
+                    <button
+                      type="button"
+                      className={styles.pushPromptBtn}
+                      onClick={async () => {
+                        const res = await solicitarPermissaoPush();
+                        if (res === 'granted') {
+                          await testarNotificacaoPush();
+                        }
+                      }}
+                    >
+                      Ativar
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.pushPromptDismissBtn}
+                      onClick={() => setPushBannerDismissed(true)}
+                      title="Dispensar aviso"
+                      aria-label="Dispensar aviso"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Abas: Não Lidas vs Todas */}
               <div className={styles.dropdownTabs}>
@@ -763,8 +795,9 @@ export default function Header({
                         Boolean(item.destaque));
                     const isUrgente = item.tipo === 'tarefa_urgente';
                     const stackMatch = item.titulo.match(/\((\d+)\)$/);
-                    const stackCount = stackMatch ? stackMatch[1] : null;
-                    const tituloFormatado = stackMatch ? item.titulo.replace(/\s*\(\d+\)$/, '') : item.titulo;
+                    const parsedCount = stackMatch ? parseInt(stackMatch[1], 10) : 0;
+                    const stackCount = parsedCount > 1 ? String(parsedCount) : null;
+                    const tituloFormatado = item.titulo.replace(/\s*\(\d+\)$/, '');
 
                     return (
                       <div
@@ -808,7 +841,7 @@ export default function Header({
                             {stackCount && (
                               <span
                                 className={styles.stackCountBadge}
-                                title={`${stackCount} conclusões registradas`}
+                                title={`${stackCount} atualizações registradas`}
                               >
                                 {stackCount}x
                               </span>

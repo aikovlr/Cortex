@@ -10,6 +10,7 @@ import { authService } from '@/services/authService';
 import { notificacaoService } from '@/services/notificacaoService';
 import { CanalNotificacao, PreferenciaNotificacaoDTO } from '@/types/api';
 import { useToast } from '@/contexts/ToastContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { PhoneInput } from '@/components/ui/PhoneInput/PhoneInput';
 import { parseStoredPhone, buildFullPhone } from '@/utils/phoneAndEmail';
 import { AccountLevelWidget } from '@/components/gamification/AccountLevelWidget/AccountLevelWidget';
@@ -86,6 +87,12 @@ export default function ConfiguracoesPage() {
     setReduceMotion,
   } = useAccessibility();
   const { showToast } = useToast();
+  const {
+    pushPermission,
+    solicitarPermissaoPush,
+    testarNotificacaoPush,
+  } = useNotifications();
+  const [testingPush, setTestingPush] = useState(false);
   const { openAction, dialogProps } = useCriticalAction();
 
   const [activeTab, setActiveTab] = useState<ConfigTab>('account');
@@ -172,6 +179,21 @@ export default function ConfiguracoesPage() {
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarNovaSenha, setConfirmarNovaSenha] = useState('');
   const [savingSenha, setSavingSenha] = useState(false);
+
+  // Critérios de Validação de Senha (RN002)
+  const senhaHasMinLength = novaSenha.length >= 8;
+  const senhaHasUpperCase = /[A-Z]/.test(novaSenha);
+  const senhaHasLowerCase = /[a-z]/.test(novaSenha);
+  const senhaHasDigit = /[0-9]/.test(novaSenha);
+  const senhaHasSpecialChar = /[!@#$%^&*()_+\-=[\]{}|;':",./<>?`~]/.test(novaSenha);
+  const senhaPasswordsMatch = novaSenha.length > 0 && novaSenha === confirmarNovaSenha;
+  const isNovaSenhaValida =
+    senhaHasMinLength &&
+    senhaHasUpperCase &&
+    senhaHasLowerCase &&
+    senhaHasDigit &&
+    senhaHasSpecialChar &&
+    senhaPasswordsMatch;
 
   // Estados de Notificações por Canal
   const [canaisConfig, setCanaisConfig] = useState<Record<CanalNotificacao, CanalPreferenciaState>>({
@@ -288,6 +310,23 @@ export default function ConfiguracoesPage() {
         'error'
       );
       return;
+    }
+
+    if (canal === CanalNotificacao.Push && checked) {
+      if (pushPermission === 'default') {
+        solicitarPermissaoPush().then((perm) => {
+          if (perm === 'granted') {
+            showToast('Notificações push permitidas com sucesso no navegador!', 'success');
+          } else if (perm === 'denied') {
+            showToast('Permissão de notificações recusada pelo navegador.', 'info');
+          }
+        });
+      } else if (pushPermission === 'denied') {
+        showToast(
+          'Notificações push estão bloqueadas no seu navegador. Habilite-as nas permissões do site.',
+          'info'
+        );
+      }
     }
 
     const atual = canaisConfig[canal];
@@ -520,8 +559,8 @@ export default function ConfiguracoesPage() {
       showToast('Preencha a senha atual e a nova senha.', 'error');
       return;
     }
-    if (novaSenha !== confirmarNovaSenha) {
-      showToast('A nova senha e a confirmação não coincidem.', 'error');
+    if (!isNovaSenhaValida) {
+      showToast('A nova senha não atende a todos os critérios de segurança (RN002).', 'error');
       return;
     }
 
@@ -801,9 +840,45 @@ export default function ConfiguracoesPage() {
                   />
                 </div>
 
+                {novaSenha.length > 0 && (
+                  <div className={styles.criteriaList} aria-live="polite">
+                    <span className={styles.criteriaTitle}>Critérios de Segurança (RN002):</span>
+
+                    <div className={`${styles.criterionItem} ${senhaHasMinLength ? styles.criterionValid : styles.criterionInvalid}`}>
+                      <span className={styles.criterionIcon}>{senhaHasMinLength ? '✓' : '○'}</span>
+                      <span>Mínimo de 8 caracteres</span>
+                    </div>
+
+                    <div className={`${styles.criterionItem} ${senhaHasUpperCase ? styles.criterionValid : styles.criterionInvalid}`}>
+                      <span className={styles.criterionIcon}>{senhaHasUpperCase ? '✓' : '○'}</span>
+                      <span>Pelo menos uma letra maiúscula (A-Z)</span>
+                    </div>
+
+                    <div className={`${styles.criterionItem} ${senhaHasLowerCase ? styles.criterionValid : styles.criterionInvalid}`}>
+                      <span className={styles.criterionIcon}>{senhaHasLowerCase ? '✓' : '○'}</span>
+                      <span>Pelo menos uma letra minúscula (a-z)</span>
+                    </div>
+
+                    <div className={`${styles.criterionItem} ${senhaHasDigit ? styles.criterionValid : styles.criterionInvalid}`}>
+                      <span className={styles.criterionIcon}>{senhaHasDigit ? '✓' : '○'}</span>
+                      <span>Pelo menos um número (0-9)</span>
+                    </div>
+
+                    <div className={`${styles.criterionItem} ${senhaHasSpecialChar ? styles.criterionValid : styles.criterionInvalid}`}>
+                      <span className={styles.criterionIcon}>{senhaHasSpecialChar ? '✓' : '○'}</span>
+                      <span>Pelo menos um caractere especial (!@#$...)</span>
+                    </div>
+
+                    <div className={`${styles.criterionItem} ${senhaPasswordsMatch ? styles.criterionValid : styles.criterionInvalid}`}>
+                      <span className={styles.criterionIcon}>{senhaPasswordsMatch ? '✓' : '○'}</span>
+                      <span>As senhas coincidem</span>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={savingSenha || !senhaAtual || !novaSenha}
+                  disabled={savingSenha || !senhaAtual || !isNovaSenhaValida}
                   style={{
                     alignSelf: 'flex-start',
                     backgroundColor: 'var(--cortex-purple)',
@@ -813,8 +888,8 @@ export default function ConfiguracoesPage() {
                     borderRadius: '8px',
                     fontWeight: 600,
                     fontSize: '13px',
-                    cursor: 'pointer',
-                    opacity: !senhaAtual || !novaSenha ? 0.6 : 1,
+                    cursor: savingSenha || !senhaAtual || !isNovaSenhaValida ? 'not-allowed' : 'pointer',
+                    opacity: !senhaAtual || !isNovaSenhaValida ? 0.6 : 1,
                   }}
                 >
                   {savingSenha ? 'Atualizando...' : 'Atualizar Senha'}
@@ -1092,8 +1167,26 @@ export default function ConfiguracoesPage() {
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
                 ),
-                destino: 'Navegador Web / Dispositivo Conectado',
-                aviso: undefined,
+                destino:
+                  pushPermission === 'granted'
+                    ? 'Navegador Web (Permissão Concedida)'
+                    : pushPermission === 'denied'
+                    ? 'Navegador Web (Bloqueado no Navegador)'
+                    : 'Navegador Web / Dispositivo Conectado',
+                aviso:
+                  pushPermission === 'denied'
+                    ? {
+                        tipo: 'warning' as const,
+                        texto:
+                          'As notificações push estão bloqueadas nas configurações do seu navegador. Para receber alertas, clique no ícone de segurança/cadeado ao lado da URL e autorize notificações para este site.',
+                      }
+                    : pushPermission === 'default'
+                    ? {
+                        tipo: 'info' as const,
+                        texto:
+                          'A permissão de notificações do navegador ainda não foi concedida. Autorize o navegador para que os alertas em tempo real sejam exibidos.',
+                      }
+                    : undefined,
               },
               {
                 id: CanalNotificacao.Sms,
@@ -1225,6 +1318,94 @@ export default function ConfiguracoesPage() {
                         </label>
                       ))}
                     </div>
+
+                    {/* Controles de Permissão e Teste do Canal Push */}
+                    {info.id === CanalNotificacao.Push && (
+                      <div className={styles.pushActionRow}>
+                        <div className={styles.pushStatusWrapper}>
+                          <span
+                            className={`${styles.pushStatusBadge} ${
+                              pushPermission === 'granted'
+                                ? styles.pushStatusGranted
+                                : pushPermission === 'denied'
+                                ? styles.pushStatusDenied
+                                : styles.pushStatusDefault
+                            }`}
+                          >
+                            {pushPermission === 'granted' && '✓ Notificações autorizadas no navegador'}
+                            {pushPermission === 'denied' && '✕ Bloqueado no navegador'}
+                            {pushPermission === 'default' && '⚠ Permissão pendente no navegador'}
+                            {pushPermission === 'unsupported' && '✕ Push incompatível com este navegador'}
+                          </span>
+                        </div>
+                        <div className={styles.pushButtonsGroup}>
+                          {pushPermission === 'default' && (
+                            <button
+                              type="button"
+                              className={styles.pushActionBtn}
+                              onClick={async () => {
+                                const res = await solicitarPermissaoPush();
+                                if (res === 'granted') {
+                                  showToast('Permissão de notificações concedida com sucesso!', 'success');
+                                  await testarNotificacaoPush();
+                                } else if (res === 'denied') {
+                                  showToast('Permissão bloqueada no navegador. Clique no cadeado para liberar.', 'info');
+                                }
+                              }}
+                            >
+                              Autorizar no Navegador
+                            </button>
+                          )}
+
+                          {pushPermission === 'denied' && (
+                            <button
+                              type="button"
+                              className={styles.pushActionBtn}
+                              onClick={() => {
+                                showToast(
+                                  'Notificações bloqueadas! Clique no ícone de cadeado/ajustes ao lado da URL na barra de endereços e altere Notificações para Permitir.',
+                                  'info'
+                                );
+                              }}
+                            >
+                              Como Desbloquear
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            className={`${styles.pushActionBtn} ${pushPermission === 'granted' ? styles.pushActionBtnPrimary : ''}`}
+                            disabled={testingPush}
+                            onClick={async () => {
+                              setTestingPush(true);
+                              try {
+                                const res = await testarNotificacaoPush();
+                                if (res.status === 'denied') {
+                                  showToast(
+                                    'Notificações bloqueadas no navegador. Clique no ícone de cadeado ao lado da URL para permitir.',
+                                    'error'
+                                  );
+                                } else if (res.success) {
+                                  showToast(res.message || 'Notificação push disparada com sucesso!', 'success');
+                                  if (!conf.ativo) {
+                                    handleToggleCanalAtivo(CanalNotificacao.Push, true);
+                                  }
+                                } else {
+                                  showToast(res.message || 'Não foi possível disparar a notificação.', 'info');
+                                }
+                              } catch {
+                                showToast('Erro ao testar notificação push.', 'error');
+                              } finally {
+                                setTestingPush(false);
+                              }
+                            }}
+                            title="Disparar notificação de teste no navegador"
+                          >
+                            {testingPush ? 'Enviando...' : '🔔 Testar Notificação Push'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
