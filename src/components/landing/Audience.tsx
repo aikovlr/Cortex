@@ -8,6 +8,7 @@ import {
   UsersIcon,
   CheckIcon,
 } from './LandingIcons';
+import { BlurFade } from '@/components/magicui/blur-fade';
 import styles from './landing.module.css';
 
 export default function Audience() {
@@ -31,39 +32,48 @@ export default function Audience() {
       aria-labelledby="audience-heading"
     >
       <div className={styles.landingContainer}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrowLight}>Para Quem É</span>
-          <h2 id="audience-heading" className={styles.sectionTitleLight}>
-            Feito para quem busca organização sem complicação
-          </h2>
-          <p className={styles.sectionSubtitleLight}>
-            Descubra como o Cortex adapta sua estrutura para atender necessidades individuais e coletivas.
-          </p>
-        </div>
+        <BlurFade delay={0.05}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrowLight}>Para Quem É</span>
+            <h2 id="audience-heading" className={styles.sectionTitleLight}>
+              Feito para quem busca organização sem complicação
+            </h2>
+            <p className={styles.sectionSubtitleLight}>
+              Descubra como o Cortex adapta sua estrutura para atender necessidades individuais e coletivas.
+            </p>
+          </div>
+        </BlurFade>
 
         <div className={styles.audienceGrid}>
-          {AUDIENCE_LIST.map((item) => (
-            <div key={item.id} className={styles.audienceCardLight}>
-              <div className={styles.audienceIconCircleLight}>
-                {renderAudienceIcon(item.iconName)}
-              </div>
+          {AUDIENCE_LIST.map((item, index) => (
+            <BlurFade
+              key={item.id}
+              variant="pop"
+              delay={0.12 * index}
+              style={{ display: 'flex' }}
+            >
+              <div className={styles.audienceCardLight} style={{ width: '100%' }}>
+                <div className={styles.audienceIconCircleLight}>
+                  {renderAudienceIcon(item.iconName)}
+                </div>
 
-              <div>
-                <h3 className={styles.audienceTitleLight}>{item.title}</h3>
-                <p className={styles.audienceSubtitleLight}>{item.subtitle}</p>
-              </div>
+                <div>
+                  <h3 className={styles.audienceTitleLight}>{item.title}</h3>
+                  <p className={styles.audienceSubtitleLight}>{item.subtitle}</p>
+                </div>
 
-              <ul className={styles.audienceList}>
-                {item.benefits.map((benefit, index) => (
-                  <li key={index} className={styles.audienceListItemLight}>
-                    <span className={styles.audienceListIconLight} aria-hidden="true">
-                      <CheckIcon size={18} />
-                    </span>
-                    <span>{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <ul className={styles.audienceList}>
+                  {item.benefits.map((benefit, bIndex) => (
+                    <li key={bIndex} className={styles.audienceListItemLight}>
+                      <span className={styles.audienceListIconLight} aria-hidden="true">
+                        <CheckIcon size={18} />
+                      </span>
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </BlurFade>
           ))}
         </div>
       </div>

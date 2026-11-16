@@ -11,57 +11,76 @@ import {
   StarIcon,
   UsersIcon,
 } from './LandingIcons';
+import { TextReveal } from '@/components/magicui/text-reveal';
+import { BlurFade } from '@/components/magicui/blur-fade';
 import styles from './landing.module.css';
 
 export default function Hero() {
   return (
-    <section className={styles.heroSection} aria-labelledby="hero-heading">
+    <section id="inicio" className={styles.heroSection} aria-labelledby="hero-heading">
       <div className={styles.landingContainer}>
         <div className={styles.heroGrid}>
           {/* Conteúdo Textual da Hero com Fade e Stagger */}
           <div className={styles.heroContent}>
-            <div className={styles.heroBadge}>
-              <span className={styles.heroBadgeDot} aria-hidden="true" />
-              <span>100% Gratuito e Seguro</span>
-            </div>
 
-            <h1 id="hero-heading" className={styles.heroTitle}>
-              Organize suas tarefas <br />
-              <span className={styles.heroTitleHighlight}>pessoais e de equipe</span> em um só lugar
-            </h1>
+            {/* Magic UI Text Reveal no Título Principal */}
+            <TextReveal
+              as="h1"
+              id="hero-heading"
+              className={styles.heroTitle}
+              staggerMs={70}
+              initialDelay={100}
+              segments={[
+                { text: 'Organize suas tarefas', breakAfter: true },
+                {
+                  text: 'pessoais e de equipe',
+                  highlight: true,
+                  highlightClassName: styles.heroTitleHighlight,
+                },
+                { text: 'em um só lugar' },
+              ]}
+            />
 
-            <p className={styles.heroSubtitle}>
-              O Cortex é a plataforma web moderna e intuitiva para planejar atividades,
-              gerenciar equipes com hierarquia clara e conquistar metas com gamificação integrada.
-            </p>
+            {/* Subtítulo da Hero animado com fade-up suave */}
+            <BlurFade delay={0.4} duration={0.7} variant="fade-up">
+              <p className={styles.heroSubtitle}>
+                O Cortex é a plataforma web moderna e intuitiva para planejar atividades, gerenciar equipes com hierarquia clara e conquistar metas com gamificação integrada.
+              </p>
+            </BlurFade>
 
-            <div className={styles.heroCtaGroup}>
-              <Link
-                href={REGISTER_ROUTE}
-                className={styles.btnPrimary}
-                aria-label="Criar conta grátis no Cortex"
-              >
-                <span>Criar conta grátis</span>
-                <ArrowRightIcon size={18} />
-              </Link>
+            {/* Grupo de Botões CTA animado com pop spring suave */}
+            <BlurFade delay={0.65} duration={0.65} variant="pop">
+              <div className={styles.heroCtaGroup}>
+                <Link
+                  href={REGISTER_ROUTE}
+                  className={styles.btnPrimary}
+                  aria-label="Criar conta grátis no Cortex"
+                >
+                  <span>Criar conta grátis</span>
+                  <ArrowRightIcon size={18} />
+                </Link>
 
-              <Link
-                href={AUTH_ROUTE}
-                className={styles.btnSecondary}
-                aria-label="Acessar conta existente no Cortex"
-              >
-                <span>Já tenho conta</span>
-              </Link>
-            </div>
+                <Link
+                  href={AUTH_ROUTE}
+                  className={styles.btnSecondary}
+                  aria-label="Acessar conta existente no Cortex"
+                >
+                  <span>Já tenho conta</span>
+                </Link>
+              </div>
+            </BlurFade>
 
-            <div className={styles.heroGuarantee}>
-              <ShieldCheckIcon size={16} />
-              <span>Sem custos e sem assinaturas.</span>
-            </div>
+            {/* Garantia Hero */}
+            <BlurFade delay={0.8} duration={0.6} variant="fade-up">
+              <div className={styles.heroGuarantee}>
+                <ShieldCheckIcon size={16} />
+                <span>Sem custos e sem assinaturas.</span>
+              </div>
+            </BlurFade>
           </div>
 
           {/* Ilustração Feita Somente com CSS e Ícones SVG (Sem Imagens) */}
-          <div className={styles.heroIllustration} aria-hidden="true">
+          <BlurFade delay={0.2} className={styles.heroIllustration} aria-hidden="true">
             <div className={styles.illustrationCanvas}>
               {/* Card Flutuante Terciário (Colaboração e Equipe) */}
               <div className={styles.heroTaskCardTertiary}>
@@ -81,7 +100,7 @@ export default function Hero() {
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardBadges}>
                     <span className={styles.badgePriority}>Alta Prioridade</span>
-                    <span className={styles.badgeStatus}>Em andamento</span>
+                    <span className={styles.badgeStatus}>Pendente</span>
                   </div>
                   <span className={styles.scoreBadge}>
                     <StarIcon size={12} />
@@ -116,7 +135,7 @@ export default function Hero() {
                 </div>
               </div>
             </div>
-          </div>
+          </BlurFade>
         </div>
       </div>
     </section>

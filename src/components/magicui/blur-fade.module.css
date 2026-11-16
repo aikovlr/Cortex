@@ -1,0 +1,108 @@
+.blurFadeContainer {
+  transition-property: opacity, transform, filter;
+  transition-duration: var(--bf-duration, 0.65s);
+  transition-delay: var(--bf-delay, 0s);
+  will-change: opacity, transform, filter;
+}
+
+/* Variant 1: fade-up (padrão suave) */
+.variant-fade-up {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.variant-fade-up.blurFadeOut {
+  opacity: 0;
+  transform: translateY(var(--bf-y-offset, 22px));
+  filter: blur(var(--bf-blur, 6px));
+}
+.variant-fade-up.blurFadeIn {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Variant 2: drop ("como se alguém colocasse o componente ali na mesa") */
+.variant-drop {
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center top;
+}
+.variant-drop.blurFadeOut {
+  opacity: 0;
+  transform: translateY(-24px) scale(1.04) rotate(-1.2deg);
+  filter: blur(5px);
+}
+.variant-drop.blurFadeIn {
+  opacity: 1;
+  transform: translateY(0) scale(1) rotate(0deg);
+  filter: blur(0);
+}
+
+/* Variant 3: pop (cards surgindo aos poucos com spring suave) */
+.variant-pop {
+  transition-timing-function: cubic-bezier(0.34, 1.25, 0.64, 1);
+}
+.variant-pop.blurFadeOut {
+  opacity: 0;
+  transform: translateY(22px) scale(0.92);
+  filter: blur(4px);
+}
+.variant-pop.blurFadeIn {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* Variant 4: slide-left (desliza da esquerda para direita) */
+.variant-slide-left {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.variant-slide-left.blurFadeOut {
+  opacity: 0;
+  transform: translateX(-36px);
+  filter: blur(6px);
+}
+.variant-slide-left.blurFadeIn {
+  opacity: 1;
+  transform: translateX(0);
+  filter: blur(0);
+}
+
+/* Variant 5: slide-right (desliza da direita para esquerda e ancora) */
+.variant-slide-right {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.variant-slide-right.blurFadeOut {
+  opacity: 0;
+  transform: translateX(36px);
+  filter: blur(6px);
+}
+.variant-slide-right.blurFadeIn {
+  opacity: 1;
+  transform: translateX(0);
+  filter: blur(0);
+}
+
+/* Variant 6: focus (abertura e nitidez fotográfica para acessibilidade) */
+.variant-focus {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.variant-focus.blurFadeOut {
+  opacity: 0;
+  transform: scale(0.97);
+  filter: blur(14px);
+}
+.variant-focus.blurFadeIn {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blurFadeContainer,
+  .blurFadeOut,
+  .blurFadeIn {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { STEPS } from './constants';
+import { BlurFade } from '@/components/magicui/blur-fade';
 import styles from './landing.module.css';
 
 export default function HowItWorks() {
@@ -34,15 +35,17 @@ export default function HowItWorks() {
       aria-labelledby="how-it-works-heading"
     >
       <div className={styles.landingContainer}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrowLight}>Fluxo de Trabalho</span>
-          <h2 id="how-it-works-heading" className={styles.sectionTitleLight}>
-            Como o Cortex funciona na prática
-          </h2>
-          <p className={styles.sectionSubtitleLight}>
-            Quatro etapas simples para estruturar seu fluxo pessoal ou colaborar com sua equipe em minutos.
-          </p>
-        </div>
+        <BlurFade delay={0.05}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrowLight}>Fluxo de Trabalho</span>
+            <h2 id="how-it-works-heading" className={styles.sectionTitleLight}>
+              Como o Cortex funciona na prática
+            </h2>
+            <p className={styles.sectionSubtitleLight}>
+              Quatro etapas simples para estruturar seu fluxo pessoal ou colaborar com sua equipe em minutos.
+            </p>
+          </div>
+        </BlurFade>
 
         <div className={styles.stepsWrapper}>
           {/* Linha Conectora Animada em Modo Claro */}
@@ -54,14 +57,21 @@ export default function HowItWorks() {
             />
           </div>
 
-          {STEPS.map((step) => (
-            <div key={step.number} className={styles.stepCardLight}>
-              <div className={styles.stepNumberCircleLight} aria-hidden="true">
-                {step.number}
+          {STEPS.map((step, index) => (
+            <BlurFade
+              key={step.number}
+              variant="pop"
+              delay={0.12 * index}
+              style={{ flex: 1 }}
+            >
+              <div className={styles.stepCardLight} style={{ height: '100%' }}>
+                <div className={styles.stepNumberCircleLight} aria-hidden="true">
+                  {step.number}
+                </div>
+                <h3 className={styles.stepTitleLight}>{step.title}</h3>
+                <p className={styles.stepDescriptionLight}>{step.description}</p>
               </div>
-              <h3 className={styles.stepTitleLight}>{step.title}</h3>
-              <p className={styles.stepDescriptionLight}>{step.description}</p>
-            </div>
+            </BlurFade>
           ))}
         </div>
       </div>

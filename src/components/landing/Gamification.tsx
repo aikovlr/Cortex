@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { TrophyIcon, StarIcon, AwardIcon, LayersIcon } from './LandingIcons';
+import { BlurFade } from '@/components/magicui/blur-fade';
 import styles from './landing.module.css';
 
 export default function Gamification() {
@@ -54,8 +55,8 @@ export default function Gamification() {
     <section id="gamificacao" className={`${styles.section} ${styles.sectionDark}`} aria-labelledby="gamification-heading">
       <div className={styles.landingContainer}>
         <div className={styles.gamificationGrid}>
-          {/* Lado Esquerdo: Conteúdo Explicativo */}
-          <div className={styles.gamificationContent}>
+          {/* Lado Esquerdo: Conteúdo Explicativo (Desliza da Esquerda) */}
+          <BlurFade delay={0.05} variant="slide-left" className={styles.gamificationContent}>
             <div className={styles.gamificationPill}>
               <AwardIcon size={16} />
               <span>Avaliação & Desempenho</span>
@@ -98,80 +99,82 @@ export default function Gamification() {
                 </div>
               </div>
             </div>
-          </div>
+          </BlurFade>
 
-          {/* Lado Direito: Widget Visual de Avaliação de Tarefas */}
-          <div ref={containerRef} className={styles.gamificationInteractiveCard}>
-            <div className={styles.gamificationScoreRow}>
-              <div className={styles.scoreBlock}>
-                <span className={styles.scoreLabel}>Média Geral de Notas</span>
-                <span className={styles.scoreValue}>{scoreCount} pts</span>
+          {/* Lado Direito: Widget Visual de Avaliação de Tarefas (Desliza e ancora da Direita) */}
+          <BlurFade delay={0.15} variant="slide-right" style={{ width: '100%' }}>
+            <div ref={containerRef} className={styles.gamificationInteractiveCard}>
+              <div className={styles.gamificationScoreRow}>
+                <div className={styles.scoreBlock}>
+                  <span className={styles.scoreLabel}>Média Geral de Notas</span>
+                  <span className={styles.scoreValue}>{scoreCount} pts</span>
+                </div>
+                <div className={styles.badgeLevel}>
+                  <StarIcon size={14} />
+                  <span>Desempenho Excelente</span>
+                </div>
               </div>
-              <div className={styles.badgeLevel}>
-                <StarIcon size={14} />
-                <span>Desempenho Excelente</span>
+
+              <div className={styles.goalItemList}>
+                {/* Tarefa 1 */}
+                <div className={styles.goalItem}>
+                  <div className={styles.goalItemHeader}>
+                    <div>
+                      <span className={styles.goalItemTitle}>Relatório de Arquitetura do Sistema</span>
+                      <span className={styles.floatingCardSubtitle} style={{ display: 'block', marginTop: '2px' }}>
+                        Entrega avaliada por Dono / Admin
+                      </span>
+                    </div>
+                    <span className={styles.goalItemPoints}>Nota: 95 / 100 pts</span>
+                  </div>
+                  <div className={styles.goalTrack}>
+                    <div
+                      className={styles.goalFill}
+                      style={{ width: isVisible ? '95%' : '0%' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Tarefa 2 */}
+                <div className={styles.goalItem}>
+                  <div className={styles.goalItemHeader}>
+                    <div>
+                      <span className={styles.goalItemTitle}>Implementação da Interface Responsiva</span>
+                      <span className={styles.floatingCardSubtitle} style={{ display: 'block', marginTop: '2px' }}>
+                        Entrega avaliada com anexos validados
+                      </span>
+                    </div>
+                    <span className={styles.goalItemPoints}>Nota: 90 / 100 pts</span>
+                  </div>
+                  <div className={styles.goalTrack}>
+                    <div
+                      className={styles.goalFill}
+                      style={{ width: isVisible ? '90%' : '0%' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Tarefa 3 */}
+                <div className={styles.goalItem}>
+                  <div className={styles.goalItemHeader}>
+                    <div>
+                      <span className={styles.goalItemTitle}>Revisão e Resolução de Tickets</span>
+                      <span className={styles.floatingCardSubtitle} style={{ display: 'block', marginTop: '2px' }}>
+                        Entrega aprovada sem impedimentos
+                      </span>
+                    </div>
+                    <span className={styles.goalItemPoints}>Nota: 100 / 100 pts</span>
+                  </div>
+                  <div className={styles.goalTrack}>
+                    <div
+                      className={styles.goalFill}
+                      style={{ width: isVisible ? '100%' : '0%' }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-
-            <div className={styles.goalItemList}>
-              {/* Tarefa 1 */}
-              <div className={styles.goalItem}>
-                <div className={styles.goalItemHeader}>
-                  <div>
-                    <span className={styles.goalItemTitle}>Relatório de Arquitetura do Sistema</span>
-                    <span className={styles.floatingCardSubtitle} style={{ display: 'block', marginTop: '2px' }}>
-                      Entrega avaliada por Dono / Admin
-                    </span>
-                  </div>
-                  <span className={styles.goalItemPoints}>Nota: 95 / 100 pts</span>
-                </div>
-                <div className={styles.goalTrack}>
-                  <div
-                    className={styles.goalFill}
-                    style={{ width: isVisible ? '95%' : '0%' }}
-                  />
-                </div>
-              </div>
-
-              {/* Tarefa 2 */}
-              <div className={styles.goalItem}>
-                <div className={styles.goalItemHeader}>
-                  <div>
-                    <span className={styles.goalItemTitle}>Implementação da Interface Responsiva</span>
-                    <span className={styles.floatingCardSubtitle} style={{ display: 'block', marginTop: '2px' }}>
-                      Entrega avaliada com anexos validados
-                    </span>
-                  </div>
-                  <span className={styles.goalItemPoints}>Nota: 90 / 100 pts</span>
-                </div>
-                <div className={styles.goalTrack}>
-                  <div
-                    className={styles.goalFill}
-                    style={{ width: isVisible ? '90%' : '0%' }}
-                  />
-                </div>
-              </div>
-
-              {/* Tarefa 3 */}
-              <div className={styles.goalItem}>
-                <div className={styles.goalItemHeader}>
-                  <div>
-                    <span className={styles.goalItemTitle}>Revisão e Resolução de Tickets</span>
-                    <span className={styles.floatingCardSubtitle} style={{ display: 'block', marginTop: '2px' }}>
-                      Entrega aprovada sem impedimentos
-                    </span>
-                  </div>
-                  <span className={styles.goalItemPoints}>Nota: 100 / 100 pts</span>
-                </div>
-                <div className={styles.goalTrack}>
-                  <div
-                    className={styles.goalFill}
-                    style={{ width: isVisible ? '100%' : '0%' }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          </BlurFade>
         </div>
       </div>
     </section>

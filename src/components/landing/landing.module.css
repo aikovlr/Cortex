@@ -266,13 +266,22 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   white-space: nowrap;
+}
+
+.btnPrimary svg {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btnPrimary:hover {
   background-color: var(--cortex-purple-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(123, 79, 201, 0.35);
+}
+
+.btnPrimary:hover svg {
+  transform: translateX(3px);
 }
 
 .btnPrimary:active {
@@ -339,27 +348,6 @@
   gap: 24px;
 }
 
-.heroBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--cortex-border);
-  color: var(--cortex-white);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  width: fit-content;
-}
-
-.heroBadgeDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--cortex-purple);
-}
-
 .heroTitle {
   font-size: 3rem;
   line-height: 1.18;
@@ -371,6 +359,43 @@
 
 .heroTitleHighlight {
   color: var(--cortex-purple);
+  background-image: linear-gradient(
+    115deg,
+    #7B4FC9 0%,
+    #7B4FC9 32%,
+    #b98eff 48%,
+    #ffffff 52%,
+    #b98eff 56%,
+    #7B4FC9 72%,
+    #7B4FC9 100%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  animation: shinyPurple 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 2px 14px rgba(123, 79, 201, 0.35));
+}
+
+@keyframes shinyPurple {
+  0% {
+    background-position: 130% 0;
+  }
+  100% {
+    background-position: -130% 0;
+  }
+}
+
+@keyframes heroTextFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .heroSubtitle {
@@ -782,7 +807,7 @@
 }
 
 /* ============================================================
-   4. RECURSOS (Seção 3 - Azul Cortex)
+   4. RECURSOS (Seção 3 - Bento Grid Moderno)
    ============================================================ */
 .featuresGrid {
   display: grid;
@@ -840,6 +865,85 @@
   color: var(--cortex-bg-light);
   margin: 0;
   font-weight: 400;
+}
+
+/* --- Bento Grid Moderno (Conteúdo Original, Sem Brilhos Artificiais) --- */
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+.bentoCard {
+  background-color: var(--cortex-dark-card);
+  border: 1px solid var(--cortex-border);
+  border-radius: 20px;
+  padding: 32px 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.bentoCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--cortex-purple);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+}
+
+.bentoSpan2 {
+  grid-column: span 2;
+}
+
+.bentoCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.bentoIconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: var(--cortex-dark-input);
+  border: 1px solid var(--cortex-border);
+  color: var(--cortex-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.bentoCard:hover .bentoIconWrapper {
+  background-color: var(--cortex-purple);
+  color: var(--cortex-white);
+}
+
+.bentoTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--cortex-white);
+  margin: 0;
+}
+
+.bentoSpan2 .bentoTitle {
+  font-size: 1.25rem;
+}
+
+.bentoDescription {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--cortex-bg-light);
+  margin: 0;
+  font-weight: 400;
+}
+
+.bentoSpan2 .bentoDescription {
+  max-width: 650px;
 }
 
 /* ============================================================
@@ -1572,6 +1676,14 @@
     justify-content: center;
   }
 
+  .bentoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bentoSpan2 {
+    grid-column: span 2;
+  }
+
   .featuresGrid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1623,6 +1735,14 @@
 
   .heroSubtitle {
     font-size: 1rem;
+  }
+
+  .bentoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bentoSpan2 {
+    grid-column: span 1;
   }
 
   .featuresGrid {
@@ -1692,7 +1812,16 @@
   .heroTaskCardSecondary,
   .heroTaskCardTertiary,
   .stepsConnectorLineActive,
-  .goalFill {
+  .goalFill,
+  .heroTitle,
+  .heroSubtitle,
+  .heroTitleHighlight {
     animation: none !important;
   }
+}
+
+:global(html.high-contrast) .bentoCard,
+:global(html[data-high-contrast="true"]) .bentoCard {
+  border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+  background-color: var(--cortex-dark-card) !important;
 }

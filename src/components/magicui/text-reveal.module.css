@@ -1,0 +1,59 @@
+.textRevealContainer {
+  display: block;
+  position: relative;
+}
+
+.textRevealWords {
+  display: inline;
+}
+
+.wordWrapper {
+  display: inline-block;
+  position: relative;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s ease;
+  will-change: opacity, transform, filter;
+}
+
+.wordDimmed {
+  opacity: 0.15;
+  filter: blur(4px);
+  transform: translateY(6px);
+  color: var(--cortex-bg-light);
+}
+
+.wordRevealed {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+  color: var(--cortex-white);
+}
+
+.highlightWordDimmed {
+  opacity: 0.15 !important;
+  filter: blur(4px) !important;
+  transform: translateY(6px) !important;
+}
+
+.highlightWordRevealed {
+  opacity: 1 !important;
+  filter: blur(0) drop-shadow(0 2px 14px rgba(123, 79, 201, 0.35)) !important;
+  transform: translateY(0) !important;
+}
+
+.wordHighlight {
+  color: var(--cortex-purple);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordWrapper,
+  .highlightWordDimmed,
+  .highlightWordRevealed {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

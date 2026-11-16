@@ -11,6 +11,7 @@ import {
   BellIcon,
   SlidersIcon,
 } from './LandingIcons';
+import { BlurFade } from '@/components/magicui/blur-fade';
 import styles from './landing.module.css';
 
 export default function Features() {
@@ -38,29 +39,43 @@ export default function Features() {
   return (
     <section id="recursos" className={`${styles.section} ${styles.sectionDark}`} aria-labelledby="features-heading">
       <div className={styles.landingContainer}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrow}>Funcionalidades Essenciais</span>
-          <h2 id="features-heading" className={styles.sectionTitle}>
-            Tudo o que você precisa para gerenciar atividades
-          </h2>
-          <p className={styles.sectionSubtitle}>
-            Recursos práticos e objetivos projetados para manter indivíduos e equipes alinhados em cada etapa.
-          </p>
-        </div>
+        <BlurFade delay={0.05}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Funcionalidades Essenciais</span>
+            <h2 id="features-heading" className={styles.sectionTitle}>
+              Tudo o que você precisa para gerenciar atividades
+            </h2>
+            <p className={styles.sectionSubtitle}>
+              Recursos práticos e objetivos projetados para manter indivíduos e equipes alinhados em cada etapa.
+            </p>
+          </div>
+        </BlurFade>
 
-        <div className={styles.featuresGrid}>
-          {FEATURES.map((feature) => (
-            <div key={feature.id} className={styles.featureCard}>
-              <div className={styles.featureIconWrapper}>
-                {renderIcon(feature.iconName)}
-              </div>
-              <h3 className={styles.featureTitle}>{feature.title}</h3>
-              <p className={styles.featureDescription}>{feature.description}</p>
-            </div>
-          ))}
+        {/* Bento Grid com os cards aparecendo aos poucos */}
+        <div className={styles.bentoGrid}>
+          {FEATURES.map((feature, index) => {
+            const isSpan2 = index === 0 || index === 3;
+            return (
+              <BlurFade
+                key={feature.id}
+                variant="pop"
+                delay={index * 0.08}
+                className={isSpan2 ? styles.bentoSpan2 : ''}
+              >
+                <div className={styles.bentoCard} style={{ height: '100%' }}>
+                  <div className={styles.bentoCardContent}>
+                    <div className={styles.bentoIconWrapper}>
+                      {renderIcon(feature.iconName)}
+                    </div>
+                    <h3 className={styles.bentoTitle}>{feature.title}</h3>
+                    <p className={styles.bentoDescription}>{feature.description}</p>
+                  </div>
+                </div>
+              </BlurFade>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
-

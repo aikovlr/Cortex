@@ -9,6 +9,7 @@ import {
   TypeIcon,
   SparklesIcon,
 } from './LandingIcons';
+import { BlurFade } from '@/components/magicui/blur-fade';
 import styles from './landing.module.css';
 
 // Todos os 7 tamanhos de fonte oficiais disponíveis no Cortex
@@ -32,17 +33,21 @@ export default function AccessibilitySection() {
       aria-labelledby="accessibility-heading"
     >
       <div className={styles.landingContainer}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrow}>Inclusão e Usabilidade</span>
-          <h2 id="accessibility-heading" className={styles.sectionTitle}>
-            Acessibilidade como prioridade real
-          </h2>
-          <p className={styles.sectionSubtitle}>
-            Uma ferramenta de produtividade só é eficiente quando pode ser usada com conforto por todos.
-          </p>
-        </div>
+        <BlurFade delay={0.05}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Inclusão e Usabilidade</span>
+            <h2 id="accessibility-heading" className={styles.sectionTitle}>
+              Acessibilidade como prioridade real
+            </h2>
+            <p className={styles.sectionSubtitle}>
+              Uma ferramenta de produtividade só é eficiente quando pode ser usada com conforto por todos.
+            </p>
+          </div>
+        </BlurFade>
 
-        <div className={styles.accessibilityBox}>
+        {/* Caixa de Acessibilidade com Efeito de Foco Fotográfico (Aperture / Focus) */}
+        <BlurFade delay={0.15} duration={0.8} variant="focus">
+          <div className={styles.accessibilityBox}>
           {/* Lado Esquerdo: Descrição dos Recursos de Acessibilidade */}
           <div className={styles.accessibilityFeaturesList}>
             <div className={styles.accessibilityFeatureItem}>
@@ -158,6 +163,7 @@ export default function AccessibilitySection() {
             </div>
           </div>
         </div>
+      </BlurFade>
       </div>
     </section>
   );

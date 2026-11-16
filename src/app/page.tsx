@@ -10,6 +10,7 @@ import Audience from '@/components/landing/Audience';
 import AccessibilitySection from '@/components/landing/AccessibilitySection';
 import FinalCta from '@/components/landing/FinalCta';
 import Footer from '@/components/landing/Footer';
+import { ScrollProgress } from '@/components/magicui/scroll-progress';
 import { AUTH_ROUTE } from '@/components/landing/constants';
 import styles from '@/components/landing/landing.module.css';
 
@@ -28,6 +29,9 @@ export default function HomePage() {
       <a href="#conteudo-principal" className={styles.skipLink}>
         Pular para o conteúdo principal
       </a>
+      {/* Magic UI Scroll Progress */}
+      <ScrollProgress />
+
       {/* 1. Cabeçalho (Navbar Fixa) */}
       <Navbar />
 
